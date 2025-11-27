@@ -68,11 +68,13 @@
     </div>
 
     <!-- Maatriksi konteiner -->
-    <div class="grid grid-cols-[40px_1fr_40px] md:grid-cols-[60px_1fr_60px] grid-rows-[auto_1fr_auto] gap-1 max-w-5xl w-full">
+    <!-- MUUDATUS: gap-0 eemaldab kõik vahed, et elemendid puutuksid kokku -->
+    <div class="grid grid-cols-[40px_1fr_40px] md:grid-cols-[60px_1fr_60px] grid-rows-[auto_1fr_auto] gap-0 max-w-5xl w-full">
 
         <!-- 1. Rida: Ülemine telg -->
-        <div class="col-start-2 col-end-3 flex justify-center mb-[-1px] z-10">
-            <div class="bg-[#333333] text-white py-2 px-8 md:px-16 text-center text-sm md:text-base font-medium shape-top w-3/4 md:w-1/2">
+        <!-- MUUDATUS: mb-[-1px] ja z-20 tagavad, et must kuju on veidi pealpool ja katab ühenduskoha -->
+        <div class="col-start-2 col-end-3 flex justify-center mb-[-1px] z-20 pointer-events-none">
+            <div class="bg-[#333333] text-white py-2 px-8 md:px-16 text-center text-sm md:text-base font-medium shape-top w-3/4 md:w-1/2 shadow-lg">
                 Rahastus<br>jääb samaks
             </div>
         </div>
@@ -80,8 +82,9 @@
         <!-- 2. Rida: Vasak telg, Sisu (2x2), Parem telg -->
         
         <!-- Vasak telg -->
-        <div class="row-start-2 flex items-center justify-end mr-[-1px] z-10">
-            <div class="bg-[#333333] text-white w-full h-3/4 flex items-center justify-center shape-left py-4">
+        <!-- MUUDATUS: mr-[-1px] toob paremale servale lähemale -->
+        <div class="row-start-2 flex items-center justify-end mr-[-1px] z-20 pointer-events-none">
+            <div class="bg-[#333333] text-white w-full h-3/4 flex items-center justify-center shape-left py-4 shadow-lg">
                 <span class="transform -rotate-90 whitespace-nowrap text-sm md:text-base font-medium tracking-wide">
                     Tehisaru džungel
                 </span>
@@ -89,11 +92,10 @@
         </div>
 
         <!-- Sisu: 2x2 Grid -->
-        <div class="row-start-2 grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-0">
+        <div class="row-start-2 grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-0 z-10">
             
             <!-- Üleval Vasak: Punane -->
-            <!-- data-attributes hoiab infot modaali jaoks (lihtsustatud versioon, tegelik sisu võetakse HTML-ist) -->
-            <div class="bg-[#A51D2D] text-white p-6 rounded-2xl md:rounded-none md:rounded-tl-3xl shadow-sm hover:shadow-lg transition-shadow cursor-pointer scenario-card">
+            <div class="bg-[#A51D2D] text-white p-6 rounded-2xl md:rounded-none md:rounded-tl-3xl shadow-sm hover:shadow-lg hover:z-30 transition-all cursor-pointer scenario-card relative">
                 <h2 class="text-xl md:text-2xl mb-4 text-center">Tänapäeva apokalüpsis</h2>
                 <div class="content-source">
                     <ul class="text-sm md:text-base leading-snug space-y-2">
@@ -105,12 +107,11 @@
                         Eestis nähakse teadusrahastust kuluna, mitte investeeringuna, avalikkus peab teadlasi majandusse vähe panustavateks. HTM-i rahastuse eesmärk on säilitada kõrgharidus, raha on vähe ja konkurents tihe. Teadlased kasutavad rahastustaotluste kirjutamisel TI-d, ETAg on automatiseerinud hindamise, vähendades bürokraatiat ja kiirendades otsuseid. Inimese roll rahastuse saamisel on väike, kuid parema puudumisel jätkub kestev olukord. TI ei genereeri olemasoleva info põhjal radikaalselt uusi ideid, mistõttu Eesti teaduse innovaatilisus väheneb. Teadusvaldkondade rahastuse proportsioon on TI otsuste tõttu ennustamatu.
                     </p>
                 </div>
-                <!-- Nähtav osa kaardil (peidame pika jutu siin, näitame ainult modaalis) -->
                 <style> .scenario-card .content-source p { display: none; } </style>
             </div>
 
             <!-- Üleval Parem: Hall -->
-            <div class="bg-[#8B8780] text-white p-6 rounded-2xl md:rounded-none md:rounded-tr-3xl shadow-sm hover:shadow-lg transition-shadow cursor-pointer scenario-card">
+            <div class="bg-[#8B8780] text-white p-6 rounded-2xl md:rounded-none md:rounded-tr-3xl shadow-sm hover:shadow-lg hover:z-30 transition-all cursor-pointer scenario-card relative">
                 <h2 class="text-xl md:text-2xl mb-4 text-center">Lõputu küünlapäev</h2>
                 <div class="content-source">
                     <ul class="text-sm md:text-base leading-snug space-y-2">
@@ -125,7 +126,7 @@
             </div>
 
             <!-- All Vasak: Lilla -->
-            <div class="bg-[#C226A7] text-white p-6 rounded-2xl md:rounded-none md:rounded-bl-3xl shadow-sm hover:shadow-lg transition-shadow cursor-pointer scenario-card">
+            <div class="bg-[#C226A7] text-white p-6 rounded-2xl md:rounded-none md:rounded-bl-3xl shadow-sm hover:shadow-lg hover:z-30 transition-all cursor-pointer scenario-card relative">
                 <h2 class="text-xl md:text-2xl mb-4 text-center">Kasiino</h2>
                 <div class="content-source">
                     <ul class="text-sm md:text-base leading-snug space-y-2">
@@ -140,7 +141,7 @@
             </div>
 
             <!-- All Parem: Roheline -->
-            <div class="bg-[#005831] text-white p-6 rounded-2xl md:rounded-none md:rounded-br-3xl shadow-sm hover:shadow-lg transition-shadow cursor-pointer scenario-card">
+            <div class="bg-[#005831] text-white p-6 rounded-2xl md:rounded-none md:rounded-br-3xl shadow-sm hover:shadow-lg hover:z-30 transition-all cursor-pointer scenario-card relative">
                 <h2 class="text-xl md:text-2xl mb-4 text-center">Ilus (mõistus) elu</h2>
                 <div class="content-source">
                     <ul class="text-sm md:text-base leading-snug space-y-2">
@@ -157,17 +158,19 @@
         </div>
 
         <!-- Parem telg -->
-        <div class="row-start-2 flex items-center justify-start ml-[-1px] z-10">
-            <div class="bg-[#333333] text-white w-full h-3/4 flex items-center justify-center shape-right py-4">
+        <!-- MUUDATUS: ml-[-1px] toob vasakule servale lähemale -->
+        <div class="row-start-2 flex items-center justify-start ml-[-1px] z-20 pointer-events-none">
+            <div class="bg-[#333333] text-white w-full h-3/4 flex items-center justify-center shape-right py-4 shadow-lg">
                 <span class="transform rotate-90 whitespace-nowrap text-sm md:text-base font-medium tracking-wide">
-                    tehisaru <br> Reguleeritud
+                    Tehisaru <br> reguleeritud
                 </span>
             </div>
         </div>
 
         <!-- 3. Rida: Alumine telg -->
-        <div class="col-start-2 col-end-3 flex justify-center mt-[-1px] z-10">
-            <div class="bg-[#333333] text-white py-2 px-8 md:px-16 text-center text-sm md:text-base font-medium shape-bottom w-3/4 md:w-1/2">
+        <!-- MUUDATUS: mt-[-1px] toob üles servale lähemale -->
+        <div class="col-start-2 col-end-3 flex justify-center mt-[-1px] z-20 pointer-events-none">
+            <div class="bg-[#333333] text-white py-2 px-8 md:px-16 text-center text-sm md:text-base font-medium shape-bottom w-3/4 md:w-1/2 shadow-lg">
                 Rahastus<br>kasvab
             </div>
         </div>

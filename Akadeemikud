@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Akadeemikute ennustusvõistlus</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; background-color: #f5f5f5; color: #222; }
+        h1 { text-align: center; border-bottom: 2px solid #444; padding-bottom: 15px; margin-bottom: 30px; }
+        
+        .sticky-header { position: sticky; top: 0; background: #222; color: #fff; padding: 15px; text-align: center; z-index: 1000; box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-radius: 0 0 8px 8px; margin-bottom: 20px; }
+        .points-big { font-size: 1.5em; font-weight: bold; color: #4CAF50; }
+        .points-error { color: #ff5252; }
+
+        .category-header { margin-top: 30px; margin-bottom: 10px; padding: 5px; background: #ddd; font-weight: bold; border-left: 5px solid #555; }
+        
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
+        
+        .candidate-card { background: #fff; padding: 15px; border: 1px solid #ccc; border-radius: 5px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .candidate-info { margin-bottom: 10px; font-size: 0.95em; line-height: 1.4; }
+        .candidate-name { font-weight: bold; font-size: 1.1em; display: block; margin-bottom: 4px; }
+        .candidate-title { font-size: 0.85em; color: #666; display: block; }
+        
+        .controls { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #eee; padding-top: 10px; }
+        input[type="number"] { width: 60px; padding: 5px; text-align: center; font-size: 1.2em; border: 1px solid #aaa; border-radius: 4px; }
+        
+        .user-input { margin: 20px 0; padding: 20px; background: #fff; border: 1px solid #ccc; }
+        input[type="text"] { width: 100%; padding: 12px; margin-top: 5px; box-sizing: border-box; font-size: 1em; border: 1px solid #aaa; }
+        
+        button#submitBtn { display: block; width: 100%; padding: 18px; background: #222; color: #fff; font-size: 1.3em; border: none; cursor: pointer; border-radius: 5px; transition: background 0.2s; margin-top: 20px; }
+        button#submitBtn:disabled { background: #999; cursor: not-allowed; }
+        button#submitBtn:hover:not(:disabled) { background: #444; }
+    </style>
+</head>
+<body>
+
+    <div class="sticky-header">
+        Jäänud palle: <span id="remaining" class="points-big">9</span> / 9
+    </div>
+
+    <h1>Teaduste Akadeemia ennustus</h1>
+
+    <div class="user-input">
+        <label for="username"><strong>Sinu nimi:</strong></label>
+        <input type="text" id="username" placeholder="Ees- ja perekonnanimi" oninput="validate()">
+        <p style="font-size: 0.9em; color: #666; margin-top: 5px;">Jaota 9 palli kandidaatide vahel. Ühele kandidaadile võid anda mitu palli.</p>
+    </div>
+
+    <div id="mainContainer">
+        </div>
+
+    <button id="submitBtn" onclick="submitToGoogle()" disabled>Kinnita ja mine saatma</button>
+
+    <script>
+        // *** ANDMED ***
+        const categories = {
+            "Füüsika": [
+                {name: "Gert Hütsi", title: "KBFI vanemteadur"},
+                {name: "Heikki Junninen", title: "TÜ keskkonnafüüsika professor"},
+                {name: "Jaan Kalda", title: "TalTech täisprofessor tenuuris"}
+            ],
+            "Innovatsioon": [
+                {name: "Indrek Ibrus", title: "TLÜ meediainnovatsiooni professor"},
+                {name: "Rainer Kattel", title: "TalTech kaasatud professor"},
+                {name: "Margus Pedaste", title: "TÜ haridusinnovatsiooni professor"},
+                {name: "Priit Vahter", title: "TÜ rakendusliku majandusteaduse professor"}
+            ],
+            "Kliiniline meditsiin": [
+                {name: "Külli Kingo", title: "TÜ dermatoloogia ja veneroloogia professor"},
+                {name: "Margus Punab", title: "TÜ androloogia professor"},
+                {name: "Joel Starkopf", title: "TÜ anestesioloogia ja intensiivravi professor"},
+                {name: "Pille Taba", title: "TÜ neuroloogia professor"},
+                {name: "Margus Viigimaa", title: "TalTech täisprofessor tenuuris"}
+            ],
+            "Matemaatika": [
+                {name: "Juhan Aru", title: "EPFL kaasprofessor tenuuris"},
+                {name: "Rainis Haller", title: "TÜ matemaatilise analüüsi professor"},
+                {name: "Jüri Lember", title: "TÜ tõenäosusteooria professor"},
+                {name: "Jüri Majak", title: "TalTech täisprofessor tenuuris"}
+            ],
+            "Mullateadus": [
+                {name: "Alar Astover", title: "EMÜ tenuuriprofessor"},
+                {name: "Leho Tedersoo", title: "TÜ mükoriisauuringute professor"},
+                {name: "Maarja Öpik", title: "TÜ molekulaarse ökoloogia professor"}
+            ],
+            "Muusika interpretatsioon": [
+                {name: "Ivari Ilja", title: "EMTA rektor, klaveri professor"}
+            ],
+            "Sotsioloogia": [
+                {name: "Veronika Kalmus", title: "TÜ sotsioloogia professor"},
+                {name: "Merike Sisask", title: "TLÜ sotsiaaltervishoiu professor"},
+                {name: "Marge Unt", title: "TLÜ võrdleva sotsioloogia professor"}
+            ],
+            "Tehisaru": [
+                {name: "Jaan Aru", title: "TÜ arvutusliku neuroteaduse kaasprofessor"},
+                {name: "Meelis Kull", title: "TÜ tehisintellekti professor"},
+                {name: "Tanel Tammet", title: "TalTech täisprofessor tenuuris"}
+            ],
+            "Tootmistehnika": [
+                {name: "Jüri Olt", title: "EMÜ põllumajandustehnika professor"},
+                {name: "Tauno Otto", title: "TalTech täisprofessor tenuuris"},
+                {name: "Toomas Vaimann", title: "TalTech juhtivteadur"}
+            ]
+        };
+
+        const maxPoints = 9;
+        const container = document.getElementById('mainContainer');
+        const remainingSpan = document.getElementById('remaining');
+        const submitBtn = document.getElementById('submitBtn');
+        const usernameInput = document.getElementById('username');
+        
+        let inputs = []; // Hoiame viiteid input elementidele
+
+        // Ehitame vormi üles
+        for (const [category, candidates] of Object.entries(categories)) {
+            let catHeader = document.createElement('div');
+            catHeader.className = 'category-header';
+            catHeader.innerText = category;
+            container.appendChild(catHeader);
+
+            let grid = document.createElement('div');
+            grid.className = 'grid';
+
+            candidates.forEach(cand => {
+                let card = document.createElement('div');
+                card.className = 'candidate-card';
+                card.innerHTML = `
+                    <div class="candidate-info">
+                        <span class="candidate-name">${cand.name}</span>
+                        <span class="candidate-title">${cand.title}</span>
+                    </div>
+                    <div class="controls">
+                        <label>Punktid:</label>
+                        <input type="number" min="0" max="9" value="0" data-name="${cand.name}">
+                    </div>
+                `;
+                grid.appendChild(card);
+                inputs.push(card.querySelector('input'));
+            });
+            container.appendChild(grid);
+        }
+
+        // Event listeners
+        inputs.forEach(input => {
+            input.addEventListener('input', updateState);
+        });
+
+        function updateState() {
+            let totalUsed = inputs.reduce((sum, input) => sum + (parseInt(input.value) || 0), 0);
+            let remaining = maxPoints - totalUsed;
+
+            remainingSpan.innerText = remaining;
+            
+            if (remaining < 0) {
+                remainingSpan.className = 'points-big points-error';
+                submitBtn.disabled = true;
+                submitBtn.innerText = "Liiga palju palle jagatud!";
+            } else {
+                remainingSpan.className = 'points-big';
+                validate(remaining);
+            }
+        }
+
+        function validate(remaining) {
+            let nameValid = usernameInput.value.trim().length > 0;
+            // Kui tahad, et kõik pallid PEAVAD olema jagatud, kasuta: remaining === 0
+            // Praegu lubab saata ka siis, kui palle on alles (remaining >= 0)
+            if (nameValid && remaining >= 0) {
+                submitBtn.disabled = false;
+                submitBtn.innerText = "Kinnita ja mine saatma";
+            } else {
+                submitBtn.disabled = true;
+                if (!nameValid) submitBtn.innerText = "Sisesta oma nimi";
+            }
+        }
+
+        function submitToGoogle() {
+            // *** SEADISTUS - MUUDA NEED KOLM RIDA OMA VORMI JÄRGI ***
+            // Näidis URL, kust võtta ID-d: docs.google.com/forms/d/e/.../viewform?entry.12345=NIMI&entry.67890=VASTUS
+            
+            const FORM_ID = "1FAIpQLSdxxxxxxxxxxxxxxxxxxxxxx"; // See pikk joru URLi keskel
+            const ENTRY_ID_NAME = "entry.123456789";   // Nime välja ID
+            const ENTRY_ID_RESULT = "entry.987654321"; // Vastuse välja ID
+
+            // ---------------------------------------------------------
+            
+            let name = usernameInput.value;
+            let resultList = [];
+            
+            inputs.forEach(input => {
+                let val = parseInt(input.value) || 0;
+                if (val > 0) {
+                    let cName = input.getAttribute('data-name');
+                    resultList.push(`${cName}: ${val}`);
+                }
+            });
+
+            if (resultList.length === 0) resultList.push("Hääletas tühjalt");
+
+            let finalString = resultList.join('\n');
+            
+            // Kodeerime URLi jaoks sobivaks
+            let targetURL = `https://docs.google.com/forms/d/e/${FORM_ID}/viewform?${ENTRY_ID_NAME}=${encodeURIComponent(name)}&${ENTRY_ID_RESULT}=${encodeURIComponent(finalString)}`;
+            
+            // Avame uues aknas
+            window.location.href = targetURL;
+        }
+    </script>
+</body>
+</html>

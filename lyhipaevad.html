@@ -3,11 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aasta lühemad päevad Tallinnas</title>
+    <title>Tallinna pimedaimad päevad - Detsember 2025</title>
+    <!-- Fira Sans font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Fira Sans', sans-serif;
             background-color: #f4f4f9;
             color: #333;
             margin: 0;
@@ -18,7 +22,7 @@
         }
         .container {
             width: 100%;
-            max-width: 800px;
+            max-width: 1000px;
             background: white;
             padding: 20px;
             border-radius: 8px;
@@ -26,16 +30,18 @@
         }
         h1 {
             text-align: center;
-            font-size: 1.5rem;
+            font-size: 24pt; 
             margin-bottom: 10px;
             color: #2c3e50;
+            font-weight: 700;
         }
         p.subtitle {
             text-align: center;
-            font-size: 0.9rem;
+            font-size: 20pt;
             color: #666;
             margin-bottom: 30px;
             font-style: italic;
+            line-height: 1.2;
         }
         
         .split-chart-container {
@@ -45,31 +51,31 @@
             border: 1px solid #d0dce6; 
             border-radius: 4px;
             overflow: hidden;
-            background-color: #fff; /* Taust valgeks */
+            background-color: #fff;
         }
 
         .chart-part {
             position: relative;
             width: 100%;
-            /* Eemaldasime siit taustavärvi, teeme seda nüüd dataseti sees */
         }
 
         /* Ülemine graafik (Hommik) */
         #sunriseChartWrapper {
-            height: 200px;
+            height: 250px;
         }
 
-        /* Vaheala (Keskpäev) */
+        /* Vaheala (Keskpäev) - Kahvatukollane */
+        /* NB! Jätsin selle kollaseks, kuna see on visuaalne eraldaja, 
+           aga kui soovid ka selle siniseks, anna märku */
         .chart-gap {
-            height: 40px;
+            height: 50px;
             width: 100%;
-            /* Gradient mis sobib uue kollasega */
-            background: linear-gradient(to bottom, rgba(255, 206, 86, 0.3), rgba(255, 206, 86, 0.3));
+            background-color: #fffde7;
             display: flex;
             align-items: center;
             justify-content: center;
             color: #947c2d;
-            font-size: 0.8rem;
+            font-size: 16pt; /* Muudetud 16pt */
             font-weight: bold;
             letter-spacing: 1px;
             border-top: 1px dashed rgba(0,0,0,0.1);
@@ -78,12 +84,12 @@
 
         /* Alumine graafik (Õhtu) */
         #sunsetChartWrapper {
-            height: 200px;
+            height: 250px;
         }
 
         .chart-wrapper-small {
             position: relative;
-            height: 150px;
+            height: 200px;
             width: 100%;
             margin-top: 20px;
             border-top: 1px solid #eee;
@@ -94,8 +100,9 @@
 <body>
 
 <div class="container">
-    <h1>Aasta lühemad päevad Tallinnas</h1>
-    <p class="subtitle">14. – 31. detsember 2025. Sinine = pime aeg, Kollane = valge aeg</p>
+    <h1>Tallinna pimedaimad päevad</h1>
+    <!-- Uuendasin legendi vastavalt värvivahetusele -->
+    <p class="subtitle">14. – 31. detsember 2025. Kollane = valge aeg, Sinine = pime aeg</p>
 
     <div class="split-chart-container">
         <!-- 1. Ülemine osa: Hommik -->
@@ -105,7 +112,7 @@
 
         <!-- Vahekoht: Valge aeg -->
         <div class="chart-gap">
-            ☀ KESKPÄEV (10:00 – 15:00) ☀
+            ☀ PÄEV (10:00 – 15:00) ☀
         </div>
 
         <!-- 2. Alumine osa: Õhtu -->
@@ -121,6 +128,14 @@
 </div>
 
 <script>
+    // 16pt on ligikaudu 21-22px (1pt = 1.333px)
+    const FONT_SIZE_PT16 = 21;
+
+    // Seadistame Chart.js fondi globaalselt
+    Chart.defaults.font.family = "'Fira Sans', sans-serif";
+    Chart.defaults.font.size = FONT_SIZE_PT16; 
+    Chart.defaults.color = '#333';
+
     // --- ANDMED ---
     const labels = [
         '14.12', '15.12', '16.12', '17.12', '18.12', '19.12', '20.12', 
@@ -139,18 +154,24 @@
         return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
     }
 
-    const sunriseTimes = ['09:10', '09:12', '09:13', '09:14', '09:15', '09:16', '09:17', '09:17', '09:18', '09:18', '09:19', '09:19', '09:19', '09:20', '09:20', '09:19', '09:19', '09:18'];
-    const sunsetTimes = ['15:18', '15:18', '15:18', '15:18', '15:19', '15:19', '15:20', '15:20', '15:21', '15:22', '15:23', '15:24', '15:25', '15:26', '15:28', '15:29', '15:31', '15:33'];
+
+    const sunriseTimes = ['09:10', '09:12', '09:13', '09:14', '09:15',
+'09:16', '09:17', '09:17', '09:18', '09:18', '09:19', '09:19', '09:19',
+'09:20', '09:20', '09:19', '09:19', '09:18'];
+
+    const sunsetTimes = ['15:18', '15:18', '15:18', '15:18', '15:19',
+'15:19', '15:20', '15:20', '15:21', '15:22', '15:23', '15:24', '15:25',
+'15:26', '15:28', '15:29', '15:31', '15:33'];
     const dayLengths = [368, 366, 365, 364, 364, 363, 363, 362, 362, 363, 364, 365, 366, 367, 368, 370, 372, 374];
 
     const sunriseData = sunriseTimes.map(timeToDecimal);
     const sunsetData = sunsetTimes.map(timeToDecimal);
 
-    // Värvid - Kasutame seda pehmemat kollast
+    // Värvid
     const colors = {
         line: '#2c3e50',
-        dayLight: 'rgba(255, 206, 86, 0.3)', // "Eelmine kollane"
-        darkness: '#dbe4eb', // Hallikassinine
+        dayLight: '#fffde7', // Kahvatukollane (nüüd Pimeduse rollis)
+        darkness: '#dbe4eb', // Sinakas (nüüd Valguse rollis)
         solstice: '#e74c3c'
     };
 
@@ -160,8 +181,10 @@
         plugins: {
             legend: { display: false },
             tooltip: {
+                titleFont: { size: FONT_SIZE_PT16 },
+                bodyFont: { size: FONT_SIZE_PT16 },
                 filter: function(tooltipItem) {
-                    return tooltipItem.datasetIndex === 0; // Näita ainult põhijoone tooltippi, mitte tausta oma
+                    return tooltipItem.datasetIndex === 0; 
                 },
                 callbacks: {
                     label: function(context) {
@@ -189,36 +212,33 @@
     const pointRadii = (ctx) => ctx.dataIndex === 7 ? 6 : 4;
 
     // --- 1. Hommik (Päikesetõus) ---
-    // Y-telg on tagurpidi (Top=9, Bottom=10).
-    // Joonest ÜLEVAL on aeg < 09:xx (PIME).
-    // Joonest ALL on aeg > 09:xx (VALGE).
     new Chart(document.getElementById('sunriseChart'), {
         type: 'line',
         data: {
             labels: labels,
             datasets: [
                 {
-                    // PÕHIJOON (Nähtav) ja VALGE ala
                     label: 'Päikesetõus',
                     data: sunriseData,
                     borderColor: colors.line,
-                    backgroundColor: colors.dayLight, 
-                    fill: 'end', // Täidab joone alt lõpuni (valge aeg on hilisem/all)
+                    // VAHETATUD: Valge aeg (joone all) on nüüd SININE (colors.darkness)
+                    backgroundColor: colors.darkness, 
+                    fill: 'end',
                     tension: 0.4,
                     pointBackgroundColor: pointColors,
                     pointRadius: pointRadii,
                     zIndex: 2
                 },
                 {
-                    // TAUSTAJOON (Peidetud) ja PIME ala
                     label: 'Pimedus',
                     data: sunriseData,
-                    borderColor: 'transparent', // Joont ennast pole näha
-                    backgroundColor: colors.darkness,
-                    fill: 'start', // Täidab joone pealt alguseni (pime aeg on varasem/üleval)
+                    borderColor: 'transparent',
+                    // VAHETATUD: Pime aeg (joone peal) on nüüd KOLLANE (colors.dayLight)
+                    backgroundColor: colors.dayLight,
+                    fill: 'start',
                     tension: 0.4,
-                    pointRadius: 0, // Punkte pole
-                    hitRadius: 0, // Ei sega hiirt
+                    pointRadius: 0,
+                    hitRadius: 0,
                     zIndex: 1
                 }
             ]
@@ -233,9 +253,14 @@
                     max: 9.36,
                     ticks: {
                         callback: function(value) { return decimalToTime(value); },
-                        stepSize: 2/60
+                        stepSize: 2/60,
+                        font: { family: "'Fira Sans', sans-serif", size: FONT_SIZE_PT16 } 
                     },
-                    title: { display: true, text: 'Hommik (Pime ➝ Valge)' }
+                    title: { 
+                        display: true, 
+                        text: 'Hommik (Pime ➝ Valge)', 
+                        font: { family: "'Fira Sans', sans-serif", size: FONT_SIZE_PT16 } 
+                    }
                 },
                 x: {
                     grid: { display: false },
@@ -244,39 +269,40 @@
             },
             plugins: {
                 ...commonOptions.plugins,
-                title: { display: true, text: 'Hommikud lähevad pimedamaks (sinine ala suureneb)', font: { size: 14 } }
+                title: { 
+                    display: true, 
+                    text: 'Hommikud lähevad pimedamaks', 
+                    font: { size: FONT_SIZE_PT16, family: "'Fira Sans', sans-serif" } 
+                }
             }
         }
     });
 
     // --- 2. Õhtu (Päikeseloojang) ---
-    // Y-telg on tagurpidi (Top=15, Bottom=16).
-    // Joonest ÜLEVAL on aeg < 15:xx (VALGE).
-    // Joonest ALL on aeg > 15:xx (PIME).
     new Chart(document.getElementById('sunsetChart'), {
         type: 'line',
         data: {
             labels: labels,
             datasets: [
                 {
-                    // PÕHIJOON ja VALGE ala
                     label: 'Päikeseloojang',
                     data: sunsetData,
                     borderColor: colors.line,
-                    backgroundColor: colors.dayLight,
-                    fill: 'start', // Täidab joone pealt alguseni (valge aeg on varasem/üleval)
+                    // VAHETATUD: Valge aeg (joone peal) on nüüd SININE
+                    backgroundColor: colors.darkness,
+                    fill: 'start',
                     tension: 0.4,
                     pointBackgroundColor: pointColors,
                     pointRadius: pointRadii,
                     zIndex: 2
                 },
                 {
-                    // TAUSTAJOON ja PIME ala
                     label: 'Pimedus',
                     data: sunsetData,
                     borderColor: 'transparent',
-                    backgroundColor: colors.darkness,
-                    fill: 'end', // Täidab joone alt lõpuni (pime aeg on hilisem/all)
+                    // VAHETATUD: Pime aeg (joone all) on nüüd KOLLANE
+                    backgroundColor: colors.dayLight,
+                    fill: 'end',
                     tension: 0.4,
                     pointRadius: 0,
                     hitRadius: 0,
@@ -294,22 +320,34 @@
                     max: 15.6,
                     ticks: {
                         callback: function(value) { return decimalToTime(value); },
-                        stepSize: 3/60
+                        stepSize: 3/60,
+                        font: { family: "'Fira Sans', sans-serif", size: FONT_SIZE_PT16 }
                     },
-                    title: { display: true, text: 'Õhtu (Valge ➝ Pime)' }
+                    title: { 
+                        display: true, 
+                        text: 'Õhtu (Valge ➝ Pime)', 
+                        font: { family: "'Fira Sans', sans-serif", size: FONT_SIZE_PT16 } 
+                    }
                 },
                 x: {
                     grid: { display: false },
                     ticks: { 
                         display: true,
                         maxRotation: 45,
-                        minRotation: 45
+                        minRotation: 45,
+                        autoSkip: true,
+                        maxTicksLimit: 10,
+                        font: { family: "'Fira Sans', sans-serif", size: FONT_SIZE_PT16 }
                     } 
                 }
             },
             plugins: {
                 ...commonOptions.plugins,
-                title: { display: true, text: 'Õhtud lähevad valgemaks (kollane ala suureneb)', font: { size: 14 } }
+                title: { 
+                    display: true, 
+                    text: 'Õhtud lähevad valgemaks', 
+                    font: { size: FONT_SIZE_PT16, family: "'Fira Sans', sans-serif" } 
+                }
             }
         }
     });
@@ -334,14 +372,28 @@
             ...commonOptions,
             plugins: {
                 ...commonOptions.plugins,
-                title: { display: true, text: 'Päeva kogupikkus minutites', font: { size: 12 } }
+                title: { 
+                    display: true, 
+                    text: 'Päeva kogupikkus minutites', 
+                    font: { size: FONT_SIZE_PT16, family: "'Fira Sans', sans-serif" } 
+                }
             },
             scales: {
                 y: {
-                    title: { display: true, text: 'Minutid' }
+                    title: { 
+                        display: true, 
+                        text: 'Minutid', 
+                        font: { family: "'Fira Sans', sans-serif", size: FONT_SIZE_PT16 } 
+                    },
+                    ticks: { font: { family: "'Fira Sans', sans-serif", size: FONT_SIZE_PT16 } }
                 },
                 x: {
-                    ticks: { display: true, maxRotation: 45, minRotation: 45 }
+                    ticks: { 
+                        display: true, 
+                        maxRotation: 45, 
+                        minRotation: 45,
+                        font: { family: "'Fira Sans', sans-serif", size: FONT_SIZE_PT16 }
+                    }
                 }
             }
         }

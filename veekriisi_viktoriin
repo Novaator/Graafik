@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Viktoriin: Valmistume veekriisiks</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #005bb8; /* ERR sinine */
+            --text-color: #333;
+            --bg-color: #f4f4f4;
+            --white: #ffffff;
+            --correct: #2e7d32;
+            --wrong: #c62828;
+        }
+
+        body {
+            font-family: 'Fira Sans', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .quiz-container {
+            background-color: var(--white);
+            width: 100%;
+            max-width: 700px;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-size: 26px;
+            margin-bottom: 20px;
+            line-height: 1.3;
+        }
+
+        /* Avaslaidi spetsiifika */
+        .welcome-screen {
+            text-align: center;
+            display: block; /* Vaikimisi nähtav */
+        }
+        
+        .start-btn {
+            display: inline-block;
+            margin-top: 25px;
+            padding: 15px 40px;
+            background-color: var(--primary-color);
+            color: var(--white);
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            font-family: 'Fira Sans', sans-serif;
+            transition: background-color 0.2s;
+        }
+        
+        .start-btn:hover {
+            opacity: 0.9;
+        }
+
+        /* Viktoriini vaade (alguses peidetud) */
+        #quiz {
+            display: none; 
+        }
+
+        .progress {
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #666;
+            font-weight: 600;
+        }
+
+        /* Piltide stiilid */
+        .quiz-image-container {
+            margin-bottom: 20px;
+            display: none; /* Peidetud, kui pilti pole */
+        }
+        
+        /* Avaslaidi pilt on alati nähtav */
+        .welcome-image-container {
+            margin-bottom: 20px;
+            display: block;
+        }
+        
+        .quiz-image {
+            width: 100%;
+            height: auto;
+            border-radius: 4px;
+            display: block;
+        }
+
+        .image-credit {
+            font-size: 12px;
+            color: #777;
+            text-align: right;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        .question {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .options {
+            list-style: none;
+            padding: 0;
+        }
+
+        .options li {
+            margin-bottom: 10px;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 12px 15px;
+            background-color: var(--white);
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            text-align: left;
+            cursor: pointer;
+            font-size: 17px; /* Veidi suurem font loetavuse huvides */
+            font-family: 'Fira Sans', sans-serif;
+            transition: all 0.2s;
+            color: var(--text-color);
+        }
+
+        .btn:hover:not([disabled]) {
+            background-color: #eef4fb;
+            border-color: var(--primary-color);
+        }
+
+        .btn.correct {
+            background-color: #e8f5e9;
+            border-color: var(--correct);
+            color: var(--correct);
+            font-weight: 700;
+        }
+
+        .btn.wrong {
+            background-color: #ffebee;
+            border-color: var(--wrong);
+            color: var(--wrong);
+            opacity: 0.8;
+        }
+
+        .feedback-message {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            display: none;
+        }
+        .feedback-message.success { color: var(--correct); }
+        .feedback-message.error { color: var(--wrong); }
+
+        .explanation {
+            margin-top: 10px;
+            padding: 15px;
+            background-color: #f0f7ff;
+            border-left: 4px solid var(--primary-color);
+            display: none; 
+            font-size: 16px;
+        }
+
+        .next-btn, .restart-btn {
+            display: none;
+            margin-top: 20px;
+            padding: 12px 25px;
+            background-color: var(--primary-color);
+            color: var(--white);
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            font-family: 'Fira Sans', sans-serif;
+            float: right;
+        }
+        
+        .next-btn:hover, .restart-btn:hover {
+            opacity: 0.9;
+        }
+
+        .result-screen {
+            text-align: center;
+            display: none;
+        }
+
+        .score-display {
+            font-size: 3em;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin: 20px 0;
+        }
+
+        @media (max-width: 600px) {
+            .quiz-container { padding: 20px; }
+            h1 { font-size: 22px; }
+            .question { font-size: 18px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container">
+    
+    <div id="welcome-screen" class="welcome-screen">
+        <h1>Kui hästi oled sina veekriisiks valmis?</h1>
+        
+        <div class="welcome-image-container">
+            <img src="https://s.err.ee/photo/orig/2026/01/15/3154594hca80.jpg" alt="Vesi" class="quiz-image">
+            <div class="image-credit">Allikas: JJ Badenhorst/Unsplash</div>
+        </div>
+
+        <button class="start-btn" onclick="startQuiz()">Alusta testi</button>
+    </div>
+
+    <div id="quiz">
+        <div class="progress" id="progress">Küsimus 1 / 15</div>
+        
+        <div class="quiz-image-container" id="image-container">
+            <img src="" alt="Küsimuse pilt" class="quiz-image" id="q-image">
+            <div class="image-credit" id="q-credit"></div>
+        </div>
+
+        <div class="question" id="question">Laen küsimust...</div>
+        <ul class="options" id="options"></ul>
+        
+        <div class="feedback-message" id="feedback-msg"></div>
+        <div class="explanation" id="explanation"></div>
+        
+        <button class="next-btn" id="next-btn" onclick="nextQuestion()">Järgmine küsimus</button>
+    </div>
+
+    <div class="result-screen" id="result">
+        <h1>Viktoriin tehtud!</h1>
+        <p>Sinu tulemus:</p>
+        <div class="score-display" id="score">0 / 0</div>
+        <p id="final-feedback"></p>
+        <button class="restart-btn" style="display:inline-block; float:none;" onclick="restartQuiz()">Proovi uuesti</button>
+    </div>
+</div>
+
+<script>
+    const positivePhrases = ["Tubli töö!", "Hästi tehtud!", "Läks täkkesse!", "Õige vastus!"];
+    const negativePhrases = ["Läks nihu.", "Vale vastus.", "Paraku eksisid.", "See ei olnud õige."];
+
+    const quizData = [
+        {
+            question: "Kui suur osa Maa veest on magevesi?",
+            options: ["Umbes 50%", "Umbes 10%", "Umbes 2–3%", "Üle 25%"],
+            correct: 2,
+            image: "https://s.err.ee/photo/orig/2026/01/15/3154585h8cd7.jpg",
+            credit: "Foto: NASA/USGS/CC0",
+            explanation: "Enamik Maa veest on soolane ning magevett on vaid väike osa kogu veevarust, millest suurem osa jää ja põhjavesi, mistõttu kergesti kättesaadavat joogivett on veelgi vähem."
+        },
+        {
+            question: "Milline looduslik veevõtukoht pakub üldjuhul puhtaimat joogivett?",
+            options: ["Porilomp", "Allikas", "Järv", "Jõgi"],
+            correct: 1,
+            image: "https://s.err.ee/photo/orig/2026/01/15/3154597h5ca7.jpg", 
+            credit: "Chandler Cruttenden/Unsplash",
+            explanation: "Allikavesi on põhjavesi, mis on läbi pinnasekihtide ja kivimite liikudes looduslikult filtreerunud. See vähendab tavaliselt mikroobide ja heitainete hulka võrreldes pinnaveega. Samas ei garanteeri loodusliku filtreerimise protsess täielikku ohutust – ka põhjavesi võib olla reostunud – mistõttu ilma laboratoorse kontrolli või veetöötluseta ei saa täielikult kindel olla."
+        },
+        {
+            question: "Kuidas saad veenduda, et tundmatust allikast kogutud vett võib juua?",
+            options: ["Soola lisades", "Päevaks anumasse seisma jättes", "Pole vaja midagi teha, võib kohe juua", "Vett keetes"],
+            correct: 3,
+            image: "https://s.err.ee/photo/orig/2026/01/15/3154603h4ee9.jpg",
+            credit: "Julian Scagliola/Unsplash",
+            explanation: "Keetmine hävitab enamiku haigustekitajaid, nagu bakterid, viirused ja parasiidid, ning on kriisiolukorras kõige kindlam lihtmeetod. Samas keetmine ei eemalda veest keemilisi saasteaineid, mistõttu kahtluse korral tuleb eelistada ametlikku infot ja otsida kontrollitud allikaid (abiks on lehekülg https://allikad.info/)."
+        },
+        {
+            question: "Kui kaua inimene suudab tavaliselt ilma veeta ellu jääda?",
+            options: ["Umbes 1 päev", "Umbes 3–5 päeva", "Umbes 2 nädalat", "Üle kuu"],
+            correct: 1,
+            image: "https://s.err.ee/photo/orig/2026/01/15/3154606h72c3.jpg",
+            credit: "engin akyurt/Unsplash",
+            explanation: "Inimene suudab üldjuhul ilma veeta elada vaid mõne päeva. Kõrged temperatuur, füüsiline koormus ja haigused lühendavad seda aega märgatavalt."
+        },
+        {
+            question: "Kes pakub parimat informatsiooni veekriisi korral?",
+            options: ["Sõbrad sotsiaalmeedias", "Vanaema", "Internetist leitud artikkel", "Kohalik omavalitsus / Päästeamet"],
+            correct: 3,
+            image: "https://s.err.ee/photo/orig/2026/01/15/3154612h05de.jpg",
+            credit: "Sear Greyson/Unsplash",
+            explanation: "Kriisi ajal on usaldusväärseim teave ametlikest kanalitest – kohalikud omavalitsused, terviseamet, vee-ettevõtted ja päästeamet. Nende info põhineb konkreetsetel mõõtmistel, riskihinnangul ja koordineeritud otsustel. Sotsiaalmeedia ja juhuslikud allikad võivad levitada vastuolulist, kontrollimata või aegunud teavet, mis suurendab segadust ja paanikat."
+        },
+        {
+            question: "Kui kraanivesi muutub ootamatult pruunikaks, mida peaks tegema?",
+            options: ["Juua ära, sest värv ei loe", "Lasta veel joosta ja jälgida ametlikke teateid", "Lisada sidrunimahla", "Keeta ja kohe tarbida"],
+            correct: 1,
+            image: "https://s.err.ee/photo/orig/2026/01/15/3154615h4f32.jpg",
+            credit: "Andres Siimon/Unsplash",
+            explanation: "Pruunikas toon tekib sageli torustikust lahtipääsenud rooste- või seteteosakestest, eriti pärast hooldustöid või rõhumuutusi. Mõistlik on lasta külmal veel mõnda aega joosta ning jälgida vee-ettevõtte ja ametkondade teateid enne tarbimist."
+        },
+        {
+            question: "Kui palju joogivett tuleks hädaolukorraks varuda ühe inimese kohta?",
+            options: ["0,5 liitrit päevas", "1 liiter päevas", "2–3 liitrit päevas", "5 liitrit päevas"],
+            correct: 2,
+            image: "https://s.err.ee/photo/orig/2026/01/15/3154627h3753.jpg",
+            credit: "Greg Rosenke/Unsplash",
+            explanation: "Praktiline miinimum on umbes 2–3 liitrit inimese kohta ööpäevas, et katta joomine ja elementaarne toidu valmistamine. Kui lisada ka lihtne hügieen, suureneb vajadus veelgi. Seetõttu tasub varuda pigem rohkem – hädaolukord võib kesta oodatust kauem."
+        },
+        {
+            question: "Kui kaua säilib korralikult hoitud kraanivesi suletud anumas?",
+            options: ["1–2 päeva", "Nädal", "Mitu kuud", "Lõpmatult"],
+            correct: 2,
+            image: "https://s.err.ee/photo/orig/2026/01/15/3154633h1f6e.jpg",
+            credit: "Darío Méndez/Unsplash",
+            explanation: "Puhtas, suletud anumas ning jahedas ja pimedas hoitud kraanivesi võib säilida mitu kuud. Hea tava on varu regulaarselt ringluses hoida ja vahetada näiteks iga kuue kuu järel."
+        },
+        {
+            question: "Milline anum sobib joogivee pikaajaliseks säilitamiseks kõige paremini?",
+            options: ["Avatud ämber", "Klaaspurk ilma kaaneta", "Metallist nõu", "Toidukõlblikust plastikust või klaasist suletav anum"],
+            correct: 3,
+            image: "https://s.err.ee/photo/orig/2026/01/15/3154693h984c.jpg",
+            credit: "Sandip Pandhare/Unsplash",
+            explanation: "Parim on toidukõlblik, puhas ja tihedalt suletav anum, sest see vähendab mikroobide ja mustuse sattumist vette. Anuma toidukõlblikkus on oluline, sest mõned plastid võivad vette ohtlike aineid eraldada. Avatud või määrdunud anumad suurendavad kiiresti saastumise riski, isegi kui vesi alguses oli puhas."
+        },
+        {
+            question: "Milline märk viitab, et vesi EI OLE ohutu tarbimiseks?",
+            options: ["Kergelt kloorine lõhn", "Läbipaistev värvus", "Ebatavaline lõhn, värvus või sade", "Madal temperatuur"],
+            correct: 2,
+            image: "https://s.err.ee/photo/orig/2026/01/15/3154702h381a.jpg",
+            credit: "Justin Owens/Unsplash",
+            explanation: "Ebatavaline lõhn, värvuse muutus või sade võivad viidata reostusele, torustikuprobleemile või mikroobsele reostusele. Kui vesi tekitab kahtlust, on targem see joomiseks mitte kasutada enne, kui põhjus on selge või vesi on ohutuks muudetud."
+        },
+        {
+            question: "Milline on kõige olulisem hügieenireegel, kui vett on vähe ja kanalisatsioon ei toimi?",
+            options: ["Kätepesu võib vahele jätta", "Puhasta käed alati pärast WC-d ja enne söömist", "Loputa käsi ainult veega", "Hügieen pole tähtis"],
+            correct: 1,
+            image: "https://s.err.ee/photo/orig/2026/01/15/3154705hacd3.jpg",
+            credit: "Nathan Dumlao/Unsplash",
+            explanation: "Käte hügieen on kriitilise tähtsusega, sest nakkushaigused levivad kriisis kõige kiiremini just käte ja pindade kaudu, eriti kui reovesi ei liigu tavapäraselt ära. Kui vett napib, on tõhus kompromiss käte puhastamine seebiga vähese veega või alkoholipõhise desinfitseerijaga. Oluline on pesta/puhastada käsi enne söömist, pärast tualetis käiku ja pärast prügi või määrdunud pindade puudutamist."
+        },
+        {
+            question: "Kui suur osa keskmise majapidamise siseruumide veekasutusest kulub WC loputusele?",
+            options: ["~1%", "~10%", "~ 30%", "~50%"],
+            correct: 2,
+            image: "https://s.err.ee/photo/orig/2026/01/15/3154711hc151.jpg",
+            credit: "Giorgio Trovato/Unsplash",
+            explanation: "WC-loputus on paljudes majapidamistes üks suurimaid veekasutuse allikaid, sest iga loputus kulutab mitu liitrit korraga. Eestis on arvestuslik WC loputuse päevane veekogus 32 l inimese kohta. Kuivlat kasutades see veekulu puudub täielikult."
+        },
+        {
+            question: "Kui kanalisatsioon ei tööta ja WC-d loputada ei saa, mis on ajutiselt kõige ohutum lahendus?",
+            options: ["Kasuta WC-d edasi", "Prügikott ilma katteta", "Ajutine 'kuivkäimla' (ämber+kott+puru)", "Vala torudesse vett juurde"],
+            correct: 2,
+            image: "https://s.err.ee/photo/orig/2026/01/15/3154714h6986.jpg",
+            credit: "Lucas Santos/Unsplash",
+            explanation: "Kanalisatsioonikatkestuse korral on eriti kortermajades probleemid väga suured ning ilma selleks valmistumiseta on neid võimatu lahendada. Ajutine kuivkäimla (ämber + kott + puistematerjal) hoiab jäätmed kontrolli all ja vähendab haiguste leviku riski."
+        },
+        {
+            question: "Millised tegevused aitavad sul veekriisiks paremini valmis olla?",
+            options: ["Varun vett ja uuendan varu", "Mul on olemas kuivkäimla lahendus", "Hoian kodus desinfitseerimisvahendeid", "Kõik nimetatud variandid"],
+            correct: [0, 1, 2, 3],
+            image: "https://s.err.ee/photo/orig/2026/01/15/3154717h2e71.jpg",
+            credit: "Daniele Levis Pelusi/Unsplash",
+            explanation: "Kriisivalmidusel on palju erinevaid tahke: joogivesi tagab baasvajadused, kuivkäimla lahendus hoiab ära hügieeniriskid ning puhastusvahendid aitavad nakkusi piirata. Ennetav veekokkuhoid ja harjumuste paika sättimine annavad suurima võidu just siis, kui veevarustus või kanalisatsioon muutub ebastabiilseks."
+        },
+        {
+            question: "Millistest 'peidetud' veevarudest võib kriisi alguses abi olla?",
+            options: ["WC loputuskast", "Kuumaveeboiler", "Torustikku jäänud vesi", "Kõik eelnev (kasuta ohutuks muudetuna)"],
+            correct: [0, 1, 2, 3],
+            image: "https://s.err.ee/photo/orig/2026/01/15/3154720hd9c3.jpg",
+            credit: "ün LIU/Unsplash",
+            explanation: "Kriisi alguses võib süsteemi “sisse jäänud” vesi anda väärtusliku ajutise varu, eriti kui veevõtt katkeb ootamatult. Selle kasutamiseks peab olema loodud võimalus - näiteks tühjenduskraanid boileritel ja kortermajade püstakutel. Samas tuleb arvestada saastumisriskiga, seega kasuta joogiks ainult vett, mille ohutuses oled kindel, ja vajadusel muuda see ohutuks (nt keetmisega)."
+        }
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+    
+    // DOM elemendid
+    const welcomeEl = document.getElementById('welcome-screen');
+    const quizEl = document.getElementById('quiz');
+    const resultEl = document.getElementById('result');
+    
+    const questionEl = document.getElementById('question');
+    const optionsEl = document.getElementById('options');
+    const explanationEl = document.getElementById('explanation');
+    const feedbackEl = document.getElementById('feedback-msg');
+    const nextBtn = document.getElementById('next-btn');
+    const progressEl = document.getElementById('progress');
+    const imageContainer = document.getElementById('image-container');
+    const qImage = document.getElementById('q-image');
+    const qCredit = document.getElementById('q-credit');
+
+    function getRandomPhrase(array) {
+        return array[Math.floor(Math.random() * array.length)];
+    }
+
+    function startQuiz() {
+        welcomeEl.style.display = 'none';
+        quizEl.style.display = 'block';
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        const currentQuiz = quizData[currentQuestionIndex];
+        
+        questionEl.textContent = currentQuiz.question;
+        progressEl.textContent = `Küsimus ${currentQuestionIndex + 1} / ${quizData.length}`;
+        
+        // Pildi loogika
+        if (currentQuiz.image && currentQuiz.image.trim() !== "") {
+            qImage.src = currentQuiz.image;
+            qCredit.textContent = currentQuiz.credit || "";
+            imageContainer.style.display = "block";
+        } else {
+            imageContainer.style.display = "none";
+        }
+
+        // Reset
+        optionsEl.innerHTML = '';
+        explanationEl.style.display = 'none';
+        feedbackEl.style.display = 'none';
+        explanationEl.innerHTML = '';
+        feedbackEl.className = 'feedback-message';
+        nextBtn.style.display = 'none';
+
+        currentQuiz.options.forEach((option, index) => {
+            const li = document.createElement('li');
+            const btn = document.createElement('button');
+            btn.textContent = option;
+            btn.classList.add('btn');
+            btn.onclick = () => checkAnswer(index, btn);
+            li.appendChild(btn);
+            optionsEl.appendChild(li);
+        });
+    }
+
+    function checkAnswer(selectedIndex, selectedBtn) {
+        const buttons = optionsEl.querySelectorAll('.btn');
+        buttons.forEach(btn => btn.disabled = true);
+        const currentQuiz = quizData[currentQuestionIndex];
+        
+        // Kontrollime, kas õige vastus on massiiv (mitu õiget) või number (üks õige)
+        let isCorrect = false;
+        if (Array.isArray(currentQuiz.correct)) {
+            isCorrect = currentQuiz.correct.includes(selectedIndex);
+        } else {
+            isCorrect = (selectedIndex === currentQuiz.correct);
+        }
+
+        if (isCorrect) {
+            selectedBtn.classList.add('correct');
+            feedbackEl.textContent = getRandomPhrase(positivePhrases);
+            feedbackEl.classList.add('success');
+            score++;
+        } else {
+            selectedBtn.classList.add('wrong');
+            feedbackEl.textContent = getRandomPhrase(negativePhrases);
+            feedbackEl.classList.add('error');
+        }
+
+        // Näita visuaalselt ära KÕIK võimalikud õiged vastused
+        if (Array.isArray(currentQuiz.correct)) {
+            currentQuiz.correct.forEach(index => {
+                buttons[index].classList.add('correct');
+            });
+        } else {
+            buttons[currentQuiz.correct].classList.add('correct');
+        }
+
+        feedbackEl.style.display = 'block';
+        
+        explanationEl.innerHTML = `<strong>Selgitus:</strong> ${currentQuiz.explanation}`;
+        explanationEl.style.display = 'block';
+
+        if (currentQuestionIndex < quizData.length - 1) {
+            nextBtn.style.display = 'block';
+        } else {
+            nextBtn.textContent = "Vaata tulemust";
+            nextBtn.style.display = 'block';
+            nextBtn.onclick = showResult;
+        }
+    }
+
+    function nextQuestion() {
+        currentQuestionIndex++;
+        loadQuestion();
+    }
+
+    function showResult() {
+        quizEl.style.display = 'none';
+        resultEl.style.display = 'block';
+        const scoreEl = document.getElementById('score');
+        const finalFeedbackEl = document.getElementById('final-feedback');
+        
+        scoreEl.textContent = `${score} / ${quizData.length}`;
+        
+        const percentage = (score / quizData.length) * 100;
+        if (percentage >= 90) {
+            finalFeedbackEl.textContent = "Suurepärane! Oled kriisiks väga hästi valmis.";
+        } else if (percentage >= 50) {
+            finalFeedbackEl.textContent = "Pole paha, aga tasub teadmisi värskendada.";
+        } else {
+            finalFeedbackEl.textContent = "Soovitame veekriisi teemaga tõsisemalt tutvuda.";
+        }
+    }
+
+    function restartQuiz() {
+        currentQuestionIndex = 0;
+        score = 0;
+        resultEl.style.display = 'none';
+        quizEl.style.display = 'none';
+        // Taaskäivitamisel näitame taas avaslaidi
+        welcomeEl.style.display = 'block'; 
+        nextBtn.textContent = "Järgmine küsimus";
+        nextBtn.onclick = nextQuestion;
+    }
+</script>
+
+</body>
+</html>

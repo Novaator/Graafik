@@ -42,18 +42,49 @@
 
         h1 {
             color: var(--primary-color);
-            font-size: 26px;
-            margin-bottom: 20px;
-            line-height: 1.3;
+            font-size: 28px;
+            margin-bottom: 15px;
+            line-height: 1.2;
+            font-weight: 700;
+        }
+
+        h2 {
+            font-size: 20px;
+            color: var(--text-color);
+            margin-top: 20px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+
+        /* Üldised peidetavad vaated */
+        .view-section {
+            display: none;
+        }
+        
+        .view-section.active {
+            display: block;
         }
 
         /* Avaslaidi spetsiifika */
         .welcome-screen {
             text-align: center;
-            display: block; /* Vaikimisi nähtav */
+        }
+
+        .intro-text, .info-text {
+            font-size: 18px;
+            margin-bottom: 25px;
+            color: #444;
+            line-height: 1.5;
+            text-align: left;
         }
         
-        .start-btn {
+        .center-text {
+            text-align: center;
+        }
+
+        /* Nupud */
+        .action-btn {
             display: inline-block;
             margin-top: 25px;
             padding: 15px 40px;
@@ -66,34 +97,39 @@
             font-weight: bold;
             font-family: 'Fira Sans', sans-serif;
             transition: background-color 0.2s;
+            text-decoration: none;
         }
         
-        .start-btn:hover {
+        .action-btn:hover {
             opacity: 0.9;
         }
 
-        /* Viktoriini vaade (alguses peidetud) */
-        #quiz {
-            display: none; 
-        }
-
-        .progress {
-            margin-bottom: 15px;
-            font-size: 14px;
-            color: #666;
+        .social-link {
+            display: block;
+            margin: 10px 0;
             font-weight: 600;
-        }
-
-        /* Piltide stiilid */
-        .quiz-image-container {
-            margin-bottom: 20px;
-            display: none; /* Peidetud, kui pilti pole */
+            color: var(--primary-color);
+            text-decoration: none;
+            font-size: 18px;
         }
         
-        /* Avaslaidi pilt on alati nähtav */
-        .welcome-image-container {
+        .social-link:hover {
+            text-decoration: underline;
+        }
+
+        .credits-list {
+            text-align: left;
+            font-size: 16px;
             margin-bottom: 20px;
-            display: block;
+        }
+
+        .credits-list strong {
+            color: var(--primary-color);
+        }
+
+        /* Pildide stiilid */
+        .welcome-image-container, .quiz-image-container {
+            margin-bottom: 20px;
         }
         
         .quiz-image {
@@ -109,6 +145,14 @@
             text-align: right;
             margin-top: 5px;
             font-style: italic;
+        }
+
+        /* Viktoriini elemendid */
+        .progress {
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #666;
+            font-weight: 600;
         }
 
         .question {
@@ -135,7 +179,7 @@
             border-radius: 4px;
             text-align: left;
             cursor: pointer;
-            font-size: 17px; /* Veidi suurem font loetavuse huvides */
+            font-size: 17px; 
             font-family: 'Fira Sans', sans-serif;
             transition: all 0.2s;
             color: var(--text-color);
@@ -178,7 +222,7 @@
             font-size: 16px;
         }
 
-        .next-btn, .restart-btn {
+        .next-btn {
             display: none;
             margin-top: 20px;
             padding: 12px 25px;
@@ -193,15 +237,9 @@
             float: right;
         }
         
-        .next-btn:hover, .restart-btn:hover {
-            opacity: 0.9;
-        }
+        .next-btn:hover { opacity: 0.9; }
 
-        .result-screen {
-            text-align: center;
-            display: none;
-        }
-
+        .result-screen { text-align: center; }
         .score-display {
             font-size: 3em;
             font-weight: 700;
@@ -211,7 +249,8 @@
 
         @media (max-width: 600px) {
             .quiz-container { padding: 20px; }
-            h1 { font-size: 22px; }
+            h1 { font-size: 24px; }
+            .intro-text, .info-text { font-size: 16px; }
             .question { font-size: 18px; }
         }
     </style>
@@ -220,25 +259,27 @@
 
 <div class="quiz-container">
     
-    <div id="welcome-screen" class="welcome-screen">
-        <h1>Kui hästi oled sina veekriisiks valmis?</h1>
-          <p class="intro-text">
+    <div id="welcome-screen" class="view-section active welcome-screen">
+        <h1>Valmistume veekriisiks</h1>
+        
+        <p class="intro-text">
             Vesi on elu alus – veevarustuse katkemisel oleme haavatavad mitmest elulisest aspektist. 
             <br><br>
             <strong>Kui hästi oled veekriisiks valmis sina?</strong> Selgita viktoriini abil välja oma tänased teadmised ja valmisolek.
         </p>
+
         <div class="welcome-image-container">
             <img src="https://s.err.ee/photo/orig/2026/01/15/3154594hca80.jpg" alt="Vesi" class="quiz-image">
             <div class="image-credit">Allikas: JJ Badenhorst/Unsplash</div>
         </div>
 
-        <button class="start-btn" onclick="startQuiz()">Alusta testi</button>
+        <button class="action-btn" onclick="switchView('quiz-view')">Alusta testi</button>
     </div>
 
-    <div id="quiz">
+    <div id="quiz-view" class="view-section">
         <div class="progress" id="progress">Küsimus 1 / 15</div>
         
-        <div class="quiz-image-container" id="image-container">
+        <div class="quiz-image-container" id="image-container" style="display:none;">
             <img src="" alt="Küsimuse pilt" class="quiz-image" id="q-image">
             <div class="image-credit" id="q-credit"></div>
         </div>
@@ -252,7 +293,7 @@
         <button class="next-btn" id="next-btn" onclick="nextQuestion()">Järgmine küsimus</button>
     </div>
 
-     <div id="result-screen" class="view-section result-screen">
+    <div id="result-screen" class="view-section result-screen">
         <h1>Viktoriin tehtud!</h1>
         <p>Sinu tulemus:</p>
         <div class="score-display" id="score">0 / 0</div>
@@ -295,9 +336,11 @@
         <button class="action-btn" onclick="restartQuiz()">Alusta uuesti</button>
     </div>
 
+</div>
+
 <script>
     const positivePhrases = ["Tubli töö!", "Hästi tehtud!", "Läks täkkesse!", "Õige vastus!"];
-    const negativePhrases = ["Läks nihu.", "Vale vastus.", "Paraku eksisid.", "See ei ole õige."];
+    const negativePhrases = ["Läks nihu.", "Vale vastus.", "Paraku eksisid.", "See ei olnud õige."];
 
     const quizData = [
         {
@@ -362,7 +405,7 @@
             correct: 2,
             image: "https://s.err.ee/photo/orig/2026/01/15/3154633h1f6e.jpg",
             credit: "Darío Méndez/Unsplash",
-            explanation: "Puhtas, suletud anumas ning jahedas ja pimedas hoitud kraanivesi võib säilida mitu kuud. Hea tava on varu regulaarselt ringluses hoida ja vahetada näiteks iga kuue kuu järel."
+            explanation: "Puhtas, suletud anumas ning jahedas ja pimedas hoitud kraanivesi võib säilida mitu kuud. Hea tava on varu regulaarselt ringluses hoida ja vahetada näiteks iga 6 kuu järel."
         },
         {
             question: "Milline anum sobib joogivee pikaajaliseks säilitamiseks kõige paremini?",
@@ -378,7 +421,7 @@
             correct: 2,
             image: "https://s.err.ee/photo/orig/2026/01/15/3154702h381a.jpg",
             credit: "Justin Owens/Unsplash",
-            explanation: "Ebatavaline lõhn, värvuse muutus või sade võivad viidata reostusele, torustikuprobleemile või mikroobsele reostusele. Kui vesi tekitab kahtlust, on targem seda joomiseks mitte kasutada enne, kui põhjus on selge või vesi on ohutuks muudetud."
+            explanation: "Ebatavaline lõhn, värvuse muutus või sade võivad viidata reostusele, torustikuprobleemile või mikroobsele reostusele. Kui vesi tekitab kahtlust, on targem see joomiseks mitte kasutada enne, kui põhjus on selge või vesi on ohutuks muudetud."
         },
         {
             question: "Milline on kõige olulisem hügieenireegel, kui vett on vähe ja kanalisatsioon ei toimi?",
@@ -426,10 +469,6 @@
     let score = 0;
     
     // DOM elemendid
-    const welcomeEl = document.getElementById('welcome-screen');
-    const quizEl = document.getElementById('quiz');
-    const resultEl = document.getElementById('result');
-    
     const questionEl = document.getElementById('question');
     const optionsEl = document.getElementById('options');
     const explanationEl = document.getElementById('explanation');
@@ -444,10 +483,16 @@
         return array[Math.floor(Math.random() * array.length)];
     }
 
-    function startQuiz() {
-        welcomeEl.style.display = 'none';
-        quizEl.style.display = 'block';
-        loadQuestion();
+    // Vaadete vahetamine (navigatsioon)
+    function switchView(viewId) {
+        // Peida kõik vaated
+        document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+        // Näita soovitud vaadet
+        document.getElementById(viewId).classList.add('active');
+        
+        if (viewId === 'quiz-view' && currentQuestionIndex === 0 && score === 0) {
+            loadQuestion();
+        }
     }
 
     function loadQuestion() {
@@ -518,7 +563,6 @@
         }
 
         feedbackEl.style.display = 'block';
-        
         explanationEl.innerHTML = `<strong>Selgitus:</strong> ${currentQuiz.explanation}`;
         explanationEl.style.display = 'block';
 
@@ -528,27 +572,6 @@
             nextBtn.textContent = "Vaata tulemust";
             nextBtn.style.display = 'block';
             nextBtn.onclick = showResult;
-
-// Sinu Google Scripti URL
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbz4ao6jgt3z3bJamgWbAW7BgIyV_T4fzmGEadIB2KZhX0Mtbm3bsszviZEm1_53bPKt/exec';
-
-    // Paneme andmed paketti
-    const dataToSend = {
-        question_nr: currentQuestionIndex + 1,
-        answer_text: currentQuiz.options[selectedIndex],
-        is_correct: selectedBtn.classList.contains('correct') // või muu loogika
-    };
-
-    // Saadame teele (fire and forget)
-    fetch(scriptURL, {
-        method: 'POST',
-        // 'no-cors' on oluline, et brauser ei blokeeriks Google'i vastust
-        mode: 'no-cors', 
-        headers: {
-            'Content-Type': 'text/plain;charset=utf-8',
-        },
-        body: JSON.stringify(dataToSend)
-    }).catch(error => console.error('Viga logimisel:', error));
         }
     }
 
@@ -558,8 +581,7 @@
     }
 
     function showResult() {
-        quizEl.style.display = 'none';
-        resultEl.style.display = 'block';
+        switchView('result-screen');
         const scoreEl = document.getElementById('score');
         const finalFeedbackEl = document.getElementById('final-feedback');
         
@@ -569,21 +591,18 @@
         if (percentage >= 90) {
             finalFeedbackEl.textContent = "Suurepärane! Oled kriisiks väga hästi valmis.";
         } else if (percentage >= 50) {
-            finalFeedbackEl.textContent = "Pole paha, aga tasub igaks juhuks oma teadmisi värskendada.";
+            finalFeedbackEl.textContent = "Pole paha, aga tasub teadmisi värskendada.";
         } else {
-            finalFeedbackEl.textContent = "Soovitame meie heitlikus maailmas veekriisi teemaga tõsisemalt tutvuda.";
+            finalFeedbackEl.textContent = "Soovitame veekriisi teemaga tõsisemalt tutvuda.";
         }
     }
 
     function restartQuiz() {
         currentQuestionIndex = 0;
         score = 0;
-        resultEl.style.display = 'none';
-        quizEl.style.display = 'none';
-        // Taaskäivitamisel näitame taas avaslaidi
-        welcomeEl.style.display = 'block'; 
         nextBtn.textContent = "Järgmine küsimus";
         nextBtn.onclick = nextQuestion;
+        switchView('welcome-screen');
     }
 </script>
 

@@ -252,14 +252,48 @@
         <button class="next-btn" id="next-btn" onclick="nextQuestion()">Järgmine küsimus</button>
     </div>
 
-    <div class="result-screen" id="result">
+     <div id="result-screen" class="view-section result-screen">
         <h1>Viktoriin tehtud!</h1>
         <p>Sinu tulemus:</p>
         <div class="score-display" id="score">0 / 0</div>
         <p id="final-feedback"></p>
-        <button class="restart-btn" style="display:inline-block; float:none;" onclick="restartQuiz()">Proovi uuesti</button>
+        <button class="action-btn" onclick="switchView('info-screen')">Lisainfo ja materjalid</button>
     </div>
-</div>
+
+    <div id="info-screen" class="view-section center-text">
+        <h1>Lisamaterjalid</h1>
+        
+        <p class="info-text">
+            Tallinna Ülikooli tudengite ELU projekti raames valminud Nõmme linnaosa elanike uuringu tulemused ja materjalid veekriisi olemusest ja selleks valmistumisest leiad meie sotsiaalmeediast:
+        </p>
+
+        <a href="https://www.instagram.com/know.your.water" target="_blank" class="social-link">IG: @know.your.water</a>
+        <a href="https://www.facebook.com/veestik.info" target="_blank" class="social-link">FB: veestik.info</a>
+        
+        <br>
+        <p class="info-text">Tutvu ka lehega:</p>
+        <a href="https://www.olevalmis.ee/veekatkestus" target="_blank" class="social-link">olevalmis.ee/veekatkestus</a>
+
+        <button class="action-btn" onclick="switchView('credits-screen')">Viktoriini autorid</button>
+    </div>
+
+    <div id="credits-screen" class="view-section center-text">
+        <h1>Autorid</h1>
+        
+        <p class="info-text">
+            Viktoriini on koostanud Tallinna Ülikooli teadlased ja tudengid.
+        </p>
+
+        <div class="credits-list">
+            <p><strong>Tudengid:</strong><br>
+            Karmen Kaljula, Cathy-Carmen Kaareste, Hanna-Liina Reimann, Maiken Sisask, Riho Saar, Ronet Kriisa, Kristina Paškevicius, Evely Ehrpas, Eerik Kask, Liisi Kalm, Paavo Teder, Anastassia Zaitseva.</p>
+            
+            <p><strong>Juhendajad:</strong><br>
+            Jaanus Terasmaa, Triinu Jesmin</p>
+        </div>
+
+        <button class="action-btn" onclick="restartQuiz()">Alusta uuesti</button>
+    </div>
 
 <script>
     const positivePhrases = ["Tubli töö!", "Hästi tehtud!", "Läks täkkesse!", "Õige vastus!"];
@@ -344,7 +378,7 @@
             correct: 2,
             image: "https://s.err.ee/photo/orig/2026/01/15/3154702h381a.jpg",
             credit: "Justin Owens/Unsplash",
-            explanation: "Ebatavaline lõhn, värvuse muutus või sade võivad viidata reostusele, torustikuprobleemile või mikroobsele reostusele. Kui vesi tekitab kahtlust, on targem see joomiseks mitte kasutada enne, kui põhjus on selge või vesi on ohutuks muudetud."
+            explanation: "Ebatavaline lõhn, värvuse muutus või sade võivad viidata reostusele, torustikuprobleemile või mikroobsele reostusele. Kui vesi tekitab kahtlust, on targem seda joomiseks mitte kasutada enne, kui põhjus on selge või vesi on ohutuks muudetud."
         },
         {
             question: "Milline on kõige olulisem hügieenireegel, kui vett on vähe ja kanalisatsioon ei toimi?",

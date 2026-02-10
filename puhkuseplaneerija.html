@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+    <meta charset="UTF-8">
+    <title>Puhkuseplaneerija v3.1 (Uued värvid)</title>
+    <style>
+        * { box-sizing: border-box; }
+
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #f4f4f9; 
+            color: #333; 
+            padding: 20px; 
+            margin: 0;
+        }
+        
+        h2 { font-weight: 300; border-bottom: 2px solid #333; padding-bottom: 10px; margin-top: 0; }
+        .info { font-size: 0.9em; color: #666; margin-bottom: 20px; font-family: monospace; }
+        
+        .app-container { display: flex; gap: 20px; height: 85vh; }
+        
+        /* SIDEBAR */
+        .sidebar { 
+            width: 200px; 
+            flex-shrink: 0; 
+            background: #e0e0e0; 
+            padding: 15px; 
+            border-radius: 4px; 
+            overflow-y: auto;
+            border: 1px solid #ccc;
+        }
+
+        /* MAIN BOARD */
+        .main-board { 
+            flex-grow: 1; 
+            background: white; 
+            border: 1px solid #ccc; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+            overflow: auto; 
+            position: relative;
+        }
+
+        :root {
+            --col-width: 45px; 
+            --col-gap: 2px;
+            --row-height: 45px;
+            --label-width: 100px;
+        }
+
+        .board-content { display: inline-block; min-width: 100%; }
+
+        /* HEADER */
+        .header-row { 
+            display: flex; 
+            position: sticky; 
+            top: 0; 
+            background: #f9f9f9; 
+            z-index: 100; 
+            border-bottom: 2px solid #ddd;
+            padding-left: var(--label-width); 
+            height: 60px;
+        }
+
+        .week-col { 
+            width: var(--col-width); 
+            margin-right: var(--col-gap);
+            text-align: center; 
+            font-size: 10px; 
+            border-right: 1px solid #eee; 
+            flex-shrink: 0; 
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding-bottom: 5px;
+            position: relative;
+        }
+        
+        .week-number { font-weight: bold; font-size: 13px; }
+        .week-date { font-size: 9px; color: #888; margin-top: 2px; }
+        
+        /* STATUS DOTS (VÄRVIKOODID) */
+        .status-dot { 
+            height: 5px; 
+            width: 100%; 
+            background: #4caf50; /* 0-2 (Roheline) */
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            transition: background 0.3s; 
+        }
+        
+        .status-dot.yellow { background: #ffeb3b; } /* 3 (Kollane) */
+        .status-dot.orange { background: #ff9800; } /* 4-5 (Oranž) */
+        .status-dot.red { background: #d32f2f; height: 7px; } /* >5 (Punane) */
+
+        /* ROWS */
+        .row { 
+            display: flex; 
+            height: var(--row-height); 
+            border-bottom: 1px solid #eee; 
+            align-items: center; 
+            position: relative;
+        }
+        
+        .name-label { 
+            width: var(--label-width); 
+            position: sticky; 
+            left: 0; 
+            background: white; 
+            z-index: 50;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 15px;
+            font-weight: bold;
+            font-size: 12px;
+            border-right: 1px solid #ddd;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+        }
+
+        .grid-cells { display: flex; }
+        
+        .cell { 
+            width: var(--col-width); 
+            height: 38px; 
+            border: 1px dashed #e0e0e0; 
+            margin-right: var(--col-gap); 
+            background: #fafafa;
+            flex-shrink: 0;
+            position: relative;
+        }
+        .cell.drag-over { background: #e3f2fd; border-color: #2196f3; }
+
+        /* BLOCKS */
+        .block { 
+            height: 34px; 
+            margin-top: 1px; 
+            border-radius: 3px; 
+            cursor: grab; 
+            font-size: 10px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            color: white; 
+            font-weight: bold;
+            box-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+            position: relative;
+            z-index: 10;
+        }
+        .block:active { cursor: grabbing; }
+        
+        .block-1 { width: var(--col-width); background-color: #2e7d32; } 
+        .block-2 { width: calc( (var(--col-width) * 2) + var(--col-gap) ); background-color: #1565c0; z-index: 20; }
+
+        .inventory-item { margin-bottom: 10px; border-bottom: 1px solid #ccc; padding-bottom: 8px; }
+        .inventory-name { font-weight: bold; margin-bottom: 4px; font-size: 11px; }
+        .inventory-blocks { display: flex; gap: 4px; flex-wrap: wrap; }
+        
+        .month-marker { 
+            position: absolute; top: 5px; left: 0; width: 100%;
+            text-align: center; font-size: 9px; color: #999; 
+            text-transform: uppercase; font-weight: bold; letter-spacing: 1px;
+        }
+        
+        /* Legend */
+        .legend { display: flex; gap: 15px; align-items: center; margin-bottom: 10px; font-size: 11px; }
+        .legend-item { display: flex; align-items: center; gap: 5px; }
+        .dot-sample { width: 10px; height: 10px; border-radius: 50%; }
+
+    </style>
+</head>
+<body>
+
+    <h2>Puhkuseplaneerija v3.1</h2>
+    
+    <div class="legend">
+        <strong>Koormuse indikaatorid:</strong>
+        <div class="legend-item"><div class="dot-sample" style="background:#4caf50"></div> 0-2 (OK)</div>
+        <div class="legend-item"><div class="dot-sample" style="background:#ffeb3b"></div> 3 (Hoiatus)</div>
+        <div class="legend-item"><div class="dot-sample" style="background:#ff9800"></div> 4-5 (Kriitiline)</div>
+        <div class="legend-item"><div class="dot-sample" style="background:#d32f2f"></div> >5 (Ülekoormus)</div>
+    </div>
+
+    <div class="app-container">
+        <div class="sidebar" id="inventory">
+            <h3>Ladu</h3>
+            </div>
+
+        <div class="main-board">
+            <div class="board-content">
+                <div class="header-row" id="header-row">
+                    </div>
+                <div id="rows-container">
+                    </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    // --- KONFIGURATSIOON ---
+    const people = [
+        "Marko", "Sass", "Mari", "Märten", "Karin", 
+        "Johanna", "Mirjam", "Mait", "Valner", "Karl"
+    ];
+    
+    // Periood: Mai algus (18) kuni Oktoobri algus (40)
+    const startWeek = 18; 
+    const endWeek = 40;   
+    const totalWeeks = endWeek - startWeek + 1;
+    const startDate = new Date(2026, 3, 27); // 27. aprill 2026
+
+    const inventoryEl = document.getElementById('inventory');
+    const headerRowEl = document.getElementById('header-row');
+    const rowsContainerEl = document.getElementById('rows-container');
+
+    let weeklyLoad = new Array(totalWeeks).fill(0);
+
+    function formatDate(dateObj) {
+        let d = dateObj.getDate();
+        let m = dateObj.getMonth() + 1;
+        return `${d}.${m < 10 ? '0'+m : m}`;
+    }
+
+    function addDays(date, days) {
+        let result = new Date(date);
+        result.setDate(result.getDate() + days);
+        return result;
+    }
+
+    // 1. Initsialiseeri grid
+    function initGrid() {
+        const months = ["JAN", "VEEB", "MÄRTS", "APR", "MAI", "JUUNI", "JUULI", "AUG", "SEPT", "OKT"];
+
+        for (let i = 0; i < totalWeeks; i++) {
+            let currentWeekDate = addDays(startDate, i * 7);
+            let weekNum = startWeek + i;
+            
+            let col = document.createElement('div');
+            col.className = 'week-col';
+            
+            let monthLabel = "";
+            if (i === 0 || currentWeekDate.getDate() <= 7) {
+                 monthLabel = `<span class="month-marker">${months[currentWeekDate.getMonth()]}</span>`;
+            }
+
+            col.innerHTML = `
+                ${monthLabel}
+                <div class="status-dot" id="stat-${i}"></div>
+                <div class="week-number">${weekNum}</div>
+                <div class="week-date">${formatDate(currentWeekDate)}</div>
+            `;
+            headerRowEl.appendChild(col);
+        }
+
+        people.forEach(person => {
+            let row = document.createElement('div');
+            row.className = 'row';
+            
+            let label = document.createElement('div');
+            label.className = 'name-label';
+            label.innerText = person;
+            row.appendChild(label);
+
+            let cellsDiv = document.createElement('div');
+            cellsDiv.className = 'grid-cells';
+
+            for (let i = 0; i < totalWeeks; i++) {
+                let cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.dataset.weekIndex = i;
+                cell.dataset.person = person;
+                
+                cell.addEventListener('dragover', allowDrop);
+                cell.addEventListener('dragenter', dragEnter);
+                cell.addEventListener('dragleave', dragLeave);
+                cell.addEventListener('drop', drop);
+                
+                cellsDiv.appendChild(cell);
+            }
+            row.appendChild(cellsDiv);
+            rowsContainerEl.appendChild(row);
+        });
+    }
+
+    // 2. Initsialiseeri nupud
+    function initInventory() {
+        people.forEach(person => {
+            let wrapper = document.createElement('div');
+            wrapper.className = 'inventory-item';
+            wrapper.innerHTML = `<div class="inventory-name">${person}</div>`;
+            
+            let blockContainer = document.createElement('div');
+            blockContainer.className = 'inventory-blocks';
+            
+            // 1x 2-nädalane
+            blockContainer.appendChild(createBlock(person, 2));
+            // 3x 1-nädalane
+            for(let k=0; k<3; k++) blockContainer.appendChild(createBlock(person, 1));
+
+            wrapper.appendChild(blockContainer);
+            inventoryEl.appendChild(wrapper);
+        });
+    }
+
+    function createBlock(person, duration) {
+        let div = document.createElement('div');
+        div.className = `block block-${duration}`;
+        div.draggable = true;
+        div.innerText = duration === 2 ? "2n" : "1";
+        div.dataset.duration = duration;
+        div.dataset.owner = person;
+        div.id = `blk-${person}-${Math.random().toString(36).substr(2, 9)}`;
+        
+        div.addEventListener('dragstart', dragStart);
+        return div;
+    }
+
+    // --- DRAG & DROP ---
+
+    function dragStart(e) {
+        e.dataTransfer.setData("text/plain", e.target.id);
+        e.dataTransfer.setData("duration", e.target.dataset.duration);
+        e.dataTransfer.setData("owner", e.target.dataset.owner);
+        setTimeout(() => e.target.style.opacity = '0.5', 0);
+    }
+
+    function allowDrop(e) { e.preventDefault(); }
+
+    function dragEnter(e) {
+        e.preventDefault();
+        let target = e.target.closest('.cell');
+        if (target) target.classList.add('drag-over');
+    }
+
+    function dragLeave(e) {
+        let target = e.target.closest('.cell');
+        if (target) target.classList.remove('drag-over');
+    }
+
+    function drop(e) {
+        e.preventDefault();
+        const id = e.dataTransfer.getData("text/plain");
+        const duration = parseInt(e.dataTransfer.getData("duration"));
+        const owner = e.dataTransfer.getData("owner");
+        const block = document.getElementById(id);
+
+        let target = e.target.closest('.cell');
+
+        if (!target) return resetBlock(block);
+
+        // Kontrollid
+        if (target.dataset.person !== owner) {
+            return resetBlock(block, target);
+        }
+
+        if (target.children.length > 0) {
+            return resetBlock(block, target);
+        }
+
+        let index = parseInt(target.dataset.weekIndex);
+        if (duration === 2) {
+            if (index >= totalWeeks - 1) {
+                alert("Ei mahu lõppu!");
+                return resetBlock(block, target);
+            }
+            let nextCell = target.nextElementSibling;
+            if (nextCell.children.length > 0) {
+                alert("Järgmine nädal on hõivatud!");
+                return resetBlock(block, target);
+            }
+        }
+
+        target.classList.remove('drag-over');
+        target.appendChild(block);
+        block.style.opacity = '1';
+        calculateConflicts();
+    }
+
+    function resetBlock(block, target) {
+        block.style.opacity = '1';
+        if(target) target.classList.remove('drag-over');
+    }
+
+    // Tagasi lattu
+    inventoryEl.addEventListener('dragover', allowDrop);
+    inventoryEl.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const id = e.dataTransfer.getData("text/plain");
+        if(!id) return;
+        const block = document.getElementById(id);
+        const owner = block.dataset.owner;
+        
+        const items = document.querySelectorAll('.inventory-item');
+        items.forEach(item => {
+            if(item.querySelector('.inventory-name').innerText === owner) {
+                item.querySelector('.inventory-blocks').appendChild(block);
+            }
+        });
+        calculateConflicts();
+    });
+
+    // --- ARVUTUSED (UUENDATUD LOOGIKA) ---
+
+    function calculateConflicts() {
+        weeklyLoad.fill(0);
+        const allCells = document.querySelectorAll('.cell');
+        
+        allCells.forEach(cell => {
+            if (cell.children.length > 0) {
+                let weekIdx = parseInt(cell.dataset.weekIndex);
+                let block = cell.children[0];
+                let duration = parseInt(block.dataset.duration);
+                
+                weeklyLoad[weekIdx]++;
+                if (duration === 2 && weekIdx + 1 < totalWeeks) {
+                    weeklyLoad[weekIdx + 1]++;
+                }
+            }
+        });
+        updateVisuals();
+    }
+
+    function updateVisuals() {
+        for (let i = 0; i < totalWeeks; i++) {
+            let indicator = document.getElementById(`stat-${i}`);
+            let load = weeklyLoad[i];
+            
+            indicator.className = 'status-dot'; // Reset (default Green)
+            
+            if (load > 5) {
+                indicator.classList.add('red'); // > 5 (6, 7...)
+            } else if (load >= 4) {
+                indicator.classList.add('orange'); // 4 või 5
+            } else if (load === 3) {
+                indicator.classList.add('yellow'); // 3
+            }
+        }
+    }
+
+    initGrid();
+    initInventory();
+
+</script>
+
+</body>
+</html>

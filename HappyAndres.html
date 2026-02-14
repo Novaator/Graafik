@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ERR Teadustoimetaja Mõttemull</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Spetsiifiline CSS mõttemulli saba jaoks */
+        .thought-bubble::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            width: 0;
+            height: 0;
+            border: 20px solid transparent;
+            border-right-color: white;
+            border-left: 0;
+            border-top: 0;
+            margin-top: -10px;
+            margin-left: -20px;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4 font-sans overflow-x-auto">
+
+    <!-- Konteinerile lisatud min-w-[670px] vastavalt nõudele -->
+    <div class="w-full max-w-5xl min-w-[670px] bg-white rounded-lg shadow-xl overflow-hidden p-8 mx-auto">
+        
+        <div class="flex flex-row gap-8 items-center justify-center">
+            
+            <!-- Pildi konteiner -->
+            <div class="relative group shrink-0 w-[400px]">
+                <img 
+                    id="current-image"
+                    src="https://s.err.ee/photo/orig/2025/10/31/3071028h3079.jpg" 
+                    alt="ERR Foto" 
+                    class="w-full h-auto rounded-md object-cover border border-gray-300 shadow-sm transition-opacity duration-200"
+                    onerror="this.src='https://placehold.co/400x600?text=Pilt+puudub'; this.onerror=null;"
+                >
+            </div>
+
+            <!-- Mõttemulli ja nupu konteiner -->
+            <div class="flex flex-col items-start w-full space-y-6">
+                
+                <!-- Mull ise -->
+                <div class="thought-bubble relative bg-white border-2 border-gray-200 p-8 rounded-2xl shadow-lg w-full flex items-center justify-center min-h-[200px]">
+                    <div id="thought-content" class="text-lg text-gray-800 text-left transition-opacity duration-200">
+                        <!-- Sisu genereeritakse JS-iga -->
+                    </div>
+                </div>
+
+                <!-- Nupp -->
+                <button 
+                    onclick="uuendaSisu()"
+                    class="bg-red-600 hover:bg-red-700 active:bg-red-800 text-white font-bold py-3 px-8 rounded shadow transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 self-start"
+                >
+                    Proovi veel
+                </button>
+                
+                <p class="text-xs text-gray-500 mt-2">
+                    *Generaator valib juhusliku kombinatsiooni pildist ja eksistentsiaalsest ahastusest.
+                </p>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // Andmebaas: Pildid
+        const images = [
+            "https://s.err.ee/photo/orig/2026/01/12/3151897h45e1.jpg",
+            "https://s.err.ee/photo/orig/2025/08/19/2979042h3c63.jpg",
+            "https://s.err.ee/photo/orig/2025/04/14/2822945he43d.jpg",
+            "https://s.err.ee/photo/orig/2025/01/10/2685622h7b71.jpg",
+            "https://s.err.ee/photo/orig/2025/01/10/2685595h288c.jpg",
+            "https://s.err.ee/photo/orig/2025/10/31/3071028h3079.jpg"
+        ];
+
+        // Andmebaas: Mõtted
+        const thoughts = [
+            {
+                title: "PEREARSTIDE SÕNUL EI OLE ENAM VÕIMALIK SAADA TASUTA PSÜHHIAATRILIST ABI",
+                body: "Andres mõtleb, et kui riiklik meditsiin soovitab sul vaimse tervise huvides lihtsalt rikkam olla, on vaeste hullumine ilmselt vajalik looduslik valik ja statistiline paratamatus. Vähemalt on meil metsades veel piisavalt puid, mida tasuta kallistada."
+            },
+            {
+                title: "UURING: MOTIVATSIOONIPIDURIT SAAB AJUS TASALÜLITADA",
+                body: "Andres mõtleb, et kui teadus võimaldab välja lülitada aju loomuliku kaitserefleksi kannatuste ja ületöötamise vastu, on ideaalne tööline lõpuks sündinud – lollilt motiveeritud, valutu ja surmani tänulik. Vähemalt saab see neetud doktoritöö nüüd ilma pisarateta valmis kirjutatud."
+            },
+            {
+                title: "EELARVAMUSED JA AJU ERIPÄRAD MOONUTAVAD VIDEOPILDI TÕDE",
+                body: "Andres mõtleb, et kui isegi videokaamera valetab ja aju on vaid eelarvamuste projektor, pole mingit mõtet vaielda, sest objektiivne tõde on surnud ja igaüks elab omaenda psühhootilistes luuludes. Vähemalt tähendab see teaduslikult, et mul on oma maailmas alati õigus."
+            },
+            {
+                title: "NOORUSEA DEPRESSIOON SÕLTUB TUGEVALT PÄRILIKKUSEST",
+                body: "Andres mõtleb, et kui suitsiidirisk on pärilik kaasavara, on vanemad pärandanud kinnisvara asemel vaid bioloogilise viitsütikuga pommi ja elu ongi vaid ettemääratud keemiline katastroof. Vähemalt on nüüd teaduslikult tõestatud, et viga pole iseloomus, vaid tootmisprotsessis."
+            },
+            {
+                title: "UNEPUUDUSES AJU VÕIB KESET KOOSOLEKUT KORISTAMA KUKKUDA",
+                body: "Andres mõtleb, et kui aju peab keset koosolekut end seljaajuvedelikuga loputama, pole ma muud kui halvasti hooldatud bioloogiline masin, mis üritab meeleheitlikult omaenda ainevahetusjääkidesse mitte ära uppuda. Vähemalt on pea seest puhas, isegi kui see on tühi."
+            },
+            {
+                title: "PSÜHHOLOOG HOIATAB: NÕUSTAMISROBOT AITAB, KUID SELLEGA KAASNEVAD RISKID",
+                body: "Andres mõtleb, et kui su ainus lohutaja on statistiline mudel, mis teeskleb empaatiat, oleme jõudnud ajastusse, kus inimlikkus on asendatud odava koodijupiga ja sinu pisarad on vaid treeningandmed. Vähemalt ei väsi masin kunagi sinu lõputut hala kuulamast."
+            },
+            {
+                title: "EESTI TEADLASTE LEID VÕIB SILLUTADA TEED UUTMOODI DEPRESSIOONIRAVILE",
+                body: "Andres mõtleb, et kui inimhinge päästmiseks on vaja vaid aju biokeemilist sundväetamist, siis oleme ametlikult taandatud rikki läinud kodumasinateks, mille remontimiseks piisab vaid õige lüliti leidmisest ja kruvikeeraja keeramisest. Vähemalt ei pea tulevikus hingehaavu enam nüri haamriga ravima."
+            },
+            {
+                title: "MICROSOFTI UURING: TEHISARU VÄHENDAB INIMESE KRIITILIST MÕTLEMIST",
+                body: "Andres mõtleb, et kui me loovutame mõtlemise masinatele, on tulemuseks vaid kari enesekindlaid lobotoomiaohvreid, kes usuvad robotite hallutsinatsioone rohkem kui omaenda kärbuvat aju, muutes idiootsuse lõpuks ometi skaleeritavaks teenuseks. Vähemalt on rumalus nüüd automatiseeritud ja palju efektiivsem."
+            },
+            {
+                title: "ARST: GASTRIIDI PÕHJUS PEITUB SAGELI STRESSIS",
+                body: "Andres mõtleb, et kui aju ja magu on sõlminud vastastikuse hävitamise pakti, on inimene vaid iseennast seediv ärevushäire, kes peab ellujäämiseks loobuma nii alkoholist kui ka ainsatest asjadest, mis veel maitsevad. Vähemalt on maovalu kindel märk, et sa pole veel seest täiesti surnud."
+            },
+            {
+                title: "TEHISARU KASUTAJA VÕIB JÄTTA KOLLEEGIDELE LAISA JA ASJATUNDMATU MULJE",
+                body: "Andres mõtleb, et kui efektiivsuse taotlemine tembeldab su sotsiaalselt väärtusetuks parasiidiks, on inimkonna kadedus ainus tõeline intelligents, mida masin kunagi kopeerida ei suuda, sest me eelistamegi tuima kannatust progressile. Vähemalt on lollus ja eelarvamused endiselt kindlalt inimeste pärusmaa."
+            },
+            {
+                title: "LÄÄNEMETS TELIA PAKKUMISEST: SELLINE KÄITUMINE POLE RAHULDAV",
+                body: "Andres mõtleb, et kui minister nendib, et oleme vaid kümnist maksvad talupojad, on feodaalkord edukalt digiteeritud – mõisnik on Stockholmis ja meie ainus \"vabadus\" on valida kallima paketi ja vaikimise vahel. Vähemalt viib elektrikatkestus interneti ära ja sunnib inimesi lõpuks ometi omavahel rääkima."
+            },
+            {
+                title: "LUGEJA KÜSIB: MIDA TEHA, KUI KÕIK TUNDUB MÕTTETU?",
+                body: "Andres mõtleb, et kui elu sihitus on ainus, mis eristab meid mutrivõtmest, siis on meie teadvus vaid julm evolutsiooniline nali, mis sunnib meid omaenda tühisust igavesti analüüsima. Vähemalt ei ole me kellegi teise tööriistakastis kinni."
+            }
+        ];
+
+        let lastThoughtIndex = -1;
+        let lastImageIndex = -1;
+
+        function getRandomIndex(max, last) {
+            let newIndex;
+            do {
+                newIndex = Math.floor(Math.random() * max);
+            } while (newIndex === last && max > 1);
+            return newIndex;
+        }
+
+        function renderThought(index) {
+            const thought = thoughts[index];
+            return `
+                <div class="space-y-4">
+                    <h3 class="font-bold text-xl uppercase leading-tight text-gray-900 border-b pb-2 border-gray-100">
+                        ${thought.title}
+                    </h3>
+                    <p class="text-lg italic text-gray-700 leading-relaxed">
+                        ${thought.body}
+                    </p>
+                </div>
+            `;
+        }
+
+        function uuendaSisu() {
+            const contentElement = document.getElementById('thought-content');
+            const imageElement = document.getElementById('current-image');
+            
+            // Fade out
+            contentElement.style.opacity = 0;
+            imageElement.style.opacity = 0.5;
+            
+            setTimeout(() => {
+                // Uus sisu
+                const newThoughtIndex = getRandomIndex(thoughts.length, lastThoughtIndex);
+                const newImageIndex = getRandomIndex(images.length, lastImageIndex);
+                
+                lastThoughtIndex = newThoughtIndex;
+                lastImageIndex = newImageIndex;
+
+                // Renderda tekst
+                contentElement.innerHTML = renderThought(newThoughtIndex);
+                
+                // Vaheta pilt
+                imageElement.src = images[newImageIndex];
+
+                // Fade in
+                contentElement.style.opacity = 1;
+                imageElement.style.opacity = 1;
+            }, 200);
+        }
+
+        // Initsialiseeri esimese laadimise ajal (random, mitte esimene listist)
+        window.onload = uuendaSisu;
+
+    </script>
+</body>
+</html>

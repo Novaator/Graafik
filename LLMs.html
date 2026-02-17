@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Mudelite Võrdlus</title>
+    <!-- Fira Sans font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #1a1a1a;
+            --border-color: #e0e0e0;
+            --modal-overlay: rgba(0, 0, 0, 0.6);
+        }
+
+        body {
+            font-family: 'Fira Sans', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            text-align: center;
+        }
+
+        /* Grid layout for icons */
+        .model-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+            gap: 25px;
+            margin-bottom: 20px;
+            padding: 20px 0;
+        }
+
+        .model-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            padding: 15px 10px;
+            border-radius: 8px;
+        }
+
+        .model-card:hover {
+            transform: translateY(-5px);
+            background-color: #f5f5f5;
+        }
+
+        .icon-circle {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 12px;
+            color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        /* Ikoonide SVG stiilid */
+        .icon-circle svg {
+            width: 36px;
+            height: 36px;
+            fill: currentColor;
+        }
+
+        .model-name {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .footer-note {
+            font-size: 0.8rem;
+            color: #666;
+            margin-top: 30px;
+            font-style: italic;
+            border-top: 1px solid var(--border-color);
+            padding-top: 10px;
+            display: inline-block;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--modal-overlay);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(2px);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 600px;
+            width: 90%;
+            position: relative;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            text-align: left;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #888;
+            background: none;
+            border: none;
+            padding: 0;
+        }
+
+        .close-btn:hover {
+            color: #000;
+        }
+
+        .modal-title {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .modal-body {
+            line-height: 1.6;
+            font-size: 1rem;
+            color: #2c2c2c;
+        }
+
+        /* Brand Colors & Logos */
+        .bg-gpt { background-color: #10a37f; }
+        .bg-gemini { background: linear-gradient(135deg, #1d4ed8, #9333ea); } /* Tumedam gradient paremaks kontrastiks */
+        .bg-grok { background-color: #000000; }
+        .bg-claude { background-color: #d97757; }
+        .bg-mistral { background-color: #fcd34d; color: #000 !important; } /* Mistral kollane + must ikoon */
+        .bg-est { background-color: #0072CE; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="model-grid">
+        <!-- Chat GPT: Official Swirl Logo -->
+        <div class="model-card" onclick="openModal('gpt')">
+            <div class="icon-circle bg-gpt">
+                <svg viewBox="0 0 24 24">
+                    <path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a1.54 1.54 0 0 1 .8312 1.2091c.0048.0575.0048.1151 0 .1726v5.2023a4.4604 4.4604 0 0 1-5.2877 3.545zM2.0516 13.0974a4.4651 4.4651 0 0 1 .6322-3.8643l.1419.0805 4.7783 2.7582a.7948.7948 0 0 0 .7854 0l5.8354-3.3685v2.3324a1.54 1.54 0 0 1-.6322 1.3262l-4.5028 2.5997a4.47 4.47 0 0 1-7.0382-1.8642zm2.1322-8.8687a4.47 4.47 0 0 1 3.5049-1.2894l.0805.1419 2.7582 4.7783a.7948.7948 0 0 0 .6813.3927h6.7369l-1.1686 2.02a1.54 1.54 0 0 1-1.2091.8312 1.4883 1.4883 0 0 1-.1726 0H10.193a4.4604 4.4604 0 0 1-6.0093-6.8747zm17.7647 3.0135a4.47 4.47 0 0 1-.6322 3.8643l-.1419-.0805-4.7783-2.7582a.7948.7948 0 0 0-.7854 0L10.7753 11.6364V9.304a1.54 1.54 0 0 1 .6322-1.3262l4.5028-2.5997a4.47 4.47 0 0 1 7.0382 1.8642zm-2.1322 8.8687a4.47 4.47 0 0 1-3.5049 1.2894l-.0805-.1419-2.7582-4.7783a.7948.7948 0 0 0-.6813-.3927h-6.7369l1.1686-2.02a1.54 1.54 0 0 1 1.2091-.8312 1.4883 1.4883 0 0 1 .1726 0h5.2023a4.4604 4.4604 0 0 1 6.0093 6.8747z"/>
+                </svg>
+            </div>
+            <div class="model-name">Chat GPT 5.2</div>
+        </div>
+
+        <!-- Gemini: The Sparkle/Star Logo -->
+        <div class="model-card" onclick="openModal('gemini')">
+            <div class="icon-circle bg-gemini">
+                <svg viewBox="0 0 24 24">
+                   <path d="M12,2 L12.5,9.5 L20,10 L12.5,10.5 L12,18 L11.5,10.5 L4,10 L11.5,9.5 Z M18,18 L19,21 L22,22 L19,23 L18,26 L17,23 L14,22 L17,21 Z"></path>
+                </svg>
+            </div>
+            <div class="model-name">Gemini 3</div>
+        </div>
+
+        <!-- Claude: Stylized C -->
+        <div class="model-card" onclick="openModal('claude')">
+            <div class="icon-circle bg-claude">
+                <span style="font-family: serif; font-size: 32px; font-weight: bold;">C</span>
+            </div>
+            <div class="model-name">Claude Sonnet 4.5</div>
+        </div>
+
+        <!-- Grok: The slash / block -->
+        <div class="model-card" onclick="openModal('grok')">
+            <div class="icon-circle bg-grok">
+                <svg viewBox="0 0 24 24">
+                   <path d="M16.5 3L7.5 21H10L19 3H16.5Z"></path>
+                </svg>
+            </div>
+            <div class="model-name">Grok 4</div>
+        </div>
+
+        <!-- Mistral: The Wave/Scribble Logo -->
+        <div class="model-card" onclick="openModal('mistral')">
+            <div class="icon-circle bg-mistral">
+                <svg viewBox="0 0 24 24">
+                    <path d="M4 18l4-12 4 8 4-8 4 12" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>
+                </svg>
+            </div>
+            <div class="model-name">Mistral Large</div>
+        </div>
+
+        <!-- EstLLM -->
+        <div class="model-card" onclick="openModal('estllm')">
+            <div class="icon-circle bg-est">
+                <span style="font-size: 14px; font-weight: 600;">EST</span>
+            </div>
+            <div class="model-name">EstLLM 8B</div>
+        </div>
+    </div>
+
+    <div class="footer-note">
+        Klõpsa täpsemat kirjelduse nägemiseks ikoonil.
+    </div>
+</div>
+
+<!-- Modal Structure -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+    <div class="modal-content">
+        <button class="close-btn" onclick="closeModal(null)">&times;</button>
+        <h2 class="modal-title" id="modalTitle">Mudeli nimi</h2>
+        <div class="modal-body" id="modalBody">
+            Kirjeldus tuleb siia.
+        </div>
+    </div>
+</div>
+
+<script>
+    // Data object with the provided text
+    const models = {
+        gpt: {
+            title: "Chat GPT 5.2",
+            desc: "Chat GPT on ülemaailmselt kõige enam kasutatud keelemudel, millel on igapäevaselt sadu miljoneid aktiivseid kasutajaid. Mudelit arendab USA ettevõte OpenAI, mille suurinvestor on Microsoft. Chat GPT esimene versioon sai avalikuks 2022. aasta novembris ning sellest ajast alates on saanud mudelist suuresti generatiivse tehisintellekti sünonüüm. Eksperimendis kasutasime versiooni Chat GPT 5.2."
+        },
+        gemini: {
+            title: "Gemini 3",
+            desc: "Gemini loodi kahe Google'i tippüksuse, DeepMindi ja Google Braini ühinemisel ning see suudab reaalajas analüüsida ja sünteesida teavet üle kogu Google’i teenuste ökosüsteemi. Esimene versioon jõudis tavakasutajateni 2023. aasta detsembris. Eksperimendis kasutasime versiooni Gemini 3."
+        },
+        grok: {
+            title: "Grok 4",
+            desc: "Grok on Elon Muski xAI nimelise ettevõtte loodud keelemudel, millel on reaalajas ligipääst platvormi X andmevoogudele. Grok oli esmalt kättesaadav vaid X-i tasulise versiooni tellijatele Ameerika Ühendriikides, kuid 2024. aasta detsembrist on mudel ka tasuta versioonina saadaval. Eksperimendis kasutasime versiooni Grok 4."
+        },
+        claude: {
+            title: "Claude Sonnet 4.5",
+            desc: "Claude nimelise keelemudeli taga on endised OpenAI töötajad, kes lahkusid ettevõttest, kuna leidsid, et kasutajate ohutus oli jäetud tahaplaanile. Erinevalt teistest mudelitest, mida treenitakse peamiselt inimeste tagasiside põhjal, on Claude'ile antud ette kirjalik eetiliste põhimõtete eeskiri. Selle tulemusel peaks olema mudel ausam ning tunnistama hallutsineerimise asemel enda teadmiste puudulikkust. Tavakasutajad said esimest korda mudelile ligi 2023. aasta suvel. Eksperimendis kasutasime versiooni Claude Sonnet 4.5."
+        },
+        mistral: {
+            title: "Mistral Large",
+            desc: "Mistral on tuntuim Euroopa päritolu keelemudel, mille loojaks on Prantsusmaa ettevõte Mistral AI. Mudelit kasutavad Euroopa suurettevõtted, valitsusasutused ja arendajad, kes soovivad vältida sõltuvust USA pilveteenustest. Tavakasutajateni jõudis Mistrali juturobot Le Chat esimest korda 2024. aasta veebruaris. Eksperimendis kasutasime versiooni Mistral Large 2."
+        },
+        estllm: {
+            title: "Llama 3.1 EstLLM 8B",
+            desc: "Tallinna Tehnikaülikooli, Tartu Ülikooli ja Eesti Keele Instituudi arendatavat juturobotit treenitakse avatud eestikeelsel materjalil. Arendatava mudeli aluseks on Meta avatud lähtekoodiga keelemudel Llama 3.1, mis arvestab vastustes 8 miljardi parameetriga. 8 miljardit tundub küll esmapilgul palju, kuid tegelikult on see umbes sada korda väiksem andmehulk kui see, millega opereerivad parimad kommertsmudelid. Seda tõsiasja tuleb ka tulemuste võrdlemisel meeles pidada."
+        }
+    };
+
+    const modalOverlay = document.getElementById('modalOverlay');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalBody');
+
+    function openModal(key) {
+        const data = models[key];
+        if (data) {
+            modalTitle.innerText = data.title;
+            modalBody.innerText = data.desc;
+            modalOverlay.classList.add('active');
+        }
+    }
+
+    function closeModal(event) {
+        if (!event || event.target === modalOverlay || event.target.classList.contains('close-btn')) {
+            modalOverlay.classList.remove('active');
+        }
+    }
+
+    document.addEventListener('keydown', function(event) {
+        if (event.key === "Escape") {
+            modalOverlay.classList.remove('active');
+        }
+    });
+</script>
+
+</body>
+</html>

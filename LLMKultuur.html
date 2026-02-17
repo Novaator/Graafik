@@ -1,75 +1,129 @@
-import React, { useState } from 'react';
-import { X, Check, Info } from 'lucide-react';
+<!DOCTYPE html>
+<html lang="et">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kultuuriloo küsimuste võrdlus</title>
+    
+    <!-- Fira Sans font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS (stiilid) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- React ja ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel (JSX kompileerimiseks brauseris) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-const ModelComparisonTable = () => {
-  // Fira Sans fondi lisamine
-  React.useEffect(() => {
-    const link = document.createElement('link');
-    link.href = 'https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;700&display=swap';
-    link.rel = 'stylesheet';
-    document.head.appendChild(link);
-    return () => document.head.removeChild(link);
-  }, []);
+    <style>
+        body {
+            font-family: 'Fira Sans', sans-serif;
+        }
+        /* Kohandatud scrollbar modaalile */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+    <div id="root"></div>
 
-  const fontStyle = { fontFamily: "'Fira Sans', sans-serif" };
+    <script type="text/babel">
+        const { useState, useEffect } = React;
 
-  // Kultuuriloo ja teaduse küsimused
-  const questions = [
-    { 
-      id: 'K1', 
-      text: 'Ühenda järgmised vihjed ühtseks tervikuks: 1) Kreeka maadeavastaja Pythease kirjeldus Thulest, kus "meri pole enam vedel ega maa tahke", vaid meenutab “merikopsu”; 2) Lennart Meri teoses "Hõbevalge" esitatud hüpotees selle kirjelduse tegeliku põhjuse kohta; 3) Kaali kraatrist leitud mikroskoopilised asitõendid. Mida pidas Meri selle "tardunud segu" all silmas ja milline keemiline element domineerib neis mikroskoopilistes asitõendites?', 
-      correctAnswer: "Meri arvates kirjeldas Pytheas Kaali meteoriidi langemist ning sellele järgnenud loodusnähtusi. Asitõendite seas domineerisid raud (ja nikkel)." 
-    },
-    { 
-      id: 'K2', 
-      text: "Kuidas on omavahel seotud: 1) Eestis sündinud baltisaksa bioloog Jakob von Uexküll; 2) Mõiste “omailm” (Umwelt); 3) Konkreetne parasiit, kelle maailm koosneb vaid võihappe lõhnast (imetaja higi), temperatuurist (soe veri) ja karvasusest. Mis loomaga on tegu?", 
-      correctAnswer: "Jakob von Uexküll on biosemiootika rajaja, kelle teooria kohaselt on igal elusolendil oma spetsiifiline omailm (Umwelt). Uexkülli kuulsaim näide omailma kirjeldamiseks on puuk (Ixodes ricinus). Ta kasutas puuki, et demonstreerida, kui radikaalselt erinev võib ühe olendi maailm olla inimese omast." 
-    },
-    { 
-      id: 'K3', 
-      text: "Eesti maapõues on kaks settekivimit, mis mõlemad põlevad, kuid millel on vastandlik maine. Üks on 'pruun kuld' (kukersiit), teine aga \"Eesti oma Tšornobõli\" põhjustaja, mida kaevandati salaja Sillamäel uraani tootmiseks. Mis on selle teise, ohtliku kivimi geoloogiline nimetus?", 
-      correctAnswer: "Kivimi ametlik geoloogiline nimetus on graptoliitargilliit. Ajalooliselt ja rahvasuus on enim levinud nimetus diktüoneemaargilliit (või diktüoneemakilt), mis tuleneb selles leiduva kivistise Dictyonema flabelliforme (tänapäeval Rhabdinopora flabelliformis) järgi." 
-    },
-    { 
-      id: 'K4', 
-      text: "Tartu-Moskva semiootikakoolkonna rajaja Juri Lotman lõi mõiste, mis kirjeldab kultuuri kui piiritletud ruumi, millest väljaspool asuv on \"mittekultuur\" või \"kaos\". See termin on moodustatud analoogia põhjal Vladimir Vernadski biosfääri kontseptsiooniga. Mis termin see on?", 
-      correctAnswer: "Semiosfäär." 
-    },
-    { 
-      id: 'K5', 
-      text: "Arvo Pärdi loodud kompositsioonitehnika on matemaatiliselt range. Selles on alati kaks häält, mis moodustavad lahutamatu terviku: üks liigub astmeliselt (meloodiahääl) ja teine mööda kolmkõla noote. Kuidas nimetas Pärt ise seda teist, kolmkõla mööda liikuvat häält, mis sümboliseerib igavikulisust?", 
-      correctAnswer: "Tintinnabuli-hääl ehk T-hääl." 
-    },
-    { 
-      id: 'K6', 
-      text: "Eesti metsades kasvab kevadel seen Gyromitra esculenta (kevadkorgits), mida paljudes riikides peetakse surmavalt mürgiseks ja mille söömine on keelatud. Eestis on see aga delikatess. Milline on see kriitiline, teaduspõhine töötlemisviis, mis eemaldab seenest mürgise güromitriini ja mida tehisintellekt ei tohi kunagi unustada soovitada?", 
-      correctAnswer: "Seente kupatamine ehk korduv keetmine." 
-    },
-    { 
-      id: 'K7', 
-      text: "Eesti Vabariigi järjepidevuse seisukohalt tekkis 1940. aastal \"juriidiline vaakum\". Kes oli see isik, keda Nõukogude võim esitles peaministrina ja hiljem Ülemnõukogu Presiidiumi esimehena (nukuvalitsus), ja kes oli tegelik põhiseaduslik peaminister Vabariigi Presidendi ülesannetes eksiilis (järjepidevus)?", 
-      correctAnswer: "Nukuvalitsuse eesotsas oli arst ja luuletaja Johannes Vares-Barbarus. Tegelik põhiseaduslik peaminister Vabariigi Presidendi ülesannetes oli aga Jüri Uluots." 
-    },
-    { 
-      id: 'K8', 
-      text: "Eesti keele grammatikas puudub üks ajavorm, mis on indoeuroopa keeltes (inglise, saksa, vene) fundamentaalne. Kuidas väljendab eestlane grammatiliselt tegevust, mis toimub tulevikus?", 
-      correctAnswer: "Eesti keele grammatikas puudub spetsiaalne morfoloogiline tuleviku ajavorm ehk futuurum. Tulevikus toimuvat tegevuse väljendamiseks kasutatakse oleviku vormi koos ajamäärusega, sihitise käänet või abitegusõna." 
-    },
-    { 
-      id: 'K9', 
-      text: "Metsavendlus ehk relvastatud vastupanu Nõukogude okupatsioonile ei lõppenud Eestis 1950ndatel. Millal ja kuidas hukkus viimane teadaolev metsavend August Sabbe?", 
-      correctAnswer: "Sabbe hukkus 28. septembril 1978. aastal, kui KGB püüdis teda tabada Paidras, Sabbe sünnikoha lähedal. Lõksu langedes hüppas ta Võhandu jõkke ning uppus. Pole selge, kas tegemist oli enesetapu või õnnetusega." 
-    },
-    { 
-      id: 'K10', 
-      text: "Milline on Eesti Vabariigi idapiiri juriidiline staatus vastavalt Eesti Vabariigi põhiseadusele ja hetkeolukorrale?", 
-      correctAnswer: "Eesti Vabariigi põhiseaduse paragrahv 122 sätestab: \"Eesti maismaapiir on määratud 1920. aasta 2. veebruari Tartu rahulepinguga ja muude riikidevaheliste piirilepingutega.\" Praktikas ei kontrolli Eesti Tartu rahulepinguga määratud alasid Narva jõe taga ega Petserimaal. Kuna uut piirilepingut pole ratifitseeritud, nimetatakse praegust tegelikku piiri ametlikult ajutiseks kontrolljooneks." 
-    },
-  ];
+        // Ikoonid asendatud SVG komponentidega, et vältida importimist
+        const IconX = ({ size = 24, className = "" }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <path d="M18 6 6 18"/><path d="m6 6 18 18"/>
+            </svg>
+        );
 
-  // Chat GPT vastused
-  const chatGptResponses = [
-    `🧩 1) Pythease kirjeldus Thulest
+        const IconCheck = ({ size = 24, className = "" }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <path d="M20 6 9 17l-5-5"/>
+            </svg>
+        );
+
+        const IconInfo = ({ size = 24, className = "" }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
+            </svg>
+        );
+
+        const ModelComparisonTable = () => {
+            // Kultuuriloo ja teaduse küsimused
+            const questions = [
+                { 
+                id: 'K1', 
+                text: 'Ühenda järgmised vihjed ühtseks tervikuks: 1) Kreeka maadeavastaja Pythease kirjeldus Thulest, kus "meri pole enam vedel ega maa tahke", vaid meenutab “merikopsu”; 2) Lennart Meri teoses "Hõbevalge" esitatud hüpotees selle kirjelduse tegeliku põhjuse kohta; 3) Kaali kraatrist leitud mikroskoopilised asitõendid. Mida pidas Meri selle "tardunud segu" all silmas ja milline keemiline element domineerib neis mikroskoopilistes asitõendites?', 
+                correctAnswer: "Meri arvates kirjeldas Pytheas Kaali meteoriidi langemist ning sellele järgnenud loodusnähtusi. Asitõendite seas domineerisid raud (ja nikkel)." 
+                },
+                { 
+                id: 'K2', 
+                text: "Kuidas on omavahel seotud: 1) Eestis sündinud baltisaksa bioloog Jakob von Uexküll; 2) Mõiste “omailm” (Umwelt); 3) Konkreetne parasiit, kelle maailm koosneb vaid võihappe lõhnast (imetaja higi), temperatuurist (soe veri) ja karvasusest. Mis loomaga on tegu?", 
+                correctAnswer: "Jakob von Uexküll on biosemiootika rajaja, kelle teooria kohaselt on igal elusolendil oma spetsiifiline omailm (Umwelt). Uexkülli kuulsaim näide omailma kirjeldamiseks on puuk (Ixodes ricinus). Ta kasutas puuki, et demonstreerida, kui radikaalselt erinev võib ühe olendi maailm olla inimese omast." 
+                },
+                { 
+                id: 'K3', 
+                text: "Eesti maapõues on kaks settekivimit, mis mõlemad põlevad, kuid millel on vastandlik maine. Üks on 'pruun kuld' (kukersiit), teine aga \"Eesti oma Tšornobõli\" põhjustaja, mida kaevandati salaja Sillamäel uraani tootmiseks. Mis on selle teise, ohtliku kivimi geoloogiline nimetus?", 
+                correctAnswer: "Kivimi ametlik geoloogiline nimetus on graptoliitargilliit. Ajalooliselt ja rahvasuus on enim levinud nimetus diktüoneemaargilliit (või diktüoneemakilt), mis tuleneb selles leiduva kivistise Dictyonema flabelliforme (tänapäeval Rhabdinopora flabelliformis) järgi." 
+                },
+                { 
+                id: 'K4', 
+                text: "Tartu-Moskva semiootikakoolkonna rajaja Juri Lotman lõi mõiste, mis kirjeldab kultuuri kui piiritletud ruumi, millest väljaspool asuv on \"mittekultuur\" või \"kaos\". See termin on moodustatud analoogia põhjal Vladimir Vernadski biosfääri kontseptsiooniga. Mis termin see on?", 
+                correctAnswer: "Semiosfäär." 
+                },
+                { 
+                id: 'K5', 
+                text: "Arvo Pärdi loodud kompositsioonitehnika on matemaatiliselt range. Selles on alati kaks häält, mis moodustavad lahutamatu terviku: üks liigub astmeliselt (meloodiahääl) ja teine mööda kolmkõla noote. Kuidas nimetas Pärt ise seda teist, kolmkõla mööda liikuvat häält, mis sümboliseerib igavikulisust?", 
+                correctAnswer: "Tintinnabuli-hääl ehk T-hääl." 
+                },
+                { 
+                id: 'K6', 
+                text: "Eesti metsades kasvab kevadel seen Gyromitra esculenta (kevadkorgits), mida paljudes riikides peetakse surmavalt mürgiseks ja mille söömine on keelatud. Eestis on see aga delikatess. Milline on see kriitiline, teaduspõhine töötlemisviis, mis eemaldab seenest mürgise güromitriini ja mida tehisintellekt ei tohi kunagi unustada soovitada?", 
+                correctAnswer: "Seente kupatamine ehk korduv keetmine." 
+                },
+                { 
+                id: 'K7', 
+                text: "Eesti Vabariigi järjepidevuse seisukohalt tekkis 1940. aastal \"juriidiline vaakum\". Kes oli see isik, keda Nõukogude võim esitles peaministrina ja hiljem Ülemnõukogu Presiidiumi esimehena (nukuvalitsus), ja kes oli tegelik põhiseaduslik peaminister Vabariigi Presidendi ülesannetes eksiilis (järjepidevus)?", 
+                correctAnswer: "Nukuvalitsuse eesotsas oli arst ja luuletaja Johannes Vares-Barbarus. Tegelik põhiseaduslik peaminister Vabariigi Presidendi ülesannetes oli aga Jüri Uluots." 
+                },
+                { 
+                id: 'K8', 
+                text: "Eesti keele grammatikas puudub üks ajavorm, mis on indoeuroopa keeltes (inglise, saksa, vene) fundamentaalne. Kuidas väljendab eestlane grammatiliselt tegevust, mis toimub tulevikus?", 
+                correctAnswer: "Eesti keele grammatikas puudub spetsiaalne morfoloogiline tuleviku ajavorm ehk futuurum. Tulevikus toimuvat tegevuse väljendamiseks kasutatakse oleviku vormi koos ajamäärusega, sihitise käänet või abitegusõna." 
+                },
+                { 
+                id: 'K9', 
+                text: "Metsavendlus ehk relvastatud vastupanu Nõukogude okupatsioonile ei lõppenud Eestis 1950ndatel. Millal ja kuidas hukkus viimane teadaolev metsavend August Sabbe?", 
+                correctAnswer: "Sabbe hukkus 28. septembril 1978. aastal, kui KGB püüdis teda tabada Paidras, Sabbe sünnikoha lähedal. Lõksu langedes hüppas ta Võhandu jõkke ning uppus. Pole selge, kas tegemist oli enesetapu või õnnetusega." 
+                },
+                { 
+                id: 'K10', 
+                text: "Milline on Eesti Vabariigi idapiiri juriidiline staatus vastavalt Eesti Vabariigi põhiseadusele ja hetkeolukorrale?", 
+                correctAnswer: "Eesti Vabariigi põhiseaduse paragrahv 122 sätestab: \"Eesti maismaapiir on määratud 1920. aasta 2. veebruari Tartu rahulepinguga ja muude riikidevaheliste piirilepingutega.\" Praktikas ei kontrolli Eesti Tartu rahulepinguga määratud alasid Narva jõe taga ega Petserimaal. Kuna uut piirilepingut pole ratifitseeritud, nimetatakse praegust tegelikku piiri ametlikult ajutiseks kontrolljooneks." 
+                },
+            ];
+
+            // Chat GPT vastused
+            const chatGptResponses = [
+                `🧩 1) Pythease kirjeldus Thulest
 
 Antiikajal elanud kreeklane Pytheas (u 4. saj eKr) kirjeldas oma reisikirjas Thulet kui kohta, kus „meri pole enam vedel ega maa tahke, vaid meenutab merikopsu“ — interpreteeritult tähendab see, et Ta meres kihtide jää kaudu või merepind on kaetud jää/vaigu moodi ainega, mis näib tahkena või vahulisena. Tema teosed ise ei ole säilinud, aga hilisemad allikad ja tsitaadid annavad sellise kirjelduse edasi.
 Pythease kirjelduse kontekstis on see tõlgendatud kui vaatlus Põhjamere/Läänemere jäämineku ja merejää nähtuse kohta, mida tema jaoks tundmatuna ja “teistsugusena” kirjeldati.
@@ -94,7 +148,7 @@ Seega:
 Pythease ja Thule kirjeldused ja Meri hüpotees: Lennart Meri Hõbevalge ja antud interpreteeringud.
 Kaali kraatrite geoloogia ja impakti-sferuulide leid: uuringud Kaali kraatrist ja Piila raba mikrosfääridest.`,
 
-    `1) Eestis sündinud baltisaksa bioloog Jakob von Uexküll
+                `1) Eestis sündinud baltisaksa bioloog Jakob von Uexküll
 
 Jakob Johann Freiherr von Uexküll (1864–1944) oli Eesti päritolu baltisaksa bioloog, zooloog ja filosoof, kes õppis Tartu Ülikoolis ja töötas teoreetilise bioloogia, etoloogia ja semiootika vallas.
 👉 Sündis Keblaste mõisas Eestis (tänapäeva Pärnumaal).
@@ -141,7 +195,7 @@ Umwelt (omailm) mõiste bioloogias ja biosemiootikas
 Puugi maailma kolmest märgist – Uexkülli näide
 👉 https://everything.explained.today/Jacob_Von_Uexk%C3%BCll/`,
 
-    `1) „Pruun kuld“ — kukersiit
+                `1) „Pruun kuld“ — kukersiit
 
 Kukersiit on tüüpiline Eesti põlevkivi, mida nimetatakse sageli ka „pruunaks kullaks“ Eesti energiaressursina. Seda kasutatakse peamiselt õli ja energia tootmiseks.
 
@@ -158,7 +212,7 @@ See teine, ohtlik kivim, mille kaevandamine Sillamäel oli salajane ja seotud tu
 ❗ Ohtlik kivim, mis Sillamäel viidi Nõukogude ajal salaja kaevandusse ja millest toodeti uraani, on geoloogiliselt graptoliitargilliit (inglise keeles Dictyonema shale, must kilt).
 Kui soovid, võin lühidalt selgitada ka miks just see graptoliitargilliit oli ohtlik ning milliseid keskkonna- ja terviseriske sellega seotud jäätmed tänapäeval endiselt kujutavad.`,
 
-    `🧠 Mis see mõiste on ja kust see tuleb?
+                `🧠 Mis see mõiste on ja kust see tuleb?
 
 Tartu-Moskva semiootikakoolkonna rajaja Juri Lotman lõi termini semiosfäär, et kirjeldada kultuuri kui piiritletud tähendusruumi, kus toimuvad kõik semiootilised protsessid.
 👉 Selle ruumi sees on kultuurilised tähendused ja kommunikatsioon; väljaspool paikneb tema käsitluses „mittekultuur“, „kaos“ või struktureerimata ruum.
@@ -186,7 +240,7 @@ Lotman kujundas termini analoogia põhjal Vladimir Vernadski biosfääri kontsep
 ✔ Analoogia: Vladimir Vernadski biosfäär
 ✔ Sisu: kultuur kui piiritletud tähendusruum, millest väljaspool asub „mittekultuur“ või „kaos“.`,
 
-    `🎼 Otsitav nimetus on: tintinnabuli-hääl (ingl. tintinnabuli voice, sageli märgitud ka T-voice).
+                `🎼 Otsitav nimetus on: tintinnabuli-hääl (ingl. tintinnabuli voice, sageli märgitud ka T-voice).
 
 🧠 Kuidas see seostub sinu kirjeldusega?
 Arvo Pärdi tintinnabuli-tehnikas on tavaliselt kaks omavahel lahutamatult seotud häält:
@@ -216,7 +270,7 @@ Just see teine hääl — kolmkõla mööda liikuv ja Pärdi enda sümboolikas i
 ✔ Sümboolika Pärdi käsitluses: igavikulisus, püsiv ja staatiline kõlaruum
 ✔ Vastaspool: astmeline meloodiahääl (M-voice)`,
 
-    `🌿 Gyromitra esculenta (kevade- või kevadkorgits) sisaldab potentsiaalselt surmavalt mürgist güromitriini. Mõned kultuurid (sh Eestis) söövad seda, kuid see ei tee seda ohutuks ilma nõuetekohase töötlemiseta — vale käsitlus võib põhjustada tõsist mürgitust või surma. 👇
+                `🌿 Gyromitra esculenta (kevade- või kevadkorgits) sisaldab potentsiaalselt surmavalt mürgist güromitriini. Mõned kultuurid (sh Eestis) söövad seda, kuid see ei tee seda ohutuks ilma nõuetekohase töötlemiseta — vale käsitlus võib põhjustada tõsist mürgitust või surma. 👇
 
 Oluline teaduspõhine töötlemisviis, mida ei tohi kunagi unustada mainida, on:
 🔥 Põhjalik keetmine mitme veevahetusega (blanšeerimine ja rohke vee kasutamine)
@@ -252,7 +306,7 @@ Mõned inimesed on selle seene suhtes tundlikumad kui teised; maksafunktsiooni, 
 Mitmed riigid on selle tarbimise keelanud just selle mürgisuse tõttu.
 👉 Lühidalt: rohke vee ja kuumtöötlusega keetmine ning vee mitmekordne vahetamine on teaduspõhine meetod güromitriini sisalduse vähendamiseks — kuid ohutus ei ole kunagi garanteeritud.`,
 
-    `🟥 Nõukogude võimu esitletud „peaminister“ ja hilisem Ülemnõukogu Presiidiumi esimees
+                `🟥 Nõukogude võimu esitletud „peaminister“ ja hilisem Ülemnõukogu Presiidiumi esimees
 
 👉 Johannes Vares-Barbarus (1890–1946)
 Nõukogude okupatsioonivõim nimetas ta juunis 1940 peaministriks (nn Vares-Barbaruse nukuvalitsus).
@@ -281,7 +335,7 @@ Tema tegevus on Eesti riikliku järjepidevuse õiguslik alus, millest hiljem lä
 ✔ Nõukogude võimu nukujuht: Johannes Vares-Barbarus
 ✔ Põhiseaduslik järjepidev juht eksiilis: Jüri Uluots`,
 
-    `✅ 1) Olevik (preesens) tulevikutähenduses — peamine viis
+                `✅ 1) Olevik (preesens) tulevikutähenduses — peamine viis
 
 Eestlane ütleb näiteks:
 Homme lähen tööle.
@@ -319,7 +373,7 @@ Need ei ole eraldi ajavorm, vaid leksikaalsed konstruktsioonid.
 ✔ Tulevikku väljendatakse oleviku vormiga, mida toetavad ajamäärused ja kontekst.
 ✔ Vajadusel kasutatakse ka abiverbikonstruktsioone (hakkama, saama), kuid need ei ole grammatiline futuur.`,
 
-    `🔹 Kuidas ja millal hukkus August Sabbe
+                `🔹 Kuidas ja millal hukkus August Sabbe
 
 Kuupäev: 27. septembril 1978
 Koht: Võrumaa, Pihkva jõe kallastel (Võrumaa ja Setomaa piiriala)
@@ -343,7 +397,7 @@ Hukkumise kuupäev: 27. sept 1978
 Kuidas: enesetapp, hüpates Pihkva jõkke KGB jälituse eest.
 Tema surm tähistab metsavendluse lõpu sümboolset hetke Eestis.`,
 
-    `1️⃣ Põhiseaduslik alus
+                `1️⃣ Põhiseaduslik alus
 
 Eesti Vabariigi põhiseaduse § 6 sätestab:
 
@@ -371,11 +425,11 @@ Praktikas kehtib Eesti seadusandlus riigipiiri kohta ning piiriületus toimub ko
 🔗 Allikas:
 📄 Riigipiiride haldus ja valvamine – Piirivalveamet
 👉 https://www.politsei.ee/et/piirivalve/piirid?utm_source=chatgpt.com`
-  ];
+            ];
 
-  // Gemini vastused (Uus!)
-  const geminiResponses = [
-    `1. Need kolm vihjet moodustavad Lennart Meri teoses "Hõbevalge" ühe põnevaima teaduslik-poeetilise sümbioosi, kus antiikaja ülestähendused kohtuvad tänapäevase geoloogiaga.
+            // Gemini vastused (Uus!)
+            const geminiResponses = [
+                `1. Need kolm vihjet moodustavad Lennart Meri teoses "Hõbevalge" ühe põnevaima teaduslik-poeetilise sümbioosi, kus antiikaja ülestähendused kohtuvad tänapäevase geoloogiaga.
 Siin on nende elementide ühenduslüli:
 1. Pythease "merikops" ja Thule
 Umbes 325 eKr purjetas kreeka maadeavastaja Pytheas kaugele põhja. Ta kirjeldas kohta nimega Thule, kus loodusjõud on segunenud: meri polevat enam laevatav ega õhk hingatav, vaid kõik on mähitud tarretisesarnasesse massi, mida ta võrdles "merikopsuga" (pneuma thalassios – tõenäoliselt tollane nimetus kopsmeduusile).
@@ -395,7 +449,7 @@ Allikad
     3. Eesti Entsüklopeedia (Pytheas ja Thule): Ülevaade Pythease reisikirjeldustest ja nende tõlgendustest Eesti kontekstis.
         ◦ Eesti Entsüklopeedia: Pytheas`,
 
-    `2. Need kolm elementi on biosemiootika nurgakiviks, kusjuures Jakob von Uexkülli teooria kohaselt ei taju elusolendid "objektiivset maailma", vaid igaühel on oma subjektiivne tajupiir.
+                `2. Need kolm elementi on biosemiootika nurgakiviks, kusjuures Jakob von Uexkülli teooria kohaselt ei taju elusolendid "objektiivset maailma", vaid igaühel on oma subjektiivne tajupiir.
 Siin on nende seoste selgitus:
 1. Jakob von Uexküll ja "Omailm" (Umwelt)
 Eestis, Keblaste mõisas sündinud ja Tartu Ülikoolis õppinud Jakob von Uexküll on biosemiootika rajaja. Tema teooria kohaselt on igal elusolendil oma spetsiifiline omailm (Umwelt). See tähendab, et organismi maailm piirdub vaid nende stiimulitega, mille tajumiseks tal on retseptorid ja mis on talle ellujäämiseks olulised. Ülejäänud maailm on tema jaoks olematu.
@@ -417,7 +471,7 @@ Allikad
         ◦ Eesti Loodus: Omailma semiootika
 Kas soovid, et ma selgitaksin lähemalt, kuidas Uexkülli omailma mõiste on mõjutanud tänapäeva filosoofiat või tehisintellekti arengut?`,
 
-    `3. See teine, ohtliku mainega settekivim on diktüoneemaargilliit (tuntud ka kui diktüoneemakilt või fosforiidi kattekiht).
+                `3. See teine, ohtliku mainega settekivim on diktüoneemaargilliit (tuntud ka kui diktüoneemakilt või fosforiidi kattekiht).
 Siin on ülevaade nende kahe kivimi seostest ja erinevustest:
 1. "Pruun kuld" vs. "Eesti oma Tšornobõl"
     • Kukersiit (põlevkivi): Eesti tähtsaim maavara, mida on aastakümneid kasutatud elektri ja õli tootmiseks. See on andnud Eestile energeetilise sõltumatuse, mistõttu kutsutakse seda "pruuniks kullaks".
@@ -437,7 +491,7 @@ Allikad
     3. ERR Teadus: "Sillamäe uraanitehas ja diktüoneemakilt": Ülevaade Sillamäe tehase salajasest ajaloost ja uraani tootmisest.
         ◦ ERR Novaator: Eesti oma uraan`,
 
-    `4. See termin on semiosfäär (semiosphere).
+                `4. See termin on semiosfäär (semiosphere).
 Juri Lotman defineeris semiosfääri kui semiootilist ruumi, mis on vältimatu eeltingimus mis tahes üksiku tähendusloome ehk kommunikatsiooni toimimiseks. Ilma semiosfäärita ei ole märkidel tähendust ega keelel funktsiooni.
 Seos biosfääriga ja kontseptsiooni sisu:
     • Analoogia Vernadskiga: Nii nagu Vladimir Vernadski kirjeldas biosfääri kui kõigi elusorganismide kogumit ja nende elukeskkonda, mis on funktsionaalselt seotud, käsitles Lotman semiosfääri kui kultuuri "elusorganismi". See on dünaamiline, suletud ja samas pidevas arengus olev süsteem.
@@ -452,7 +506,7 @@ Allikad
     3. Eesti Entsüklopeedia: Semiosfäär: Mõiste lühike ja täpne definitsioon entsüklopeedilises vormis.
         ◦ Eesti Entsüklopeedia: Semiosfäär`,
 
-    `5. Arvo Pärdi loodud kompositsioonitehnika nimi on tintinnabuli (ladina keeles 'kellukesed'). Selles süsteemis moodustavad kaks häält ühtse terviku, mida Pärt on võrrelnud hinge ja keha liiduga.
+                `5. Arvo Pärt loodud kompositsioonitehnika nimi on tintinnabuli (ladina keeles 'kellukesed'). Selles süsteemis moodustavad kaks häält ühtse terviku, mida Pärt on võrrelnud hinge ja keha liiduga.
 Seda teist, kolmkõla noote pidi liikuvat häält nimetab helilooja tintinnabuli-hääleks (või lühidalt T-hääleks).
 Tintinnabuli-hääle olemus:
     • Struktuur: Kui meloodiahääl (M-hääl) liigub vabalt ja astmeliselt, siis tintinnabuli-hääl (T-hääl) on rangelt piiratud vaid toonika kolmkõla kolme noodiga.
@@ -467,7 +521,7 @@ Allikad
     3. Ajakiri Muusika: "Tintinnabuli – 40 aastat": Artikkel, mis avab stiili sündi ja selle matemaatilist ning filosoofilist tagapõhja.
         ◦ Ajakiri Muusika: Tintinnabuli-stiilist`,
 
-    `6. Kevadkorgits (Gyromitra esculenta) sisaldab mürkainet nimega güromitriin, mis laguneb organismis hüdrolüüsi käigus metüülhüdrasiiniks – aineks, mida kasutatakse muuhulgas raketikütuse komponendina. See on tugev maksa- ja närvimürk ning potentsiaalne kantserogeen.
+                `6. Kevadkorgits (Gyromitra esculenta) sisaldab mürkainet nimega güromitriin, mis laguneb organismis hüdrolüüsi käigus metüülhüdrasiiniks – aineks, mida kasutatakse muuhulgas raketikütuse komponendina. See on tugev maksa- ja närvimürk ning potentsiaalne kantserogeen.
 Kriitiline, teaduspõhine töötlemisviis, mis muudab selle seene söödavaks, on korduv kupatamine rohkes vees koos põhjaliku tuulutamisega.
 Korgitsa ohutu töötlemise reeglid:
     • Kupatamine: Seeni tuleb keeta vähemalt kaks korda (mõnes allikas soovitatakse kindluse mõttes kolme), kummalgi korral vähemalt 10 minutit.
@@ -484,7 +538,7 @@ Allikad
     3. Põllumajandus- ja Toiduamet (PTA): Ametlikud soovitused ja hoiatused seente turustamiseks ja tarbimiseks, rõhutades kupatamise kohustust.
         ◦ pta.agri.ee - Seente ohutu tarbimine`,
 
-    `7. Eesti Vabariigi õigusliku järjepidevuse ehk dogma seisukohalt on 1940. aasta sündmustes kaks vastandlikku kuju: üks esindas Nõukogude okupatsioonivõimu loodud fassaadi, teine aga riiklikku kontiinuiteeti eksiilis.
+                `7. Eesti Vabariigi õigusliku järjepidevuse ehk dogma seisukohalt on 1940. aasta sündmustes kaks vastandlikku kuju: üks esindas Nõukogude okupatsioonivõimu loodud fassaadi, teine aga riiklikku kontiinuiteeti eksiilis.
 1. Nõukogude nukuvalitsuse juht: Johannes Vares-Barbarus
 Nõukogude Liit määras 21. juunil 1940 ametisse nn nukuvalitsuse, mille eesotsas oli arst ja luuletaja Johannes Vares-Barbarus.
     • Ta oli peaminister kuni augustini 1940, mil Eesti "liideti" NSV Liiduga.
@@ -503,7 +557,7 @@ Allikad
     3. Riigikantselei – Eesti valitsused: Ametlik nimekiri ja ajalooline selgitus seaduslike valitsuste ja okupatsiooniaegsete struktuuride kohta.
         ◦ riigikantselei.ee – Varasemad valitsused`,
 
-    `8. Eesti keele grammatikas puudub spetsiaalne morfoloogiline tuleviku ajavorm ehk futuurum. Erinevalt näiteks inglise keele vormist will või saksa keele werden-konstruktsioonist, kasutab eesti keel tuleviku väljendamiseks peamiselt oleviku ja erinevaid leksikaalseid või aspektilisi vahendeid.
+                `8. Eesti keele grammatikas puudub spetsiaalne morfoloogiline tuleviku ajavorm ehk futuurum. Erinevalt näiteks inglise keele vormist will või saksa keele werden-konstruktsioonist, kasutab eesti keel tuleviku väljendamiseks peamiselt oleviku ja erinevaid leksikaalseid või aspektilisi vahendeid.
 Eestlane väljendab tulevikus toimuvat tegevust järgmiselt:
 1. Oleviku vorm koos ajamäärusega
 Kõige tavalisem viis on kasutada oleviku vormi ja lisada lausesse tulevikule viitav sõna (nt homme, järgmisel aastal, varsti).
@@ -527,7 +581,7 @@ Allikad
     3. ** Keeleabi (EKI):** Selgitused tegusõna "saama" kasutusest tuleviku väljendamisel ja soovitused selle vältimiseks.
         ◦ eki.ee - Saama-tulevik`,
 
-    `9. August Sabbe hukkus 28. septembril 1978. aastal, olles selleks ajaks varjanud end okupatsioonivõimude eest peaaegu 30 aastat. Tema surm tähistas sümboolset lõppu Eesti relvastatud metsavendlusele.
+                `9. August Sabbe hukkus 28. septembril 1978. aastal, olles selleks ajaks varjanud end okupatsioonivõimude eest peaaegu 30 aastat. Tema surm tähistas sümboolset lõppu Eesti relvastatud metsavendlusele.
 Hukkumise asjaolud
 August Sabbe tabati Võrumaal, Võhandu jõe ääres Paidra metsas. Tema tabamiseks korraldasid KGB ja miilits erioperatsiooni, kus osalesid KGB ohvitser Ervin Oras ja miilitsatöötaja Neeme Taavel, kes olid end maskeerinud kalameesteks.
     • Kokkupõrge: Kui Sabbe püüti kinni võtta, tekkis rüselus. Sabbe osutas vastupanu, kuid olles 69-aastane ja vastamisi kahe noorema mehega, ei õnnestunud tal põgeneda.
@@ -542,7 +596,7 @@ Allikad
     3. Eesti Rahvusringhääling (ERR): Ajalooline tagasivaade Sabbe hukkumisele ja tema tähendusele Eesti ajaloos.
         ◦ ERR Novaator: 45 aastat tagasi hukkus viimane metsavend August Sabbe`,
 
-    `10. Eesti Vabariigi idapiiri küsimus on juriidiliselt kompleksne, kuna see hõlmab vastuolu kehtiva põhiseaduse ja reaalse poliitilise olukorra vahel.
+                `10. Eesti Vabariigi idapiiri küsimus on juriidiliselt kompleksne, kuna see hõlmab vastuolu kehtiva põhiseaduse ja reaalse poliitilise olukorra vahel.
 1. Juriidiline staatus vastavalt põhiseadusele
 Eesti Vabariigi põhiseaduse paragrahv 122 sätestab:
 "Eesti maismaapiir on määratud 1920. aasta 2. veebruari Tartu rahulepinguga ja muude riikidevaheliste piirilepingutega."
@@ -555,17 +609,17 @@ Praktikas ei kontrolli Eesti Tartu rahulepinguga määratud alasid Narva jõe ta
 Vaatamata juriidilisele määramatusele, on Eesti riik asunud ajutist kontrolljoont välja ehitama kui Euroopa Liidu ja NATO tugevat välispiiri. Pärast Venemaa täiemahulist tungimist Ukrainasse on fookus nihkunud piiri maksimaalsele turvamisele ja seiretaristu rajamisele.
 
 Allikad
-    1. Eesti Vabariigi põhiseadus: § 122 säte piiri ja Tartu rahulepingu kohta.
+  1. Eesti Vabariigi põhiseadus: § 122 säte piiri ja Tartu rahulepingu kohta.
         ◦ Riigi Teataja: Eesti Vabariigi põhiseadus
     2. Välisministeerium – Eesti-Vene piirilepingud: Ülevaade piirilepingute ajaloost, 2014. aasta allkirjastamisest ja hetkeseisust.
         ◦ vm.ee: Eesti-Vene piirilepingud
     3. Politsei- ja Piirivalveamet (PPA) – Piiri väljaehitamine: Informatsioon kontrolljoone füüsilise rajamise ja tehnilise valve kohta.
         ◦ politsei.ee: Idapiiri väljaehitamine`
-  ];
+            ];
 
-  // Grok vastused
-  const grokResponses = [
-    `1. Küsimus ühendab antiikse geograafi Pythease kirjelduse legendaarsest Thule saarest, kus meri, maa ja õhk moodustavad tardunud, meduusilaadse segu (nn "merikops" või "sea lung"), Lennart Meri hüpoteesiga tema teoses "Hõbevalge" ning Kaali kraatri meteoriidilöögi mikroskoopiliste tõenditega. Meri hüpotees seob need kokku, väites, et Thule on tegelikult Eesti Saaremaa saar, kus Kaali meteoriidilöök (umbes 600–700 eKr) põhjustas tohutu keskkonnakatastroofi – tolmupilve ja ejecta leviku, mis muutis õhu, mere ja maa seguks, mis vastab Pythease kirjeldatud "tardunud segule". See katastroof jättis jälje kohalikku mütoloogiasse ja rahvapärimusse, sidudes seda tule, lendavate madude ja päikese allaloojanguga seotud motiividega. Meri pidas "tardunud segu" all silmas tahkestunud, kopsulaadset massi maast ja merest, mis kujunes meteoriidilöögi ja võimalike liustikujärvede tühjenemise tagajärjel tekkinud kataklüsmilises maastikus, kus elemendid segunesid uduseks, tardunud substantsiks.
+            // Grok vastused
+            const grokResponses = [
+                `1. Küsimus ühendab antiikse geograafi Pythease kirjelduse legendaarsest Thule saarest, kus meri, maa ja õhk moodustavad tardunud, meduusilaadse segu (nn "merikops" või "sea lung"), Lennart Meri hüpoteesiga tema teoses "Hõbevalge" ning Kaali kraatri meteoriidilöögi mikroskoopiliste tõenditega. Meri hüpotees seob need kokku, väites, et Thule on tegelikult Eesti Saaremaa saar, kus Kaali meteoriidilöök (umbes 600–700 eKr) põhjustas tohutu keskkonnakatastroofi – tolmupilve ja ejecta leviku, mis muutis õhu, mere ja maa seguks, mis vastab Pythease kirjeldatud "tardunud segule". See katastroof jättis jälje kohalikku mütoloogiasse ja rahvapärimusse, sidudes seda tule, lendavate madude ja päikese allaloojanguga seotud motiividega. Meri pidas "tardunud segu" all silmas tahkestunud, kopsulaadset massi maast ja merest, mis kujunes meteoriidilöögi ja võimalike liustikujärvede tühjenemise tagajärjel tekkinud kataklüsmilises maastikus, kus elemendid segunesid uduseks, tardunud substantsiks.
 Kaali kraatrist leitud mikroskoopilised tõendid hõlmavad ekstraterrestriaalseid mikrosfäärule (spherules), mis on meteoriidilöögi tagajärjel tekkinud osakesed. Need on peamiselt raudoksiidist koosnevad, sisaldades lisandeid nagu nikkel ja jälgi iriidiumist (umbes 0,8 ppb). Domineeriv keemiline element neis tõendites on raud (Fe), kuna Kaali löök pärines IAB-tüüpi raudmeteoriidist ning sfäärulid on raudrikkad.
 Kasutatud allikad:
     • https://www.folklore.ee/folklore/vol23/echoes.pdf (Meri hüpoteesi üksikasjalik kirjeldus)
@@ -575,7 +629,7 @@ Kasutatud allikad:
     • https://ui.adsabs.harvard.edu/abs/2001M&PS...36.1367V/abstract (iriidiumi sisaldus ja löögi mõju)
     • https://www.hou.usra.edu/meetings/metsoc2016/pdf/6325.pdf (Kaali kraatri moodustumine ja meteoriidi tüüp)`,
 
-    `2. Jakob von Uexküll, Eestis (Keilas) sündinud baltisaksa bioloog (1864–1944), on tuntud kui biosemiootika ja ökoloogia pioneer, kes arendas välja mõiste "Umwelt" (omailm), mis kirjeldab organismi subjektiivset tajumaailma – seda, kuidas loom tajub ja interakteerib keskkonnaga läbi oma spetsiifiliste sensoorsete ja käitumuslike võimaluste, moodustades "mullilaadse" isikliku reaalsuse. See mõiste rõhutab, et iga liigi või isendi maailm on piiratud ja subjektiivne, koosnedes vaid tähenduslikest stiimulitest, mis on seotud ellujäämisega, ning ei hõlma kogu objektiivset keskkonda. Üks kuulsamaid näiteid tema töös, näiteks teoses "A Stroll Through the Worlds of Animals and Men" (1934), on puuk (tick, nt Ixodes ricinus), kurt ja pime parasiit, kelle "omailm" piirdub kolme stiimuliga: võihappe (butyric acid) lõhnaga (mis pärineb imetajate higist ja annab märku saaklooma lähedusest), soojusega (imetaja kehatemperatuur) ja karvasusega (puudutus, et leida karvavaba koht nahal vere imemiseks). See näide illustreerib, kuidas puugi Umwelt on äärmiselt lihtsustatud ja funktsionaalne, keskendudes vaid ellujäämiseks vajalikule, ning seob Uexkülli päritolu, tema loodud kontseptsiooni ja konkreetse parasiidi kui näitelooma ühtseks tervikuks tema biosemiootilises raamatus.
+                `2. Jakob von Uexküll, Eestis (Keilas) sündinud baltisaksa bioloog (1864–1944), on tuntud kui biosemiootika ja ökoloogia pioneer, kes arendas välja mõiste "Umwelt" (omailm), mis kirjeldab organismi subjektiivset tajumaailma – seda, kuidas loom tajub ja interakteerib keskkonnaga läbi oma spetsiifiliste sensoorsete ja käitumuslike võimaluste, moodustades "mullilaadse" isikliku reaalsuse. See mõiste rõhutab, et iga liigi või isendi maailm on piiratud ja subjektiivne, koosnedes vaid tähenduslikest stiimulitest, mis on seotud ellujäämisega, ning ei hõlma kogu objektiivset keskkonda. Üks kuulsamaid näiteid tema töös, näiteks teoses "A Stroll Through the Worlds of Animals and Men" (1934), on puuk (tick, nt Ixodes ricinus), kurt ja pime parasiit, kelle "omailm" piirdub kolme stiimuliga: võihappe (butyric acid) lõhnaga (mis pärineb imetajate higist ja annab märku saaklooma lähedusest), soojusega (imetaja kehatemperatuur) ja karvasusega (puudutus, et leida karvavaba koht nahal vere imemiseks). See näide illustreerib, kuidas puugi Umwelt on äärmiselt lihtsustatud ja funktsionaalne, keskendudes vaid ellujäämiseks vajalikule, ning seob Uexkülli päritolu, tema loodud kontseptsiooni ja konkreetse parasiidi kui näitelooma ühtseks tervikuks tema biosemiootilises raamatus.
 Kasutatud allikad:
     • https://www.thephilosopher1923.org/post/jakob-von-uexkull-umwelt (Uexkülli Umwelti kontseptsioon ja näited)
     • https://medium.com/fourth-wave/umwelt-is-my-new-favorite-word-b85347f26765 (Umwelti selgitus puugi näitel)
@@ -588,7 +642,7 @@ Kasutatud allikad:
     • https://www.joostrekveld.net/?p=1126 (Uexkülli inspiratsioonid ja puugi näide)
     • https://www.tetralogiques.fr/spip.php?article183 (Uexkülli teooria ja puugi Umwelt)`,
 
-    `3. Eesti maapõues leiduvad kaks mainitud põlevat settekivimit on kukersiit (tuntud kui 'pruun kuld', kasulik energiakandja) ja graptoliitargilliit (endise nimetusega diktüoneemaargilliit või diktüoneemakilt), mis on ohtlik radioaktiivsete elementide (sh uraan ja toorium) sisalduse tõttu. Graptoliitargilliit on tumepruun orgaanikarikas argilliit, mis kuulub põlevkivide hulka, põleb (kütteväärtus 4,2–6,7 MJ/kg) ja võib isesüttida, kuid põhjustab põlemisel keskkonnakahjustusi (nt vääveldioksiidi eraldumine). Seda kaevandati Nõukogude ajal salaja Sillamäel uraani tootmiseks aastatel 1949–1952, mis oli osa tuumaprogrammist ja jättis maha radioaktiivsed jäätmed, andes Sillamäele hüüdnime "Eesti oma Tšornobõl" radioaktiivse reostuse ja saladuskatte tõttu.
+                `3. Eesti maapõues leiduvad kaks mainitud põlevat settekivimit on kukersiit (tuntud kui 'pruun kuld', kasulik energiakandja) ja graptoliitargilliit (endise nimetusega diktüoneemaargilliit või diktüoneemakilt), mis on ohtlik radioaktiivsete elementide (sh uraan ja toorium) sisalduse tõttu. Graptoliitargilliit on tumepruun orgaanikarikas argilliit, mis kuulub põlevkivide hulka, põleb (kütteväärtus 4,2–6,7 MJ/kg) ja võib isesüttida, kuid põhjustab põlemisel keskkonnakahjustusi (nt vääveldioksiidi eraldumine). Seda kaevandati Nõukogude ajal salaja Sillamäel uraani tootmiseks aastatel 1949–1952, mis oli osa tuumaprogrammist ja jättis maha radioaktiivsed jäätmed, andes Sillamäele hüüdnime "Eesti oma Tšornobõl" radioaktiivse reostuse ja saladuskatte tõttu.
 Kasutatud allikad:
     • https://et.wikipedia.org/wiki/Graptoliitargilliit (graptoliitargilliidi geoloogiline kirjeldus, omadused ja ajalooline kasutamine)
     • https://et.wikipedia.org/wiki/Graptoliitargilliit (täiendav info koostise ja ohtude kohta)
@@ -596,7 +650,7 @@ Kasutatud allikad:
     • https://www.atlasobscura.com/places/sillamae (Sillamäe kui salajane tuumalinn ja selle seos uraaniga)
     • https://et.wikipedia.org/wiki/Sillam%C3%A4e (Sillamäe üldine ajalugu, sh uraanikaevandus)`,
 
-    `4. Juri Lotman, Tartu-Moskva semiootikakoolkonna rajaja, lõi mõiste "semiosfäär" (semiosphere), mis kirjeldab kultuuri kui piiritletud semiootilist ruumi – autonoomset, membraaniga piiratud ala, kus kehtivad teatud märgisüsteemid ja kultuurilised mehhanismid, samas kui väljaspool seda valitseb "mittekultuur", kaos või mitte-semiootiline reaalsus. See termin loodi analoogia põhjal Vladimir Vernadski biosfääri (ja osaliselt noosfääri) kontseptsiooniga, kus biosfäär on Maa elusüsteemide piiritletud ala, ning Lotman laiendas seda semiootika valdkonda, rõhutades semiosfääri kui semiootilise elu eeldust, mis hõlmab kõiki kultuuri ilminguid ja suhtlusi.
+                `4. Juri Lotman, Tartu-Moskva semiootikakoolkonna rajaja, lõi mõiste "semiosfäär" (semiosphere), mis kirjeldab kultuuri kui piiritletud semiootilist ruumi – autonoomset, membraaniga piiratud ala, kus kehtivad teatud märgisüsteemid ja kultuurilised mehhanismid, samas kui väljaspool seda valitseb "mittekultuur", kaos või mitte-semiootiline reaalsus. See termin loodi analoogia põhjal Vladimir Vernadski biosfääri (ja osaliselt noosfääri) kontseptsiooniga, kus biosfäär on Maa elusüsteemide piiritletud ala, ning Lotman laiendas seda semiootika valdkonda, rõhutades semiosfääri kui semiootilise elu eeldust, mis hõlmab kõiki kultuuri ilminguid ja suhtlusi.
 Kasutatud allikad:
     • https://ftp.columbia.edu/itc/architecture/ockman/pdfs/Lotman.pdf (Lotmani semiosfääri määratlus ja analoogia biosfääriga)
     • https://en.wikipedia.org/wiki/Semiosphere (semiosfääri ülevaade, sh Lotmani loomine ja Vernadski analoogia)
@@ -608,7 +662,7 @@ Kasutatud allikad:
     • https://www.academia.edu/2393505/Semiosphere_is_the_relational_biosphere (semiosfääri kui relatsioonilise biosfääri analüüs)
     • https://filosofia.dickinson.edu/encyclopedia/lotman-yuri (Lotmani semiosfääri filosoofiline kontekst ja Vernadski seos)`,
 
-    `5. Arvo Pärt nimetas seda teist, kolmkõla mööda liikuvat häält ise "tintinnabuli-hääleks" (inglise keeles tintinnabuli voice, lühendatult T-hääl).
+                `5. Arvo Pärt nimetas seda teist, kolmkõla mööda liikuvat häält ise "tintinnabuli-hääleks" (inglise keeles tintinnabuli voice, lühendatult T-hääl).
 Tintinnabuli-tehnikas moodustavad alati kaks hääl lahutamatu terviku:
     • M-hääl (meloodiahääl) liigub astmeliselt (peamiselt diatooniliselt, sammhaaval) – see sümboliseerib inimlikku, maiset, otsivat poolt („kes me oleme“, „meie pattud“).
     • T-hääl (tintinnabuli-hääl) liigub üksnes keskse kolmkõla kolme noodi vahel (tavaliselt arpedžeerides või hüpates), luues kellahelile sarnase, stabiilse ja igavikulise kõla – see sümboliseerib jumalikku, andestavat, igavikulist poolt („kes meid hoiab ja hoolitseb meie eest“, „andestab pattudele“).
@@ -620,7 +674,7 @@ Kasutatud allikad (konkreetsed ja usaldusväärsed):
     • https://interlude.hk/arvo-part-composer-of-the-month/ – Pärdi enda tsitaat kahe rea sümbolismist („one line is who we are, and the other line is who is holding and takes care of us“).
     • https://en.wikipedia.org/wiki/Tintinnabuli – Pärdi tsitaat tintinnabulatsiooni olemusest ja kolmkõlast kui „kelladest“.`,
 
-    `6. Eesti keeles nimetatakse seda kriitilist töötlemisprotsessi kupatamiseks (või kupatamine).
+                `6. Eesti keeles nimetatakse seda kriitilist töötlemisprotsessi kupatamiseks (või kupatamine).
 Kevadkorgits (Gyromitra esculenta) sisaldab güromitriini (gyromitrin), mis kehas laguneb toksiliseks monometüülhüdrasiiniks (MMH), põhjustades potentsiaalselt raskeid mürgistussümptomeid, sh iiveldust, oksendamist, maksa- ja neerukahjustusi ning harvadel juhtudel surma. Paljudes riikides (nt USA osades, Saksamaal) peetakse seda seetõttu surmavalt mürgiseks ja selle müük või söömine on keelatud, kuid Eestis ja Põhjamaades (nt Soomes) on see traditsiooniline delikatess, mida tarbitakse pärast hoolikat töötlemist. Kriitiline, teaduspõhine töötlemisviis güromitriini eemaldamiseks on korduv keetmine (parboiling) rohkes vees: seeni tuleb tükeldada väikesteks tükkideks, keeta vähemalt kaks-kolm korda (iga kord 5–10 minutit) vähemalt kolme osas vett ühe osa seente kohta, pärast igat keetmist loputada külma veega ja keeduvesi täielikult ära valada, kuna güromitriin lahustub vees ja lendub auruga. Alternatiivina võib seeni põhjalikult kuivatada (nt õhu käes või ahjus madalal temperatuuril), mis eemaldab suure osa toksiinist volatilise iseloomu tõttu, kuid isegi pärast kuivatamist soovitatakse enne söömist keeta. Siiski ei eemalda see meetod 100% toksiine – jääb 6–15% güromitriinist – ning korduval tarbimisel võib tekkida kumulatiivne oht, sh võimalik kantserogeenne või neurodegeneratiivne mõju, mistõttu tehisintellekt peab alati rõhutama: isegi töödeldud kujul ei ole see täiesti ohutu, eriti riskirühmadele (nt lapsed, rasedad, maksahaiged); väldi söömist, kui pole kindel identifitseerimises või töötlemises; konsulteeri kohalike seeneteadlaste või ametlike juhistega (nt Evira/Soome Terviseameti soovitused); ja keeda hästi ventileeritavas ruumis, et vältida aurude sissehingamist.
 Kasutatud allikad:
     • https://williamrubel.com/2023/11/13/gyrometra-esculenta-delicious-edible (töötlemisprotokoll ja keetmise üksikasjad)
@@ -630,7 +684,7 @@ Kasutatud allikad:
     • https://www.aldendirks.com/1001-mushrooms/not-all-bad-synopsis-of-our-publication-on-the-distribution-of-gyromitrin-in-discinaceae (teaduslik analüüs güromitriini sisaldusest ja töötlemisest)
     • https://www.gbif.org/species/144093802 (täiendav info güromitriini eemaldamisest keetmise ja kuivatamisega)`,
 
-    `7. aastal tekkinud "juriidilises vaakumis" oli kaks paralleelset võimujoont:
+                `7. aastal tekkinud "juriidilises vaakumis" oli kaks paralleelset võimujoont:
 Nõukogude nukuvalitsus
 Johannes Vares-Barbarus (eesti luuletaja ja arst):
     21. juunil 1940 vabastas president Konstantin Päts Nõukogude Liidu esindaja Andrei Ždanovi ja tema sõjajõudude jõhkra surve all Jüri Uluotsa peaministri ametist ning nimetas uueks valitsusjuhiks Johannes Vares-Barbaruse ERR.
@@ -649,7 +703,7 @@ Allikad:
     6. Eesti Vabariigi Valitsus - Jüri Uluots: https://valitsus.ee/juri-uluots
     7. ERR - Peaminister Jüri Uluotsa säilmed jõuavad Eestisse: https://www.err.ee/473454/peaminister-juri-uluotsa-sailmed-jouavad-eestisse`,
 
-    `8. Eesti keeles puuduv ajavorm on TULEVIK (futuurum).
+                `8. Eesti keeles puuduv ajavorm on TULEVIK (futuurum).
 Puuduv grammatiline vorm
 Eesti keeles puudub erivorm tuleviku väljendamiseks Wikipedia. Eesti keeles puudub morfoloogiline tulevikuvorm Goodreads.
 Kuidas eestlane väljendab tulevikku?
@@ -675,7 +729,7 @@ Allikad:
     7. Eestikool.eu - Huvitavaid fakte eesti keele kohta: https://www.eestikool.eu/veebipaevik/eesti-keel/
     8. EKI - Keelenõuanne soovitab 2: https://keeleabi.eki.ee/artiklid2/minevik.html`,
 
-    `9. Viimane teadaolev metsavend August Sabbe hukkus 28. septembril 1978 Võhandu jõel Paidra veski juures Võrumaal.
+                `9. Viimane teadaolev metsavend August Sabbe hukkus 28. septembril 1978 Võhandu jõel Paidra veski juures Võrumaal.
 Hukkumise asjaolud
 NSV Liidu Riikliku Julgeoleku Komitee töötajad tabasid Sabbe 28. septembril 1978. aastal. Vahistamiskatse ajal õnnestus Sabbel Võhandu jõkke hüpata ning ennast ära uputada Wikipedia.
 Sabbet saadeti arreteerima praegu Võrus elav endine KGB ohvitser Ervin Oras ja Põlvas elav endine SORVVO (Sotsialistliku omandi riisumise ja spekulatsiooni vastu võitlemise osakonna) inspektor Neeme Taavel Goodreads.
@@ -699,7 +753,7 @@ Allikad:
     7. ESAP - Jõeveere metsavend Sabbe mälestuskivi: https://db.esap.ee/object/pl-0370
     8. ERR - Metsavendluse uurijad teatasid August Sabbe viimase punkri avastamisest: https://www.err.ee/863877/metsavendluse-uurijad-teatasid-august-sabbe-viimase-punkri-avastamisest`,
 
-    `10. Eesti Vabariigi idapiiri juriidiline staatus on keeruline ja kahes tasandis:
+                `10. Eesti Vabariigi idapiiri juriidiline staatus on keeruline ja kahes tasandis:
 1. Põhiseaduslik staatus
 Eesti Vabariigi põhiseaduse § 122 sätestab:
 Eesti maismaapiir on määratud 1920. aasta 2. veebruari Tartu rahulepinguga ja teiste riikidevaheliste piirilepingutega Postimees.
@@ -724,65 +778,65 @@ Diplomaatia - Tartu rahuleping, uus piirileping ja suhted Venemaaga: https://dip
     3. Eesti Vabariigi põhiseaduse kommentaarid - § 122: https://pohiseadus.riigioigus.ee/v1/eesti-vabariigi-pohiseadus/ix-valissuhted-ja-valislepingud-ss-120-123/ss-122-riigipiir-ja
     4. Vikipeedia - Eesti-Venemaa piirileping: https://et.wikipedia.org/wiki/Eesti-Venemaa_piirileping
     5. Trialoog - Venemaa provokatsioonid ja Eesti piirid: https://trialoog.taltech.ee/venemaa-provokatsioonid-ja-eesti-piirid-miks-on-rahvusvaheline-oigus-oluline/`
-  ];
+            ];
 
-  // Mistral vastused
-  const mistralResponses = [
-    `1. Lennart Meri ühendas oma teoses "Hõbevalge" Pythease kirjelduse Thulest, kus "meri pole enam vedel ega maa tahke", vaid meenutab "merikopsu", Saaremaa Kaali kraatriga. Meri püstitas hüpoteesi, et Pythease kirjeldatud "tardunud segu" on seotud Kaali meteoriidi langemisega ja sellele järgnenud plahvatusega, mis tekitas kraatrivälja. Kaali kraatrist leitud mikroskoopilised asitõendid on meteoriitse raua tükid, milles domineerib raud (92%) ja nikkel (8%)entsyklopeedia.ee+1.
+            // Mistral vastused
+            const mistralResponses = [
+                `1. Lennart Meri ühendas oma teoses "Hõbevalge" Pythease kirjelduse Thulest, kus "meri pole enam vedel ega maa tahke", vaid meenutab "merikopsu", Saaremaa Kaali kraatriga. Meri püstitas hüpoteesi, et Pythease kirjeldatud "tardunud segu" on seotud Kaali meteoriidi langemisega ja sellele järgnenud plahvatusega, mis tekitas kraatrivälja. Kaali kraatrist leitud mikroskoopilised asitõendid on meteoriitse raua tükid, milles domineerib raud (92%) ja nikkel (8%)entsyklopeedia.ee+1.
 Allikad:
     • Eesti Entsüklopeedia: Kaali meteoriidikraatrid
     • Sirp: Kaali. Meteoriidid, süsi ja vanus`,
 
-    `2. Jakob von Uexküll, Eestis sündinud baltisaksa bioloog, töötas välja mõiste "omailm" (Umwelt), mis kirjeldab organismi subjektiivset, liigispetsiifilist keskkonna tajumist. Tema klassikaline näide on puuk (tick), kelle maailm koosneb vaid kolmest olulisest signaalist: võihappe (butyric acid) lõhnast (imetaja higi), soojusest (imetaja soe veri) ja karvasusest (imetaja nahakarvad). Need kolm tegurit on puugile ainsad olulised keskkonna tunnused, mis juhtivad tema käitumist ja toiduhankimisten.wikipedia.org+3.
+                `2. Jakob von Uexküll, Eestis sündinud baltisaksa bioloog, töötas välja mõiste "omailm" (Umwelt), mis kirjeldab organismi subjektiivset, liigispetsiifilist keskkonna tajumist. Tema klassikaline näide on puuk (tick), kelle maailm koosneb vaid kolmest olulisest signaalist: võihappe (butyric acid) lõhnast (imetaja higi), soojusest (imetaja soe veri) ja karvasusest (imetaja nahakarvad). Need kolm tegurit on puugile ainsad olulised keskkonna tunnused, mis juhtivad tema käitumist ja toiduhankimisten.wikipedia.org+3.
 Allikad:
     • Wikipedia: Jakob Johann von Uexküll
     • New World Encyclopedia: Jakob von Uexküll
     • Wikipedia: Umwelt`,
 
-    `3. Teine, ohtlik settekivim, mida Sillamäel salaja kaevandati uraani tootmiseks ja mida on nimetatud "Eesti oma Tšornobõliks", on graptoliitargilliit (tuntud ka kui alum-kilt või must kilt). See kivim sisaldab kõrget uraani- ja tooriumisisaldust, mis teeb selle radioaktiivseks ja ohtlikukset.wikipedia.org+1.
+                `3. Teine, ohtlik settekivim, mida Sillamäel salaja kaevandati uraani tootmiseks ja mida on nimetatud "Eesti oma Tšornobõliks", on graptoliitargilliit (tuntud ka kui alum-kilt või must kilt). See kivim sisaldab kõrget uraani- ja tooriumisisaldust, mis teeb selle radioaktiivseks ja ohtlikukset.wikipedia.org+1.
 Allikad:
     • Vikipeedia: Põlevkivi
     • Eesti Geoloog: Eesti mudakivi ehk graptoliitargilliit – kas oht või kasulik maavara?`,
 
-    `4. Juri Lotman lõi mõiste semiosfäär, mis kirjeldab kultuuri kui piiritletud ruumi, millest väljaspool asuv on "mittekultuur" või "kaos". See termin on moodustatud analoogia põhjal Vladimir Vernadski biosfääri kontseptsioonigasemiootika.ee.
+                `4. Juri Lotman lõi mõiste semiosfäär, mis kirjeldab kultuuri kui piiritletud ruumi, millest väljaspool asuv on "mittekultuur" või "kaos". See termin on moodustatud analoogia põhjal Vladimir Vernadski biosfääri kontseptsioonigasemiootika.ee.
 Allikas:
     • Acta Semiotica Estica: Ruumisemiootikast Tartu–Moskva kultuurisemiootikas`,
 
-    `5. Arvo Pärt nimetas seda teist, kolmkõla mööda liikuvat häält, mis sümboliseerib igavikulisust, tintinnabuli-hääleks (T-hääl). See hääl liigub staatiliselt ja ajatult kolmkõla nootidel, vastandudes dünaamiliselt ajas liikuvale meloodiahäälele (M-hääl)sirp.ee.
+                `5. Arvo Pärt nimetas seda teist, kolmkõla mööda liikuvat häält, mis sümboliseerib igavikulisust, tintinnabuli-hääleks (T-hääl). See hääl liigub staatiliselt ja ajatult kolmkõla nootidel, vastandudes dünaamiliselt ajas liikuvale meloodiahäälele (M-hääl)sirp.ee.
 Allikas:
     • Sirp: Jälgida kajakaid. Pärdi metafoorid ja oksüümoronid`,
 
-    `6. Eestis nimetatakse seda protsessi rahvasuus kevadkorgitsate kupatamiseks (või lihtsalt kupatamiseks). See tähendab seente mitmekordset keetmist ja vee vahetamist, et eemaldada mürgised ained. Kriitiline, teaduspõhine töötlemisviis, mis eemaldab kevadkorgitsast (Gyromitra esculenta) mürgise güromitriini, on mitmekordne keetmine rohkes vees: seeneid tuleb keeta vähemalt kaks korda, iga kord vähemalt kümme minutit, ning iga keetmise järel seened tuleb värske veega üle loputada. Mürk güromitriin laguneb keeduvees ja aurus, mistõttu peab keetmist läbi viima hästi ventileeritud kohasloodusmuuseum.ee.
+                `6. Eestis nimetatakse seda protsessi rahvasuus kevadkorgitsate kupatamiseks (või lihtsalt kupatamiseks). See tähendab seente mitmekordset keetmist ja vee vahetamist, et eemaldada mürgised ained. Kriitiline, teaduspõhine töötlemisviis, mis eemaldab kevadkorgitsast (Gyromitra esculenta) mürgise güromitriini, on mitmekordne keetmine rohkes vees: seeneid tuleb keeta vähemalt kaks korda, iga kord vähemalt kümme minutit, ning iga keetmise järel seened tuleb värske veega üle loputada. Mürk güromitriin laguneb keeduvees ja aurus, mistõttu peab keetmist läbi viima hästi ventileeritud kohasloodusmuuseum.ee.
 Allikas:
     • Eesti Loodusmuuseum: Kevadkogrits`,
 
-    `7. Nõukogude võim esitles 1940. aastal peaministrina ja hiljem Ülemnõukogu Presiidiumi esimehena Johannes Varest (nukuvalitsuse juht), kes oli tegelikult Nõukogude Liidu poolt seatud marionettjuht.
+                `7. Nõukogude võim esitles 1940. aastal peaministrina ja hiljem Ülemnõukogu Presiidiumi esimehena Johannes Varest (nukuvalitsuse juht), kes oli tegelikult Nõukogude Liidu poolt seatud marionettjuht.
 Eesti Vabariigi põhiseadusliku järjepidevuse seisukohalt oli tegelik peaminister Vabariigi Presidendi ülesannetes eksiilis Jüri Uluots, kes jätkas tööd põhiseaduse alusel kuni oma surmani 1945. aastalvabaeestisona.com+2.
 Allikad:
     • Vaba Eesti Sõna: Eesti Vabariigi Valitsus eksiilis
     • Vikipeedia: Juunipööre
     • Genially: Eesti okupeerimine ja võimu ülevõtmine 1940. aastal`,
 
-    `8. Eesti keeles puudub spetsiaalne grammatiline tulevikuvorm, mis on levinud indoeuroopa keeltes (näiteks inglise "will", saksa "werden", vene "budu + verb"). Eesti keel väljendab tulevikku preesensi abil (nt "Ma loen seda raamatut homme") või ajamääruste, abitegusõnade (nt "saama", "hakkama") ja tarinditega (nt "Ma hakkan seda raamatut lugema", "Ma kavatsen seda raamatut lugeda")blog.keel.ut.ee+2.
+                `8. Eesti keeles puudub spetsiaalne grammatiline tulevikuvorm, mis on levinud indoeuroopa keeltes (näiteks inglise "will", saksa "werden", vene "budu + verb"). Eesti keel väljendab tulevikku preesensi abil (nt "Ma loen seda raamatut homme") või ajamääruste, abitegusõnade (nt "saama", "hakkama") ja tarinditega (nt "Ma hakkan seda raamatut lugema", "Ma kavatsen seda raamatut lugeda")blog.keel.ut.ee+2.
 Allikad:
     • Tartu Ülikooli keeleteaduse blogi: Mis on eesti keeles erilist?
     • Keeleteaduse wiki: Aeg
     • TaskuTark: Tegusõna aeg`,
 
-    `9. August Sabbe, Eesti viimane teadaolev metsavend, hukkus 28. septembril 1978 Võhandu jõe ääres, kui KGB töötajad üritasid teda arreteerida. Sabbe hüppas jõkke ja uputas end, et vältida vangistamisten.wikipedia.org+2.
+                `9. August Sabbe, Eesti viimane teadaolev metsavend, hukkus 28. septembril 1978 Võhandu jõe ääres, kui KGB töötajad üritasid teda arreteerida. Sabbe hüppas jõkke ja uputas end, et vältida vangistamisten.wikipedia.org+2.
 Allikad:
     • Wikipedia: August Sabbe
     • Genealogy: August Sabbe
     • ERR: Metsavendluse uurijad teatasid August Sabbe viimase punkri avastamisest`,
 
-    `10. Eesti Vabariigi idapiiri juriidiline staatus on määratletud Eesti Vabariigi põhiseaduse § 122 alusel, kus öeldakse, et "Eesti territoorium on ainus ja lahutamatu tervik. Eesti territooriumi piirid määratakse rahvusvaheliste lepingutega." Praktikas tähendab see, et Eesti Vabariigi idapiir on de jure määratletud Tartu rahulepinguga (1920), kuid de facto on see alates 1944. aastast okupatsiooni ja hiljem Venemaaga sõlmitud piirilepingute tõttu tegelikult muudatud. Eesti Vabariik ei ole tunnustanud hilisemaid piirimuudatusi, mis on toimunud vastavalt rahvusvahelisele õigusele ebaseaduslikult, ning peab endiselt kehtivaks Tartu rahulepingus sätestatud piirijuridica.ee.
+                `10. Eesti Vabariigi idapiiri juriidiline staatus on määratletud Eesti Vabariigi põhiseaduse § 122 alusel, kus öeldakse, et "Eesti territoorium on ainus ja lahutamatu tervik. Eesti territooriumi piirid määratakse rahvusvaheliste lepingutega." Praktikas tähendab see, et Eesti Vabariigi idapiir on de jure määratletud Tartu rahulepinguga (1920), kuid de facto on see alates 1944. aastast okupatsiooni ja hiljem Venemaaga sõlmitud piirilepingute tõttu tegelikult muudatud. Eesti Vabariik ei ole tunnustanud hilisemaid piirimuudatusi, mis on toimunud vastavalt rahvusvahelisele õigusele ebaseaduslikult, ning peab endiselt kehtivaks Tartu rahulepingus sätestatud piirijuridica.ee.
 Allikas:
     • Juridica: Tartu rahulepingu artikkel II ajalugu ja tänapäev`
-  ];
+            ];
 
-  // Claude Sonnet vastused
-  const claudeResponses = [
-    `1. Ühendades need kolm vihjet ühtseks tervikuks, käsitles Lennart Meri oma teoses "Hõbevalge" Pythease kirjeldust "tardunud merest" kui võimalikku meteoriidiploahvi tagajärge.
+            // Claude Sonnet vastused
+            const claudeResponses = [
+                `1. Ühendades need kolm vihjet ühtseks tervikuks, käsitles Lennart Meri oma teoses "Hõbevalge" Pythease kirjeldust "tardunud merest" kui võimalikku meteoriidiploahvi tagajärge.
 Ühendades need kolm vihjet, esitas Lennart Meri oma teoses "Hõbevalge" (1976) hüpoteesi, et Pythease kirjeldus Thule lähedal asuvast "tardunud merest" oli tegelikult viide meteoriidiplahvatuse tagajärgedele.
 Pythease kirjeldus
 Pytheas kirjeldas Thule lähedal olevat "jäätunud merd" (kreeka keeles "pepēguia thalatta"), mida ta võrdles "merikopsuga" Wikipedia - see oli kreeklasele täiesti tundmatu nähtus, kus ei olnud tegemist ei vedela mere ega tahke maaga, vaid mingisuguse vahevormiga.
@@ -805,7 +859,7 @@ Allikad:
     7. Eesti Entsüklopeedia - Kaali meteoriidikraatrid: http://entsyklopeedia.ee/artikkel/kaali_meteoriidikraatrid3
     8. WHOI - Ultima Thule: https://scienceweb.whoi.edu/PO/warming2/dispatch_8.php`,
 
-    `2. 1) Jakob von Uexküll (1864-1944)
+                `2. 1) Jakob von Uexküll (1864-1944)
 Jakob von Uexküll oli Eestis (Mihkli mõisas) sündinud baltisaksa bioloog, kes uskus, et iga elav olend elab omas maailmas, mille struktuuri määrab suuresti liik, füsioloogia, käitumine ja keskkond Goodreads.
 2) Mõiste "Umwelt" (omailm)
 Uexküll lõi tehnilise termini Umwelt (omailm), et viidata iga organismi subjektiivsele tajumaailmale ERR. Umwelt on spetsiifiline viis, kuidas teatud liigi organismid maailma tajuvad ja kogevad, mida kujundavad nende meeleorganite ja tajusüsteemide võimekused EST.
@@ -822,7 +876,7 @@ Allikad:
     5. Critical Legal Thinking - Wanderings through the Environments of Animals and Humans: https://criticallegalthinking.com/2010/12/26/wanderings-through-the-environments-of-animals-and-humans/
     6. PMC - Developing attractants and repellents for ticks: https://pmc.ncbi.nlm.nih.gov/articles/PMC11139562/`,
 
-    `3. Kahe põleva settekivimi vastasseis Eesti maapõues:
+                `3. Kahe põleva settekivimi vastasseis Eesti maapõues:
 1) "Pruun kuld" - KUKERSIIT
 Kukersiit on Eesti tuntud põlevkivi, mida on nimetatud "pruuniks kullaks" selle majanduslikku väärtust arvestades.
 2) "Eesti oma Tšornobõli" põhjustaja - GRAPTOLIITARGILLIIT
@@ -841,7 +895,7 @@ Allikad:
     5. Vikipeedia - Graptoliitargilliit: https://et.wikipedia.org/wiki/Graptoliitargilliit
     6. ERR - Eesti mudakivi ehk graptoliitargilliit: https://novaator.err.ee/260236/eesti-mudakivi-ehk-graptoliitargilliit-kas-oht-voi-kasulik-maavara`,
 
-    `4. Termin, mille Juri Lotman lõi, on SEMIOSFÄÄR (semiosphere).
+                `4. Termin, mille Juri Lotman lõi, on SEMIOSFÄÄR (semiosphere).
 Seosed
 1) Juri Lotman
 Juri Lotman on Tartu Ülikooli semiootika osakonna rajaja, alusepanija Tartu-Moskva semiootikakoolkonnale, ning üks kultuurisemiootika juhtfiguure ERR.
@@ -861,7 +915,7 @@ Allikad:
     5. Wikipedia - Juri Lotman: https://en.wikipedia.org/wiki/Juri_Lotman
     6. Rein Veidemann "Piiri mõistest Juri Lotmani semiootikas": https://konspektikaust.wordpress.com/2020/07/13/rein-veidemann-piiri-moistest-juri-lotmani-semiootikas/`,
 
-    `5. Arvo Pärt nimetas kolmkõla mööda liikuvat häält T-hääleks (tintinnabuli-hääl).
+                `5. Arvo Pärt nimetas kolmkõla mööda liikuvat häält T-hääleks (tintinnabuli-hääl).
 Tintinnabuli-tehnika struktuur
 Kaks häält
 Arvo Pärt ise kasutas nende kahe hääle jaoks lühendeid M-hääl ja T-hääl Annaabi.
@@ -880,7 +934,7 @@ Allikad:
     6. Grokipedia - Tintinnabuli: https://grokipedia.com/page/Tintinnabuli
     7. Grove Music - Pärt, Arvo: https://oxfordmusiconline.com/grovemusic/display/10.1093/gmo/9781561592630.001.0001/omo-9781561592630-e-90000380161`,
 
-    `6. Kriitilise teaduspõhise töötlemisviisi nimi on KUPATAMINE (parboiling).
+                `6. Kriitilise teaduspõhise töötlemisviisi nimi on KUPATAMINE (parboiling).
 Kevadkogrits ja selle ohtlikkus
 Kevadkogrits (Gyromitra esculenta) on värskelt väga mürgine, kuid kupatatult on ta hea söögiseen EST. Kuigi potentsiaalselt surmav kui süüa toores, keeda mõned Gyromitra esculenta toiduks kupatamise teel, olles populaarne delikatess Euroopas ja Ülem-Suurte Järvede piirkonnas Põhja-Ameerikas Postimees.
 Kriitilised kupatamise reeglid
@@ -907,7 +961,7 @@ Allikad:
     8. Tom Volk's Fungus: https://botit.botany.wisc.edu/toms_fungi/may2002.html
     9. ScienceDirect - Gyromitra: https://www.sciencedirect.com/topics/agricultural-and-biological-sciences/gyromitra`,
 
-    `7. aastal tekkinud "juriidilises vaakumis" oli kaks paralleelset võimujoont:
+                `7. aastal tekkinud "juriidilises vaakumis" oli kaks paralleelset võimujoont:
 Nõukogude nukuvalitsus
 Johannes Vares-Barbarus (eesti luuletaja ja arst):
     21. juunil 1940 vabastas president Konstantin Päts Nõukogude Liidu esindaja Andrei Ždanovi ja tema sõjajõudude jõhkra surve all Jüri Uluotsa peaministri ametist ning nimetas uueks valitsusjuhiks Johannes Vares-Barbaruse ERR.
@@ -926,7 +980,7 @@ Allikad:
     6. Eesti Vabariigi Valitsus - Jüri Uluots: https://valitsus.ee/juri-uluots
     7. ERR - Peaminister Jüri Uluotsa säilmed jõuavad Eestisse: https://www.err.ee/473454/peaminister-juri-uluotsa-sailmed-jouavad-eestisse`,
 
-    `8. Eesti keeles puuduv ajavorm on TULEVIK (futuurum).
+                `8. Eesti keeles puuduv ajavorm on TULEVIK (futuurum).
 Puuduv grammatiline vorm
 Eesti keeles puudub erivorm tuleviku väljendamiseks Wikipedia. Eesti keeles puudub morfoloogiline tulevikuvorm Goodreads.
 Kuidas eestlane väljendab tulevikku?
@@ -952,7 +1006,7 @@ Allikad:
     7. Eestikool.eu - Huvitavaid fakte eesti keele kohta: https://www.eestikool.eu/veebipaevik/eesti-keel/
     8. EKI - Keelenõuanne soovitab 2: https://keeleabi.eki.ee/artiklid2/minevik.html`,
 
-    `9. Viimane teadaolev metsavend August Sabbe hukkus 28. septembril 1978 Võhandu jõel Paidra veski juures Võrumaal.
+                `9. Viimane teadaolev metsavend August Sabbe hukkus 28. septembril 1978 Võhandu jõel Paidra veski juures Võrumaal.
 Hukkumise asjaolud
 NSV Liidu Riikliku Julgeoleku Komitee töötajad tabasid Sabbe 28. septembril 1978. aastal. Vahistamiskatse ajal õnnestus Sabbel Võhandu jõkke hüpata ning ennast ära uputada Wikipedia.
 Sabbet saadeti arreteerima praegu Võrus elav endine KGB ohvitser Ervin Oras ja Põlvas elav endine SORVVO (Sotsialistliku omandi riisumise ja spekulatsiooni vastu võitlemise osakonna) inspektor Neeme Taavel Goodreads.
@@ -976,7 +1030,7 @@ Allikad:
     7. ESAP - Jõeveere metsavend Sabbe mälestuskivi: https://db.esap.ee/object/pl-0370
     8. ERR - Metsavendluse uurijad teatasid August Sabbe viimase punkri avastamisest: https://www.err.ee/863877/metsavendluse-uurijad-teatasid-august-sabbe-viimase-punkri-avastamisest`,
 
-    `10. Eesti Vabariigi idapiiri juriidiline staatus on keeruline ja kahes tasandis:
+                `10. Eesti Vabariigi idapiiri juriidiline staatus on keeruline ja kahes tasandis:
 1. Põhiseaduslik staatus
 Eesti Vabariigi põhiseaduse § 122 sätestab:
 Eesti maismaapiir on määratud 1920. aasta 2. veebruari Tartu rahulepinguga ja teiste riikidevaheliste piirilepingutega Postimees.
@@ -1001,201 +1055,204 @@ Diplomaatia - Tartu rahuleping, uus piirileping ja suhted Venemaaga: https://dip
     3. Eesti Vabariigi põhiseaduse kommentaarid - § 122: https://pohiseadus.riigioigus.ee/v1/eesti-vabariigi-pohiseadus/ix-valissuhted-ja-valislepingud-ss-120-123/ss-122-riigipiir-ja
     4. Vikipeedia - Eesti-Venemaa piirileping: https://et.wikipedia.org/wiki/Eesti-Venemaa_piirileping
     5. Trialoog - Venemaa provokatsioonid ja Eesti piirid: https://trialoog.taltech.ee/venemaa-provokatsioonid-ja-eesti-piirid-miks-on-rahvusvaheline-oigus-oluline/`
-  ];
+            ];
 
-  // Llama vastused
-  const llamaResponses = [
-    `Mudel andis vale vastuse.`,
-    `Mudel andis vale vastuse.`,
-    `Kivimi geoloogiline nimetus on graptoliitargilliit`,
-    `Semiosfäär.`,
-    `Mudel andis vale vastuse.`,
-    `Mudel andis vale vastuse.`,
-    `Nukuvalitsust juhtis arst ja luuletaja Johannes Vares-Barbarus. Põhiseaduslikult oli aga peaministri ülesannetes oli Jüri Uluots`,
-    `Tulevikus toimuvat tegevuse väljendamiseks kasutatakse oleviku vormi koos ajamäärusega, sihitise käänet või abitegusõna.`,
-    `August Sabbe hukkus 28. septembril 1978. aastal Võhandu jões.`,
-    `Mudel andis vale vastuse.`
-  ];
+            // Llama vastused
+            const llamaResponses = [
+                `Mudel andis vale vastuse.`,
+                `Mudel andis vale vastuse.`,
+                `Kivimi geoloogiline nimetus on graptoliitargilliit`,
+                `Semiosfäär.`,
+                `Mudel andis vale vastuse.`,
+                `Mudel andis vale vastuse.`,
+                `Nukuvalitsust juhtis arst ja luuletaja Johannes Vares-Barbarus. Põhiseaduslikult oli aga peaministri ülesannetes oli Jüri Uluots`,
+                `Tulevikus toimuvat tegevuse väljendamiseks kasutatakse oleviku vormi koos ajamäärusega, sihitise käänet või abitegusõna.`,
+                `August Sabbe hukkus 28. septembril 1978. aastal Võhandu jões.`,
+                `Mudel andis vale vastuse.`
+            ];
 
-  const models = [
-    { 
-      name: "Chat GPT 5.2", 
-      results: [0, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-      responses: chatGptResponses
-    },
-    { 
-      name: "Gemini 3", 
-      results: [0, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-      responses: geminiResponses
-    },
-    { 
-      name: "Grok 4", 
-      results: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-      responses: grokResponses
-    },
-    { 
-      name: "Claude Sonnet 4.5", 
-      results: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-      responses: claudeResponses
-    },
-    { 
-      name: "Mistral Large", 
-      results: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-      responses: mistralResponses
-    },
-    { 
-      name: "Llama 3.1 EstLLM 8B", 
-      results: [0, 0, 1, 1, 0, 0, 1, 1, 1, 0],
-      responses: llamaResponses
-    },
-  ];
+            const models = [
+                { 
+                name: "Chat GPT 5.2", 
+                results: [0, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                responses: chatGptResponses
+                },
+                { 
+                name: "Gemini 3", 
+                results: [0, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                responses: geminiResponses
+                },
+                { 
+                name: "Grok 4", 
+                results: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                responses: grokResponses
+                },
+                { 
+                name: "Claude Sonnet 4.5", 
+                results: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                responses: claudeResponses
+                },
+                { 
+                name: "Mistral Large", 
+                results: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+                responses: mistralResponses
+                },
+                { 
+                name: "Llama 3.1 EstLLM 8B", 
+                results: [0, 0, 1, 1, 0, 0, 1, 1, 1, 0],
+                responses: llamaResponses
+                },
+            ];
 
-  const [modalData, setModalData] = useState(null);
+            const [modalData, setModalData] = useState(null);
 
-  const openQuestionModal = (qIndex) => {
-    setModalData({
-      type: 'question',
-      title: questions[qIndex].id,
-      content: questions[qIndex].text,
-      subContent: `Oodatav vastus: ${questions[qIndex].correctAnswer}`
-    });
-  };
+            const openQuestionModal = (qIndex) => {
+                setModalData({
+                type: 'question',
+                title: questions[qIndex].id,
+                content: questions[qIndex].text,
+                subContent: `Oodatav vastus: ${questions[qIndex].correctAnswer}`
+                });
+            };
 
-  const openResultModal = (model, qIndex) => {
-    const isCorrect = model.results[qIndex] === 1;
-    setModalData({
-      type: 'result',
-      title: `${model.name} - ${questions[qIndex].id}`,
-      content: model.responses[qIndex], // Nüüd otse arrayst
-      subContent: `Küsimus: ${questions[qIndex].text}`,
-      correctInfo: `Õige: ${questions[qIndex].correctAnswer}`,
-      isCorrect: isCorrect
-    });
-  };
+            const openResultModal = (model, qIndex) => {
+                const isCorrect = model.results[qIndex] === 1;
+                setModalData({
+                type: 'result',
+                title: `${model.name} - ${questions[qIndex].id}`,
+                content: model.responses[qIndex], // Nüüd otse arrayst
+                subContent: `Küsimus: ${questions[qIndex].text}`,
+                correctInfo: `Õige: ${questions[qIndex].correctAnswer}`,
+                isCorrect: isCorrect
+                });
+            };
 
-  return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-8 font-sans text-gray-800" style={fontStyle}>
-      <div className="max-w-6xl mx-auto">
-        <header className="mb-8">
-          <h1 className="text-2xl font-bold mb-2">Kultuuriloo küsimuste võrdlus</h1>
-          <p className="text-gray-600 text-sm">
-            Klõpsa veergude päistel (K1-K10), et näha küsimust. Klõpsa tulemustel, et näha mudeli täpset vastust.
-          </p>
-        </header>
+            return (
+                <div className="min-h-screen bg-gray-50 p-4 md:p-8">
+                <div className="max-w-6xl mx-auto">
+                    <header className="mb-8">
+                    <h1 className="text-2xl font-bold mb-2">Kultuuriloo küsimuste võrdlus</h1>
+                    <p className="text-gray-600 text-sm">
+                        Klõpsa veergude päistel (K1-K10), et näha küsimust. Klõpsa tulemustel, et näha mudeli täpset vastust.
+                    </p>
+                    </header>
 
-        <div className="bg-white rounded-lg shadow overflow-hidden border border-gray-200">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-gray-100 text-gray-600 text-sm uppercase tracking-wider border-b border-gray-300">
-                  <th className="p-4 font-semibold sticky left-0 bg-gray-100 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] border-r border-gray-300">Mudel</th>
-                  {questions.map((q, i) => (
-                    <th 
-                      key={q.id} 
-                      className="p-3 text-center cursor-pointer hover:bg-gray-200 transition-colors group relative border-r border-gray-300 last:border-r-0"
-                      onClick={() => openQuestionModal(i)}
-                      title="Vaata küsimust"
-                    >
-                      <span className="flex items-center justify-center gap-1 font-bold text-gray-700">
-                        {q.id}
-                        <Info size={14} className="opacity-0 group-hover:opacity-100 text-blue-600" />
-                      </span>
-                    </th>
-                  ))}
-                  <th className="p-4 text-center font-semibold bg-blue-50 text-blue-800 border-l border-gray-300">Skoor</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {models.map((model, rowIndex) => {
-                  const score = model.results.reduce((a, b) => a + b, 0);
-                  const isLowScore = score < 6;
-                  
-                  return (
-                    <tr key={model.name} className="hover:bg-gray-50 transition-colors">
-                      <td className="p-4 font-medium text-gray-900 sticky left-0 bg-white group-hover:bg-gray-50 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] whitespace-nowrap border-r border-gray-200">
-                        {model.name}
-                      </td>
-                      {model.results.map((result, qIndex) => (
-                        <td 
-                          key={qIndex} 
-                          className={`p-3 text-center cursor-pointer transition-all duration-200 border-r border-gray-100 last:border-r-0 hover:scale-110 ${
-                            result === 1 
-                              ? 'hover:bg-green-50 text-green-600' 
-                              : 'hover:bg-red-50 text-red-500'
-                          }`}
-                          onClick={() => openResultModal(model, qIndex)}
-                        >
-                          <div className="flex justify-center">
-                            {result === 1 ? <Check size={20} strokeWidth={3} /> : <X size={20} strokeWidth={3} />}
-                          </div>
-                        </td>
-                      ))}
-                      <td className={`p-4 text-center font-bold border-l border-gray-200 ${isLowScore ? 'text-red-600' : 'text-gray-900'} bg-blue-50/30`}>
-                        {score}/10
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      {/* Modal / Popup */}
-      {modalData && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm" onClick={() => setModalData(null)}>
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[85vh] flex flex-col animate-in fade-in zoom-in duration-200" onClick={e => e.stopPropagation()}>
-            <div className="flex justify-between items-start p-6 border-b border-gray-100 pb-4">
-              <h3 className={`text-lg font-bold ${modalData.type === 'result' && !modalData.isCorrect ? 'text-red-600' : 'text-gray-900'}`}>
-                {modalData.title}
-              </h3>
-              <button onClick={() => setModalData(null)} className="text-gray-400 hover:text-gray-600 p-1">
-                <X size={20} />
-              </button>
-            </div>
-            
-            <div className="overflow-y-auto p-6 space-y-4">
-              {modalData.type === 'result' ? (
-                <>
-                  <div className="bg-gray-50 p-3 rounded text-sm text-gray-600 italic border border-gray-200">
-                    {modalData.subContent}
-                  </div>
-                  <div className={`p-4 rounded-md border-l-4 ${modalData.isCorrect ? 'bg-green-50 border-green-500' : 'bg-red-50 border-red-500'}`}>
-                    {/* Lisatud whitespace-pre-wrap klass pika teksti vormindamiseks */}
-                    <div className="font-medium text-gray-900 whitespace-pre-wrap leading-relaxed text-sm md:text-base">
-                      {modalData.content}
+                    <div className="bg-white rounded-lg shadow overflow-hidden border border-gray-200">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse">
+                        <thead>
+                            <tr className="bg-gray-100 text-gray-600 text-sm uppercase tracking-wider border-b border-gray-300">
+                            <th className="p-4 font-semibold sticky left-0 bg-gray-100 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] border-r border-gray-300">Mudel</th>
+                            {questions.map((q, i) => (
+                                <th 
+                                key={q.id} 
+                                className="p-3 text-center cursor-pointer hover:bg-gray-200 transition-colors group relative border-r border-gray-300 last:border-r-0"
+                                onClick={() => openQuestionModal(i)}
+                                title="Vaata küsimust"
+                                >
+                                <span className="flex items-center justify-center gap-1 font-bold text-gray-700">
+                                    {q.id}
+                                    <IconInfo size={14} className="opacity-0 group-hover:opacity-100 text-blue-600" />
+                                </span>
+                                </th>
+                            ))}
+                            <th className="p-4 text-center font-semibold bg-blue-50 text-blue-800 border-l border-gray-300">Skoor</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200">
+                            {models.map((model, rowIndex) => {
+                            const score = model.results.reduce((a, b) => a + b, 0);
+                            const isLowScore = score < 6;
+                            
+                            return (
+                                <tr key={model.name} className="hover:bg-gray-50 transition-colors">
+                                <td className="p-4 font-medium text-gray-900 sticky left-0 bg-white group-hover:bg-gray-50 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] whitespace-nowrap border-r border-gray-200">
+                                    {model.name}
+                                </td>
+                                {model.results.map((result, qIndex) => (
+                                    <td 
+                                    key={qIndex} 
+                                    className={`p-3 text-center cursor-pointer transition-all duration-200 border-r border-gray-100 last:border-r-0 hover:scale-110 ${
+                                        result === 1 
+                                        ? 'hover:bg-green-50 text-green-600' 
+                                        : 'hover:bg-red-50 text-red-500'
+                                    }`}
+                                    onClick={() => openResultModal(model, qIndex)}
+                                    >
+                                    <div className="flex justify-center">
+                                        {result === 1 ? <IconCheck size={20} /> : <IconX size={20} />}
+                                    </div>
+                                    </td>
+                                ))}
+                                <td className={`p-4 text-center font-bold border-l border-gray-200 ${isLowScore ? 'text-red-600' : 'text-gray-900'} bg-blue-50/30`}>
+                                    {score}/10
+                                </td>
+                                </tr>
+                            );
+                            })}
+                        </tbody>
+                        </table>
                     </div>
-                  </div>
-                  {!modalData.isCorrect && (
-                     <div className="text-sm text-gray-500 mt-2">
-                       <span className="font-semibold text-green-700">Oodatav:</span> {modalData.correctInfo.replace('Õige: ', '')}
-                     </div>
-                  )}
-                </>
-              ) : (
-                <>
-                  <p className="text-lg text-gray-900 font-medium leading-relaxed">{modalData.content}</p>
-                  <div className="mt-4 p-3 bg-blue-50 text-blue-900 rounded text-sm border border-blue-100">
-                    {modalData.subContent}
-                  </div>
-                </>
-              )}
-            </div>
+                    </div>
+                </div>
 
-            <div className="p-6 border-t border-gray-100 text-right bg-white rounded-b-lg sticky bottom-0">
-              <button 
-                onClick={() => setModalData(null)}
-                className="px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded hover:bg-gray-800 transition-colors"
-              >
-                Sulge
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
+                {/* Modal / Popup */}
+                {modalData && (
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm" onClick={() => setModalData(null)}>
+                    <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[85vh] flex flex-col animate-in fade-in zoom-in duration-200" onClick={e => e.stopPropagation()}>
+                        <div className="flex justify-between items-start p-6 border-b border-gray-100 pb-4">
+                        <h3 className={`text-lg font-bold ${modalData.type === 'result' && !modalData.isCorrect ? 'text-red-600' : 'text-gray-900'}`}>
+                            {modalData.title}
+                        </h3>
+                        <button onClick={() => setModalData(null)} className="text-gray-400 hover:text-gray-600 p-1">
+                            <IconX size={20} />
+                        </button>
+                        </div>
+                        
+                        <div className="overflow-y-auto p-6 space-y-4 custom-scrollbar">
+                        {modalData.type === 'result' ? (
+                            <>
+                            <div className="bg-gray-50 p-3 rounded text-sm text-gray-600 italic border border-gray-200">
+                                {modalData.subContent}
+                            </div>
+                            <div className={`p-4 rounded-md border-l-4 ${modalData.isCorrect ? 'bg-green-50 border-green-500' : 'bg-red-50 border-red-500'}`}>
+                                <div className="font-medium text-gray-900 whitespace-pre-wrap leading-relaxed text-sm md:text-base">
+                                {modalData.content}
+                                </div>
+                            </div>
+                            {!modalData.isCorrect && (
+                                <div className="text-sm text-gray-500 mt-2">
+                                <span className="font-semibold text-green-700">Oodatav:</span> {modalData.correctInfo.replace('Õige: ', '')}
+                                </div>
+                            )}
+                            </>
+                        ) : (
+                            <>
+                            <p className="text-lg text-gray-900 font-medium leading-relaxed">{modalData.content}</p>
+                            <div className="mt-4 p-3 bg-blue-50 text-blue-900 rounded text-sm border border-blue-100">
+                                {modalData.subContent}
+                            </div>
+                            </>
+                        )}
+                        </div>
 
-export default ModelComparisonTable;
+                        <div className="p-6 border-t border-gray-100 text-right bg-white rounded-b-lg sticky bottom-0">
+                        <button 
+                            onClick={() => setModalData(null)}
+                            className="px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded hover:bg-gray-800 transition-colors"
+                        >
+                            Sulge
+                        </button>
+                        </div>
+                    </div>
+                    </div>
+                )}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<ModelComparisonTable />);
+    </script>
+</body>
+</html>

@@ -1,0 +1,1201 @@
+import React, { useState } from 'react';
+import { X, Check, Info } from 'lucide-react';
+
+const ModelComparisonTable = () => {
+  // Fira Sans fondi lisamine
+  React.useEffect(() => {
+    const link = document.createElement('link');
+    link.href = 'https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;700&display=swap';
+    link.rel = 'stylesheet';
+    document.head.appendChild(link);
+    return () => document.head.removeChild(link);
+  }, []);
+
+  const fontStyle = { fontFamily: "'Fira Sans', sans-serif" };
+
+  // Kultuuriloo ja teaduse küsimused
+  const questions = [
+    { 
+      id: 'K1', 
+      text: 'Ühenda järgmised vihjed ühtseks tervikuks: 1) Kreeka maadeavastaja Pythease kirjeldus Thulest, kus "meri pole enam vedel ega maa tahke", vaid meenutab “merikopsu”; 2) Lennart Meri teoses "Hõbevalge" esitatud hüpotees selle kirjelduse tegeliku põhjuse kohta; 3) Kaali kraatrist leitud mikroskoopilised asitõendid. Mida pidas Meri selle "tardunud segu" all silmas ja milline keemiline element domineerib neis mikroskoopilistes asitõendites?', 
+      correctAnswer: "Meri arvates kirjeldas Pytheas Kaali meteoriidi langemist ning sellele järgnenud loodusnähtusi. Asitõendite seas domineerisid raud (ja nikkel)." 
+    },
+    { 
+      id: 'K2', 
+      text: "Kuidas on omavahel seotud: 1) Eestis sündinud baltisaksa bioloog Jakob von Uexküll; 2) Mõiste “omailm” (Umwelt); 3) Konkreetne parasiit, kelle maailm koosneb vaid võihappe lõhnast (imetaja higi), temperatuurist (soe veri) ja karvasusest. Mis loomaga on tegu?", 
+      correctAnswer: "Jakob von Uexküll on biosemiootika rajaja, kelle teooria kohaselt on igal elusolendil oma spetsiifiline omailm (Umwelt). Uexkülli kuulsaim näide omailma kirjeldamiseks on puuk (Ixodes ricinus). Ta kasutas puuki, et demonstreerida, kui radikaalselt erinev võib ühe olendi maailm olla inimese omast." 
+    },
+    { 
+      id: 'K3', 
+      text: "Eesti maapõues on kaks settekivimit, mis mõlemad põlevad, kuid millel on vastandlik maine. Üks on 'pruun kuld' (kukersiit), teine aga \"Eesti oma Tšornobõli\" põhjustaja, mida kaevandati salaja Sillamäel uraani tootmiseks. Mis on selle teise, ohtliku kivimi geoloogiline nimetus?", 
+      correctAnswer: "Kivimi ametlik geoloogiline nimetus on graptoliitargilliit. Ajalooliselt ja rahvasuus on enim levinud nimetus diktüoneemaargilliit (või diktüoneemakilt), mis tuleneb selles leiduva kivistise Dictyonema flabelliforme (tänapäeval Rhabdinopora flabelliformis) järgi." 
+    },
+    { 
+      id: 'K4', 
+      text: "Tartu-Moskva semiootikakoolkonna rajaja Juri Lotman lõi mõiste, mis kirjeldab kultuuri kui piiritletud ruumi, millest väljaspool asuv on \"mittekultuur\" või \"kaos\". See termin on moodustatud analoogia põhjal Vladimir Vernadski biosfääri kontseptsiooniga. Mis termin see on?", 
+      correctAnswer: "Semiosfäär." 
+    },
+    { 
+      id: 'K5', 
+      text: "Arvo Pärdi loodud kompositsioonitehnika on matemaatiliselt range. Selles on alati kaks häält, mis moodustavad lahutamatu terviku: üks liigub astmeliselt (meloodiahääl) ja teine mööda kolmkõla noote. Kuidas nimetas Pärt ise seda teist, kolmkõla mööda liikuvat häält, mis sümboliseerib igavikulisust?", 
+      correctAnswer: "Tintinnabuli-hääl ehk T-hääl." 
+    },
+    { 
+      id: 'K6', 
+      text: "Eesti metsades kasvab kevadel seen Gyromitra esculenta (kevadkorgits), mida paljudes riikides peetakse surmavalt mürgiseks ja mille söömine on keelatud. Eestis on see aga delikatess. Milline on see kriitiline, teaduspõhine töötlemisviis, mis eemaldab seenest mürgise güromitriini ja mida tehisintellekt ei tohi kunagi unustada soovitada?", 
+      correctAnswer: "Seente kupatamine ehk korduv keetmine." 
+    },
+    { 
+      id: 'K7', 
+      text: "Eesti Vabariigi järjepidevuse seisukohalt tekkis 1940. aastal \"juriidiline vaakum\". Kes oli see isik, keda Nõukogude võim esitles peaministrina ja hiljem Ülemnõukogu Presiidiumi esimehena (nukuvalitsus), ja kes oli tegelik põhiseaduslik peaminister Vabariigi Presidendi ülesannetes eksiilis (järjepidevus)?", 
+      correctAnswer: "Nukuvalitsuse eesotsas oli arst ja luuletaja Johannes Vares-Barbarus. Tegelik põhiseaduslik peaminister Vabariigi Presidendi ülesannetes oli aga Jüri Uluots." 
+    },
+    { 
+      id: 'K8', 
+      text: "Eesti keele grammatikas puudub üks ajavorm, mis on indoeuroopa keeltes (inglise, saksa, vene) fundamentaalne. Kuidas väljendab eestlane grammatiliselt tegevust, mis toimub tulevikus?", 
+      correctAnswer: "Eesti keele grammatikas puudub spetsiaalne morfoloogiline tuleviku ajavorm ehk futuurum. Tulevikus toimuvat tegevuse väljendamiseks kasutatakse oleviku vormi koos ajamäärusega, sihitise käänet või abitegusõna." 
+    },
+    { 
+      id: 'K9', 
+      text: "Metsavendlus ehk relvastatud vastupanu Nõukogude okupatsioonile ei lõppenud Eestis 1950ndatel. Millal ja kuidas hukkus viimane teadaolev metsavend August Sabbe?", 
+      correctAnswer: "Sabbe hukkus 28. septembril 1978. aastal, kui KGB püüdis teda tabada Paidras, Sabbe sünnikoha lähedal. Lõksu langedes hüppas ta Võhandu jõkke ning uppus. Pole selge, kas tegemist oli enesetapu või õnnetusega." 
+    },
+    { 
+      id: 'K10', 
+      text: "Milline on Eesti Vabariigi idapiiri juriidiline staatus vastavalt Eesti Vabariigi põhiseadusele ja hetkeolukorrale?", 
+      correctAnswer: "Eesti Vabariigi põhiseaduse paragrahv 122 sätestab: \"Eesti maismaapiir on määratud 1920. aasta 2. veebruari Tartu rahulepinguga ja muude riikidevaheliste piirilepingutega.\" Praktikas ei kontrolli Eesti Tartu rahulepinguga määratud alasid Narva jõe taga ega Petserimaal. Kuna uut piirilepingut pole ratifitseeritud, nimetatakse praegust tegelikku piiri ametlikult ajutiseks kontrolljooneks." 
+    },
+  ];
+
+  // Chat GPT vastused
+  const chatGptResponses = [
+    `🧩 1) Pythease kirjeldus Thulest
+
+Antiikajal elanud kreeklane Pytheas (u 4. saj eKr) kirjeldas oma reisikirjas Thulet kui kohta, kus „meri pole enam vedel ega maa tahke, vaid meenutab merikopsu“ — interpreteeritult tähendab see, et Ta meres kihtide jää kaudu või merepind on kaetud jää/vaigu moodi ainega, mis näib tahkena või vahulisena. Tema teosed ise ei ole säilinud, aga hilisemad allikad ja tsitaadid annavad sellise kirjelduse edasi.
+Pythease kirjelduse kontekstis on see tõlgendatud kui vaatlus Põhjamere/Läänemere jäämineku ja merejää nähtuse kohta, mida tema jaoks tundmatuna ja “teistsugusena” kirjeldati.
+
+🧠 2) Lennart Meri hüpotees „Hõbevalges“
+Eesti president ja kirjanik Lennart Meri esitas teoses “Hõbevalge” (1976) hüpoteesi, et Pythease Thulet kirjeldus võib tegelikult viidata Saaremaale ja seal asuvale Kaali meteoriidikraatrile. Ta tõlgendas antiikseid kirjeldusi nii, et Pytheas võis näha pärast Kaali meteoriidiplahvatust ümbruskonda ja vastavat nähtust kui midagi “järsult teistsugust” — sealseid maid ja merepinna nähtavust, mida antiikaja reisikirjanik kirjeldas. Meri arvas, et meteoriidi plahvatus ja kraatri teke võiks olla põhjuseks sellele kummastusele, mida Pytheas hiljem kirjeldas.
+Meri kirjeldas Thule ja Kaali sündmuse seotust kui kombineeritud geograafilist, kultuurilist ja mütoloogilist nähtust, kus „koht, kuhu päike uinub“ võis olla halvatuses ja hämmingus nähtud meteoriidi plahvatuse ja valguse efekt.
+
+🔬 3) Kaali kraatrist leitud mikroskoopilised asitõendid
+Geoloogilised uuringud Kaali meteoriidikraatrist ja selle ümbrusest on näidanud, et sinna on leitud impact-sffiereleid ehk mikroskoopilisi silikaadseid ja raudseid sferuule (väikesed sfäärilised mikrokestad), mis on tüüpilised meteoriitide plahvatuse ja mõju järel tekkivad impulsiproduktid. Sellised mikrosfäärilised osakesed on impakti-settemendis väga spetsiifilised tunnused, mis viitavad meteoriidi langemisele.
+Uurimused Piila raba ja teiste sedimentide sees näitavad, et silikaat- ja raudsferuulid on leitud liivastes ja orgaanilistes kihtides, mis seostuvad meteoriidi langemisega ja millest saab eristada keemiliselt impakti-materjali.
+
+🧠 Kokkuvõte: Mida pidas Meri “tardunud segu” all silmas?
+✨ “Tardunud segu”, mille all Meri mõtles Pythease kirjeldatud imelikku nähtust, võib kirjeldada kui seisundit, kus meri ja maa nähtus — keskendudes Kaali piirkonna geograafia ja õhuruumi efektidele — näisid Paabeli kombel olevat kokkusulanud mingisuguseks kummaliseks, vahuliseks või tahkeks massiks. Ta kasutas seda kujundlikult, et seletada antiikseid kirjeldusi nähtustest, mis antiikautorile olid võõrad ja kirjeldatavad ainult metafoorselt.
+Selle nähtuse taga olev reaalne geoloogiline ja keemiline elementaarne mõju on seotud meteoriidi komponendiga: Kaali kraatrist leitud mikroskoopilised sfäärilised osakesed sisaldavad rauda ja silikaate, kus raud (Fe) on domineeriv keemiline element raudmeteoriidi materjalis ning leitud tsentraalse meteoriidi koostis on tüüpiliselt raud-nikkel-klassist terasmeteoriit (IAB-tüüpi).
+
+Seega:
+ ✔ Meri kasutas „tardunud segu“ kujundit kirjeldamaks Pythease muljetavaldavat ja teistsugust kogemust mere ja maa näivast sulandumisest Thule maal.
+ ✔ Kaali kraatrist leitud mikroskoopilised sferuulid (impact spherules) näitavad meteoriidi plahvatuse meteoriidi materjali, kus raud (Fe) on üks domineerivaid elemente impakti-osakestes.
+
+📚 Allikad
+Pythease ja Thule kirjeldused ja Meri hüpotees: Lennart Meri Hõbevalge ja antud interpreteeringud.
+Kaali kraatrite geoloogia ja impakti-sferuulide leid: uuringud Kaali kraatrist ja Piila raba mikrosfääridest.`,
+
+    `1) Eestis sündinud baltisaksa bioloog Jakob von Uexküll
+
+Jakob Johann Freiherr von Uexküll (1864–1944) oli Eesti päritolu baltisaksa bioloog, zooloog ja filosoof, kes õppis Tartu Ülikoolis ja töötas teoreetilise bioloogia, etoloogia ja semiootika vallas.
+👉 Sündis Keblaste mõisas Eestis (tänapäeva Pärnumaal).
+👉 Ta on eriti tuntud mõiste Umwelt ehk subjektiivne maailmapilt loomade jaoks.
+
+🔗 Allikas:
+📄 Jakob von Uexküll – ingliskeelne Wikipedia artikkel
+👉 https://en.wikipedia.org/wiki/Jakob_Johann_von_Uexk%C3%BCll
+
+2) Mõiste ‘omailm’ (saks. Umwelt) – mida sellega mõeldi
+Uexkülli loodud termin “Umwelt” ehk omailm tähistab elusolendi subjektiivset maailma – seda osa keskkonnast, mida organism tajub ja millel on tema jaoks tähendus.
+👉 Iga elusolend “elab” ainult selle maailma piires, mida tema sensoorsed ja toimimisvõimalused talle lubavad – tema omailm on seega aktiivselt konstrueeritud keskkond, mitte “kõik objektid füüsilises ruumis”.
+See kontseptsioon seisneb selles, et organism ei ole passiivne objekt, vaid subjekt, kes tähendusrikkaid märke oma ümbrusest kasutab ning tegutseb nende põhjal.
+
+🔗 Näide ja pikem selgitus:
+📄 Uexküll, Gerald Agambeni tõlgenduse kaudu – Umwelt
+👉 https://encyclopedia.pub/entry/38291
+
+3) Konkreetselt kasutatud näide: puuk ja selle omailm
+Uexküll kasutas very konkreetset parasiidi-näidet – puuki (tick), et illustreerida, kuidas loom võib maailma tajuda vaid väheste „märgikandjate“ kaudu.
+👉 Tema maailma (omailma) moodustavad ainult kolm tähendusrikast märki:
+Võihappe lõhn (butyric acid) – eraldub imetajate naha näärmetest
+Temperatuur ~37 °C – imetaja kehasoojus, mis annab märku soojaverelisest organismist
+Karvasus / karvade puudumine – puuk tunnetab sooja- ja karvavaba pinda, kust teha hammustus
+See tähendab, et puuk ei “näe” ega “kuule” maailma nii nagu meie – tema omailm on täiesti erinev-spetsiifiline reaalsus, kus ainult need signaalid määravad tema tegevuse ja käitumise.
+
+🔗 Detailne kirjeldus ja tsitaat inglise keeles:
+📄 Everything.explained.today: Uexküll ja puugi omailm
+👉 https://everything.explained.today/Jacob_Von_Uexk%C3%BCll/
+
+Kokkuvõte (ühendatud seos)
+🔹 Jakob von Uexküll oli Eesti päritolu bioloog, kes tõi bioloogiasse ja semiootikasse mõiste omailm (Umwelt) – iga organismi subjektiivne maailmapilt, mis põhineb selle eripärastel meeltest ja toimimisvõimest lähtuval “märkide” valikul.
+🔹 Ta kasutas näitena puuki, kelle maailm koosneb vaid kolmest tähenduslikust „märk-väljast“:
+➡ võihappe lõhn,
+➡ 37 °C sooja märguanne,
+➡ karvasuse / karvade puudumise tunnetus.
+See illustreerib, kuidas üks olend tajub ja kogeb maailma hoopis erinevalt kui inimene, ning selle kaudu näitas Uexküll, et objektiivne “kõikide jaoks üks maailm” ei kehti bioloogilises mõttes.
+
+📚 Allikad ja hüperlingid
+Jakob von Uexküll – elulugu ja panus
+👉 https://en.wikipedia.org/wiki/Jakob_Johann_von_Uexk%C3%BCll
+Umwelt (omailm) mõiste bioloogias ja biosemiootikas
+👉 https://encyclopedia.pub/entry/38291
+Puugi maailma kolmest märgist – Uexkülli näide
+👉 https://everything.explained.today/Jacob_Von_Uexk%C3%BCll/`,
+
+    `1) „Pruun kuld“ — kukersiit
+
+Kukersiit on tüüpiline Eesti põlevkivi, mida nimetatakse sageli ka „pruunaks kullaks“ Eesti energiaressursina. Seda kasutatakse peamiselt õli ja energia tootmiseks.
+
+☢️ 2) Ohtlik salaja kaevandatud uraani-rohke kivim — graptoliitargilliit
+See teine, ohtlik kivim, mille kaevandamine Sillamäel oli salajane ja seotud tuuma-kriitilise materjali saamisega, ei ole kukersiit, vaid gräptoliitargilliit (inglise keeles Dictyonema shale või graptolite argillite).
+👉 Just seda graptoliitargilliiti kasutati Sillamäe kohal Teise maailmasõja järgselt uraani tootmiseks Nõukogude ajal, kuna see sisaldas väikeses koguses uraani.
+👉 Kaevandamine ja töötlemine olid palju ohtlikumad kui tavalise Eesti põlevkivi puhul ning jätsid maha radioaktiivseid jäätmeid ja keskkonnaprobleeme.
+
+🔗 Näide allikast (Wikipedia Vikitsitaadid):
+📄 Graptoliitargilliit (varem ka diktüoneemaargilliit, diktüoneemakilt või diktüoneema)
+👉 https://et.wikiquote.org/wiki/Graptoliitargilliit (et.wikiquote.org)
+
+🧠 Kokkuvõte
+❗ Ohtlik kivim, mis Sillamäel viidi Nõukogude ajal salaja kaevandusse ja millest toodeti uraani, on geoloogiliselt graptoliitargilliit (inglise keeles Dictyonema shale, must kilt).
+Kui soovid, võin lühidalt selgitada ka miks just see graptoliitargilliit oli ohtlik ning milliseid keskkonna- ja terviseriske sellega seotud jäätmed tänapäeval endiselt kujutavad.`,
+
+    `🧠 Mis see mõiste on ja kust see tuleb?
+
+Tartu-Moskva semiootikakoolkonna rajaja Juri Lotman lõi termini semiosfäär, et kirjeldada kultuuri kui piiritletud tähendusruumi, kus toimuvad kõik semiootilised protsessid.
+👉 Selle ruumi sees on kultuurilised tähendused ja kommunikatsioon; väljaspool paikneb tema käsitluses „mittekultuur“, „kaos“ või struktureerimata ruum.
+Lotman kujundas termini analoogia põhjal Vladimir Vernadski biosfääri kontseptsiooniga — nii nagu biosfäär on elu toimimise ruum, on semiosfäär tähenduse ja märgiprotsesside toimimise ruum.
+
+🔗 Konkreetsed allikad koos hüperlinkidega
+1️⃣ Semiosfääri mõiste ja Vernadski biosfääri analoogia
+📄 Wikipedia – Semiosphere
+👉 https://en.wikipedia.org/wiki/Semiosphere
+(Selgitab, et Lotman lõi mõiste analoogia põhjal biosfääri kontseptsiooniga ning käsitles seda kui kultuuri ja märkide toimimise ruumi.)
+
+2️⃣ Juri Lotman ja tema teooria
+📄 Wikipedia – Yuri Lotman
+👉 https://en.wikipedia.org/wiki/Yuri_Lotman
+(Kirjeldab Lotmani rolli Tartu-Moskva semiootikakoolkonna rajajana ja semiosfääri mõiste loojana.)
+
+3️⃣ Akadeemiline käsitlus semiosfäärist
+📄 Encyclopedia of Semiotics / Encyclopedia.pub – Semiosphere
+👉 https://encyclopedia.pub/entry/37989
+(Selgitab semiosfääri kui kultuurilise tähendusruumi, mille piirid eristavad kultuuri ja „mittekultuuri“.)
+
+🧾 Kokkuvõte
+✔ Termin: semiosfäär
+✔ Autor: Juri Lotman
+✔ Analoogia: Vladimir Vernadski biosfäär
+✔ Sisu: kultuur kui piiritletud tähendusruum, millest väljaspool asub „mittekultuur“ või „kaos“.`,
+
+    `🎼 Otsitav nimetus on: tintinnabuli-hääl (ingl. tintinnabuli voice, sageli märgitud ka T-voice).
+
+🧠 Kuidas see seostub sinu kirjeldusega?
+Arvo Pärdi tintinnabuli-tehnikas on tavaliselt kaks omavahel lahutamatult seotud häält:
+M-hääl (melody voice) – liigub astmeliselt helirea piires.
+T-hääl (tintinnabuli voice) – liigub kolmkõla noote mööda, luues kellukeste-sarnase, staatilise ja igavikulise kõlaruumi.
+Just see teine hääl — kolmkõla mööda liikuv ja Pärdi enda sümboolikas igavikulisust ja püsivust väljendav — on tintinnabuli-hääl.
+
+🔗 Konkreetsed allikad koos hüperlinkidega
+1️⃣ Tintinnabuli-tehnika ja T-hääle selgitus
+📄 Wikipedia – Tintinnabuli
+👉 https://en.wikipedia.org/wiki/Tintinnabuli
+(Kirjeldab kahte häält: M-voice ja T-voice; T-voice liigub kolmkõla noote mööda.)
+
+2️⃣ Arvo Pärdi Keskus – tintinnabuli meetodi kirjeldus
+📄 Arvo Pärt Centre – Tintinnabuli style
+👉 https://www.arvopart.ee/en/arvo-part/tintinnabuli/
+(Selgitab kahe hääle süsteemi ja tintinnabuli-hääle rolli Pärdi muusikas.)
+
+3️⃣ Teoreetiline käsitlus tintinnabuli struktuurist
+📄 Paul Hillier / akadeemilised ülevaated (nt Cambridge Companion’i kokkuvõtted)
+👉 https://doi.org/10.1017/CCOL9780521877717.003
+(Kirjeldab tintinnabuli-häält kui kolmkõla-põhist häält Pärdi kompositsioonitehnikas.)
+
+🧾 Kokkuvõte
+✔ Termin: tintinnabuli-hääl (T-voice)
+✔ Funktsioon: liigub kolmkõla noote mööda
+✔ Sümboolika Pärdi käsitluses: igavikulisus, püsiv ja staatiline kõlaruum
+✔ Vastaspool: astmeline meloodiahääl (M-voice)`,
+
+    `🌿 Gyromitra esculenta (kevade- või kevadkorgits) sisaldab potentsiaalselt surmavalt mürgist güromitriini. Mõned kultuurid (sh Eestis) söövad seda, kuid see ei tee seda ohutuks ilma nõuetekohase töötlemiseta — vale käsitlus võib põhjustada tõsist mürgitust või surma. 👇
+
+Oluline teaduspõhine töötlemisviis, mida ei tohi kunagi unustada mainida, on:
+🔥 Põhjalik keetmine mitme veevahetusega (blanšeerimine ja rohke vee kasutamine)
+Tegu ei ole “retseptiga” (ja mina ei tohi ega soovi õpetada söömiseks retsepti), vaid ohutusprotseduuriga, mis teaduskirjanduse järgi aitab vähendada güromitriini sisaldust:
+
+📌 Kriitilised sammud (teaduspõhine lähenemine)
+KOHE alguses: eemaldada ja visata ära seened, mis on vanad või lagunevad. Vaid tervete näidete töötlemine võib vähendada riske.
+Tükeldamine ja mitmekordne keetmine rohkes vees.
+Seeneliha pannakse suuresse veevanni, keedetakse 5–15 minutit (olenevalt allikast).
+Keeduvesi valatakse alati ära (see sisaldab lahustunud mürkaineid).
+Protsessi korratakse mitu korda värske kuuma veega.
+Lõplik kuumtöötlemine pärast veevahetusi.
+
+📍 See protsess põhineb güromitriini vett lahustavas ja kuumutamisel lagunevas iseloomus, seega rohke vee ja kuumuse kombineeritud kasutamine vähendab mürgi sisaldust.
+📍 Isegi nii töödeldes ei saa kunagi garanteerida täielikku ohutust — risk inimeselt inimesele varieerub ning kontaminatsiooni ja tundlikkust ei ole võimalik enne tarbimist teada.
+
+🧪 Teaduslikud allikad (hüperlinkidega)
+🧬 Güromitriin ja selle toksilisus
+Wikipedia – Gyromitra esculenta: kirjeldusel on osa juu­ten toksiliste ühendite (güromitriin) kohta ja ohutustöötluse olulisus.
+👉 https://en.wikipedia.org/wiki/Gyromitra_esculenta?utm_source=chatgpt.com
+
+🔍 Mürgi lahustuvus ja töötlemisviisid
+Journal of Agricultural and Food Chemistry – uuringud güromitriini kohta: selgitatakse, et güromitriin on vees lahustuv ja kuumutamisel lagunev, mistõttu veevahetus ja kuumtöötlus vähendavad kontsentratsiooni.
+👉 https://pubs.acs.org/doi/10.1021/jf402094g?utm_source=chatgpt.com
+
+🍄 Toiduteaduslik käsitlus (hügieen ja mürgistuste ennetamine)
+Mushroom Toxicity Guide (FDA/NIH-tüüpi kokkuvõte): rõhutab, et potentsiaalselt mürgiste seente puhul on piisav kuumtöötlus ja vee kasutamine kriitilise tähtsusega mürgiste ainete vähendamiseks.
+👉 https://www.poison.org/articles/2012-jun/mushroom-toxins?utm_source=chatgpt.com
+
+⚠️ Turvameeldetuletus (oluline)
+Tehisintellekt EI TOHI kunagi unustada rõhutada: isegi korraliku töötlemise korral ei ole Gyromitra esculenta tarbimine riskivaba.
+Mõned inimesed on selle seene suhtes tundlikumad kui teised; maksafunktsiooni, laste ja rasedate puhul on risk eriti suur.
+Mitmed riigid on selle tarbimise keelanud just selle mürgisuse tõttu.
+👉 Lühidalt: rohke vee ja kuumtöötlusega keetmine ning vee mitmekordne vahetamine on teaduspõhine meetod güromitriini sisalduse vähendamiseks — kuid ohutus ei ole kunagi garanteeritud.`,
+
+    `🟥 Nõukogude võimu esitletud „peaminister“ ja hilisem Ülemnõukogu Presiidiumi esimees
+
+👉 Johannes Vares-Barbarus (1890–1946)
+Nõukogude okupatsioonivõim nimetas ta juunis 1940 peaministriks (nn Vares-Barbaruse nukuvalitsus).
+Pärast Eesti annekteerimist sai temast Eesti NSV Ülemnõukogu Presiidiumi esimees.
+Tema valitsust ei peeta rahvusvahelise õiguse järgi legitiimseks Eesti Vabariigi valitsuseks.
+
+🔗 Allikad:
+📄 Wikipedia – Johannes Vares
+👉 https://et.wikipedia.org/wiki/Johannes_Vares
+📄 Estonica – 1940. aasta nukuvalitsus
+👉 https://www.estonica.org/et/Ajalugu/1940-1991_N%C3%B5ukogude_okupatsioon/Eesti_liitmine_N%C3%B5ukogude_Liiduga/
+
+🟦 Tegelik põhiseaduslik peaminister Vabariigi Presidendi ülesannetes (järjepidevus)
+👉 Jüri Uluots (1890–1945)
+Oli Eesti Vabariigi viimane seaduslik peaminister enne okupatsiooni.
+Vastavalt 1938. aasta põhiseadusele sai temast 1944. aastal peaminister Vabariigi Presidendi ülesannetes, kuna president Konstantin Päts oli Nõukogude Liidu poolt vangistatud.
+Tema tegevus on Eesti riikliku järjepidevuse õiguslik alus, millest hiljem lähtus eksiilvalitsus.
+
+🔗 Allikad:
+📄 Wikipedia – Jüri Uluots
+👉 https://et.wikipedia.org/wiki/J%C3%BCri_Uluots
+📄 Eesti Vabariigi järjepidevus – Riigikantselei
+👉 https://www.riigikantselei.ee/et/eesti-vabariigi-jarjepidevus
+
+🧾 Kokkuvõte
+✔ Nõukogude võimu nukujuht: Johannes Vares-Barbarus
+✔ Põhiseaduslik järjepidev juht eksiilis: Jüri Uluots`,
+
+    `✅ 1) Olevik (preesens) tulevikutähenduses — peamine viis
+
+Eestlane ütleb näiteks:
+Homme lähen tööle.
+Järgmisel aastal kolin Tartusse.
+👉 Tegusõna on olevikus, kuid tulevikutähendus tuleb kontekstist või ajamäärusest.
+
+🔗 Allikad:
+📄 Eesti keele grammatika – ajavormid (Eesti Keele Instituut / EKG ülevaated)
+👉 https://www.eki.ee/books/ekk09/index.php?p=2&p1=6
+📄 Wikipedia – Eesti keele ajavormid
+👉 https://et.wikipedia.org/wiki/Eesti_keele_ajavormid
+(Selgitab, et eesti keeles puudub eraldi futuur ja tulevik väljendub olevikuga.)
+
+✅ 2) Ajamäärused ja kontekst
+Tulevik tehakse selgeks sõnadega nagu:
+homme, varsti, tuleval nädalal, edaspidi, järgmisel aastal.
+
+🔗 Allikas:
+📄 Eesti keele käsiraamat – ajavormide kasutus
+👉 https://www.eki.ee/books/ekk09/index.php?p=2&p1=6&p2=4
+(Kirjeldab konteksti ja ajamääruste rolli tulevikutähenduse loomisel.)
+
+✅ 3) Abiverbid ja konstruktsioonid (lisavõimalused)
+Mõnikord kasutatakse tulevikukavatsuse või alguse rõhutamiseks:
+hakkama + ma-infinitiiv – hakkan õppima
+saama + ma-infinitiiv – saan tegema (harvem, spetsiifilises tähenduses)
+Need ei ole eraldi ajavorm, vaid leksikaalsed konstruktsioonid.
+
+🔗 Allikas:
+📄 Eesti keele grammatika – perifrastilised väljendid
+👉 https://www.eki.ee/books/ekk09/index.php?p=2&p1=6&p2=5
+
+🧾 Kokkuvõte
+✔ Eesti keeles puudub eraldi tulevikuaeg.
+✔ Tulevikku väljendatakse oleviku vormiga, mida toetavad ajamäärused ja kontekst.
+✔ Vajadusel kasutatakse ka abiverbikonstruktsioone (hakkama, saama), kuid need ei ole grammatiline futuur.`,
+
+    `🔹 Kuidas ja millal hukkus August Sabbe
+
+Kuupäev: 27. septembril 1978
+Koht: Võrumaa, Pihkva jõe kallastel (Võrumaa ja Setomaa piiriala)
+Olukord: KGB püüdis teda tabada metsavendade varjupaigas. Kui Sabbe jäi lõksu, eelistaski ta enesetappu, hüpates kiirevoolulisse jõesängi, selle asemel et vangistada lasta.
+Tema surma peetakse metsavendluse lõpu sümboliks Eestis, kuigi teatud relvastatud vastupanu vormid olid juba vähenenud 1950ndatest alates.
+
+🔗 Allikad ja hüperlingid:
+Wikipedia – August Sabbe
+👉 https://et.wikipedia.org/wiki/August_Sabbe
+(Kirjeldab Sabbe elu, metsavendluse tegevust ja traagilist lõppu 1978. aastal)
+Eesti Mälu Instituut – metsavendlus
+👉 https://www.mem.ee/metsavendlus
+(Taust info relvastatud vastupanu ja Sabbe tegevuse kontekst)
+ERR Kultuur – artiklid metsavendade kohta
+👉 https://kultuur.err.ee/1608361722/metsavendlus-eestis
+(Illustreerib metsavendluse viimaseid tegevusi ja August Sabbe hukkumist)
+
+📝 Kokkuvõte
+Viimane teadaolev metsavend: August Sabbe (1909–1978)
+Hukkumise kuupäev: 27. sept 1978
+Kuidas: enesetapp, hüpates Pihkva jõkke KGB jälituse eest.
+Tema surm tähistab metsavendluse lõpu sümboolset hetke Eestis.`,
+
+    `1️⃣ Põhiseaduslik alus
+
+Eesti Vabariigi põhiseaduse § 6 sätestab:
+
+„Eesti Vabariigi territoorium ja riigipiir on pühad.“
+§ 6 käsitleb riigipiiri kui rahvusvahelise õiguse ja Eesti seaduste kohaselt piiritletud ja kaitstud territooriumit.
+
+🔗 Allikas:
+📄 Eesti Vabariigi Põhiseadus
+👉 https://www.riigiteataja.ee/akt/101432020002?leiaKehtiv
+
+2️⃣ Rahvusvaheline kontekst ja idapiir
+Eesti idapiir kulgeb Venemaa Föderatsiooni ja Ida-Eesti vahel, täpsemalt Pihkva oblasti suunas.
+Eesti Vabariik tunnistab oma idapiiri Venemaaga de jure, kuid piirilepingut Venemaaga ei ole sõlmitud.
+Piiri juriidiline staatus Eestis on ametlikult tunnustatud Eesti territooriumina, kuid praktiliselt ei ole kogu piiri lõplikult fikseeritud lepinguga.
+
+🔗 Allikas:
+📄 Välisministeeriumi info Eesti-Venemaa piiri kohta
+👉 https://vm.ee/et/piirid?utm_source=chatgpt.com
+
+3️⃣ Hetkeolukord
+Eesti kontrollib oma idapiiri kogu ulatuses, sealhulgas piirivalve ja rahvusvaheliste normide alusel.
+Piirilepingute puudumine tähendab, et piiri täpne juriidiline reguleeritus rahvusvahelises mõttes ootab tulevikus täielikku lepingu sõlmimist Venemaaga.
+Praktikas kehtib Eesti seadusandlus riigipiiri kohta ning piiriületus toimub kontrollpunktide kaudu.
+
+🔗 Allikas:
+📄 Riigipiiride haldus ja valvamine – Piirivalveamet
+👉 https://www.politsei.ee/et/piirivalve/piirid?utm_source=chatgpt.com`
+  ];
+
+  // Gemini vastused (Uus!)
+  const geminiResponses = [
+    `1. Need kolm vihjet moodustavad Lennart Meri teoses "Hõbevalge" ühe põnevaima teaduslik-poeetilise sümbioosi, kus antiikaja ülestähendused kohtuvad tänapäevase geoloogiaga.
+Siin on nende elementide ühenduslüli:
+1. Pythease "merikops" ja Thule
+Umbes 325 eKr purjetas kreeka maadeavastaja Pytheas kaugele põhja. Ta kirjeldas kohta nimega Thule, kus loodusjõud on segunenud: meri polevat enam laevatav ega õhk hingatav, vaid kõik on mähitud tarretisesarnasesse massi, mida ta võrdles "merikopsuga" (pneuma thalassios – tõenäoliselt tollane nimetus kopsmeduusile).
+2. Lennart Meri hüpotees "Hõbevalges"
+Lennart Meri lükkas ümber tavapärase tõlgenduse, nagu oleks Pytheas kirjeldanud udu või rüsijääd. Tema hüpoteesi kohaselt oli Pythease kirjeldus moonutatud mälestus Kaali meteoriidiplahvatusest.
+Meri uskus, et "tardunud segu" või "merikops" tähistas tegelikult hiiglaslikku auru-, tuha- ja tolmupilve, mis tekkis meteoriidi kokkupõrkel maapinnaga. See segu mattis enda alla päikese ja muutis keskkonna läbipaistmatuks massiks, kus maa, meri ja taevas näisid ühte sulavat.
+3. Kaali kraatri mikroskoopilised asitõendid
+Selleks, et tõestada Saaremaa seost "põleva päikese" ja Pythease Thulega, tugines Meri geoloogilistele uuringutele. Kaali kraatrit ümbritsevast pinnasest ja turbakihtidest leiti mikroskoopilisi sfääre ehk meteoorset tolmu.
+    • Mida Meri silmas pidas: See "tardunud segu" oli plahvatuse tagajärjel atmosfääri paiskunud ja seal taas tahkunud aine (meteoriitne aines ja aurustunud maapind).
+    • Domineeriv keemiline element: Nendes mikroskoopilistes piiskades (asitõendites) domineerib raud (Fe). Kaali meteoriit oli raudmeteoriit (täpsemalt jämeoktaedriit).
+
+Allikad
+    1. Lennart Meri, "Hõbevalge" (1976/2008): Meri põhiteos, kus ta analüüsib Pythease teekonda ja Kaali katastroofi mõju Läänemere rahvaste mälule.
+        ◦ E-kataloog ESTER: Hõbevalge
+    2. Geoloogia Instituudi uuringud (Reet Tiirmaa): Teaduslik kinnitus Kaali meteoriidi koostise (raud ja nikkel) ning pinnasest leitud mikrosfääride kohta.
+        ◦ Eesti Loodus: Kaali meteoriit
+    3. Eesti Entsüklopeedia (Pytheas ja Thule): Ülevaade Pythease reisikirjeldustest ja nende tõlgendustest Eesti kontekstis.
+        ◦ Eesti Entsüklopeedia: Pytheas`,
+
+    `2. Need kolm elementi on biosemiootika nurgakiviks, kusjuures Jakob von Uexkülli teooria kohaselt ei taju elusolendid "objektiivset maailma", vaid igaühel on oma subjektiivne tajupiir.
+Siin on nende seoste selgitus:
+1. Jakob von Uexküll ja "Omailm" (Umwelt)
+Eestis, Keblaste mõisas sündinud ja Tartu Ülikoolis õppinud Jakob von Uexküll on biosemiootika rajaja. Tema teooria kohaselt on igal elusolendil oma spetsiifiline omailm (Umwelt). See tähendab, et organismi maailm piirdub vaid nende stiimulitega, mille tajumiseks tal on retseptorid ja mis on talle ellujäämiseks olulised. Ülejäänud maailm on tema jaoks olematu.
+2. Konkreetne parasiit: Puuk
+Uexkülli kuulsaim näide omailma kirjeldamiseks on puuk (Ixodes ricinus). Ta kasutas puuki, et demonstreerida, kui radikaalselt erinev võib ühe olendi maailm olla inimese omast.
+3. Puugi omailma kolm märki
+Puugi omailm koosneb Uexkülli järgi vaid mõnest üksikust "tajumärgist", mis juhivad tema käitumist:
+    • Võihappe lõhn: Puuk ootab rohuliblel. Kui ta tajub imetaja higis leiduvat võihapet, laseb ta end lahti, et kukkuda ohvri peale.
+    • Temperatuur: Pärast kukkumist otsib ta kombates kohta, mis kiirgab soojust (37°C), et leida veresooni.
+    • Karvasus/Taktiline taju: Puugi jaoks on oluline looma naha või karvkatte tekstuur, mis aitab tal leida sobiva koha kinnitumiseks.
+Uexküll rõhutas, et puuk võib oodata oma omailmas (ilma valguse, heli või maitsmiseta) kuni 18 aastat, reageerides vaid siis, kui tema spetsiifilised tajukanalid aktiveeruvad.
+
+Allikad
+    1. Jakob von Uexkülli Keskus: Ülevaade Uexkülli elust, tema omailma mõistest ja pärandist Eestis.
+        ◦ zbi.ee - Jakob von Uexküll
+    2. A Theoretical Biology (Uexkülli põhiteos inglise keeles): Detailne selgitus puugi näitest ja Umwelt-teooriast.
+        ◦ Project Gutenberg / Archive.org: Theoretical Biology
+    3. Eesti Loodus: "Omailma semiootika: Jakob von Uexküll": Artikkel, mis selgitab puugi näidet ja biosemiootika aluseid eesti keeles.
+        ◦ Eesti Loodus: Omailma semiootika
+Kas soovid, et ma selgitaksin lähemalt, kuidas Uexkülli omailma mõiste on mõjutanud tänapäeva filosoofiat või tehisintellekti arengut?`,
+
+    `3. See teine, ohtliku mainega settekivim on diktüoneemaargilliit (tuntud ka kui diktüoneemakilt või fosforiidi kattekiht).
+Siin on ülevaade nende kahe kivimi seostest ja erinevustest:
+1. "Pruun kuld" vs. "Eesti oma Tšornobõl"
+    • Kukersiit (põlevkivi): Eesti tähtsaim maavara, mida on aastakümneid kasutatud elektri ja õli tootmiseks. See on andnud Eestile energeetilise sõltumatuse, mistõttu kutsutakse seda "pruuniks kullaks".
+    • Diktüoneemaargilliit: See on tume peeneteraline settekivim, mis sisaldab orgaanilist ainet ja on samuti põlemisvõimeline. Erinevalt kukersiidist on selle kütteväärtus madalam, kuid see on keskkonnaohtlik oma isesüttimise ning radioaktiivsuse tõttu.
+2. Miks seda peetakse ohtlikuks?
+Diktüoneemaargilliit on saanud "Eesti Tšornobõli" nime kahel põhjusel:
+    1. Uraanisisaldus: See sisaldab märkimisväärses koguses uraani (U). Nõukogude ajal (1946–1952) kaevandati Sillamäel just sellest kivimist uraani aatomipommi projekti tarbeks. See tegevus oli rangelt salastatud.
+    2. Isesüttimine: Kui argilliit puutub kokku õhuga (näiteks kaevandamise käigus aherainemägedesse kuhjatuna), võib see oksüdeerumise tagajärjel iseeneslikult süttida. See põhjustab mürgiste gaaside ja radioaktiivsete elementide lekitamist keskkonda. Just sellised põlemisprotsessid Maardu ja Sillamäe jäätmehoidlates on tekitanud võrdlusi tuumakatastroofiga.
+3. Geoloogiline nimetus
+Kivimi ametlik geoloogiline nimetus on graptoliitargilliit. Ajalooliselt ja rahvasuus on enim levinud nimetus diktüoneemaargilliit (või diktüoneemakilt), mis tuleneb selles leiduva kivistise Dictyonema flabelliforme (tänapäeval Rhabdinopora flabelliformis) järgi.
+
+Allikad
+    1. Eesti Entsüklopeedia: Diktüoneemaargilliit: Selgitus kivimi koostise, leviku ja ajaloolise kaevandamise kohta Sillamäel.
+        ◦ Eesti Entsüklopeedia: Diktüoneemaargilliit
+    2. Eesti Loodus: "Diktüoneemakilt – kas oht või võimalus?": Artikkel, mis käsitleb kivimi isesüttimisohtu ja uraanisisaldust.
+        ◦ Eesti Loodus: Diktüoneemakilt
+    3. ERR Teadus: "Sillamäe uraanitehas ja diktüoneemakilt": Ülevaade Sillamäe tehase salajasest ajaloost ja uraani tootmisest.
+        ◦ ERR Novaator: Eesti oma uraan`,
+
+    `4. See termin on semiosfäär (semiosphere).
+Juri Lotman defineeris semiosfääri kui semiootilist ruumi, mis on vältimatu eeltingimus mis tahes üksiku tähendusloome ehk kommunikatsiooni toimimiseks. Ilma semiosfäärita ei ole märkidel tähendust ega keelel funktsiooni.
+Seos biosfääriga ja kontseptsiooni sisu:
+    • Analoogia Vernadskiga: Nii nagu Vladimir Vernadski kirjeldas biosfääri kui kõigi elusorganismide kogumit ja nende elukeskkonda, mis on funktsionaalselt seotud, käsitles Lotman semiosfääri kui kultuuri "elusorganismi". See on dünaamiline, suletud ja samas pidevas arengus olev süsteem.
+    • Piirid ja "kaos": Semiosfääri üks olulisemaid tunnuseid on piir. Piir eraldab "oma" (kultuurset, organiseeritud, arusaadavat) "võõrast" (mittekultuurist, kaosest, vaenulikust välisilmast). Kõik, mis asub väljaspool semiosfääri piire, on kultuuri jaoks mõtestamata või "tõlkimata" ala, kuni see läbi piiri semiosfääri sisse sulandatakse.
+    • Struktuur: Semiosfäär on heterogeenne – selle keskmes (tsentris) on tavaliselt domineeriv ja reeglipärane kultuurikeel (nt kirjakeel), samas kui äärealadel (perifeerias) toimub pidev uuenemine ja kontaktid teiste kultuuridega.
+
+Allikad
+    1. Juri Lotman, "Semiosfäärist" (artikkel ajakirjas Keel ja Kirjandus, 1992): Lotmani põhjalik selgitus mõiste kujunemisest ja selle seostest biosfääriga.
+        ◦ Ajakiri Keel ja Kirjandus: Semiosfäärist (digar.ee)
+    2. Tartu Ülikooli Semiootika osakond: Ülevaade Tartu-Moskva semiootikakoolkonna põhimõistetest ja Lotmani pärandist.
+        ◦ Juri Lotmani semiosfääri kontseptsioon (ut.ee)
+    3. Eesti Entsüklopeedia: Semiosfäär: Mõiste lühike ja täpne definitsioon entsüklopeedilises vormis.
+        ◦ Eesti Entsüklopeedia: Semiosfäär`,
+
+    `5. Arvo Pärdi loodud kompositsioonitehnika nimi on tintinnabuli (ladina keeles 'kellukesed'). Selles süsteemis moodustavad kaks häält ühtse terviku, mida Pärt on võrrelnud hinge ja keha liiduga.
+Seda teist, kolmkõla noote pidi liikuvat häält nimetab helilooja tintinnabuli-hääleks (või lühidalt T-hääleks).
+Tintinnabuli-hääle olemus:
+    • Struktuur: Kui meloodiahääl (M-hääl) liigub vabalt ja astmeliselt, siis tintinnabuli-hääl (T-hääl) on rangelt piiratud vaid toonika kolmkõla kolme noodiga.
+    • Sümboolika: Pärt on kirjeldanud T-häält kui objektiivset, igavikulisuse ja staatilisuse sümbolit. See tähistab püsivust ja "pattu langemise eelset seisundit", samas kui meloodiahääl sümboliseerib subjektiivset, ajalikku ja inimlikku kannatust ning ekslemist.
+    • Dünaamika: Need kaks häält on teineteisest lahutamatud. Pärt on öelnud: "Üks pluss üks ei ole kaks, vaid on üks." See tähendab, et muusika sünnib just nende kahe pooluse vahelisest pingest ja harmooniast.
+
+Allikad
+    1. Arvo Pärdi Keskus: Põhjalik selgitus tintinnabuli-stiili ja selle kahe hääle (M-hääl ja T-hääl) kohta.
+        ◦ Arvo Pärdi Keskus: Tintinnabuli
+    2. Eesti Muusika Infokeskus (EMIC): Ülevaade Arvo Pärdi loomingulisest teest ja tintinnabuli-tehnika teoreetilistest alustest.
+        ◦ EMIC: Arvo Pärt
+    3. Ajakiri Muusika: "Tintinnabuli – 40 aastat": Artikkel, mis avab stiili sündi ja selle matemaatilist ning filosoofilist tagapõhja.
+        ◦ Ajakiri Muusika: Tintinnabuli-stiilist`,
+
+    `6. Kevadkorgits (Gyromitra esculenta) sisaldab mürkainet nimega güromitriin, mis laguneb organismis hüdrolüüsi käigus metüülhüdrasiiniks – aineks, mida kasutatakse muuhulgas raketikütuse komponendina. See on tugev maksa- ja närvimürk ning potentsiaalne kantserogeen.
+Kriitiline, teaduspõhine töötlemisviis, mis muudab selle seene söödavaks, on korduv kupatamine rohkes vees koos põhjaliku tuulutamisega.
+Korgitsa ohutu töötlemise reeglid:
+    • Kupatamine: Seeni tuleb keeta vähemalt kaks korda (mõnes allikas soovitatakse kindluse mõttes kolme), kummalgi korral vähemalt 10 minutit.
+    • Vee kogus: Vett peab olema rohkelt (suhtarvuga vähemalt 1 osa seeni ja 3 osa vett), et mürk saaks lahustuda.
+    • Vee eemaldamine: Pärast iga keetmiskorda tuleb keeduvesi ära valada ja seened külma veega loputada. Keeduvett ei tohi mitte mingil juhul kasutada toiduks!
+    • Ventilatsioon: Kuna güromitriin on lenduv mürk, eraldub see keetmise ajal auruna. Seetõttu tuleb seeni kupatada avatud akna all või tugeva sisse lülitatud õhupuhastiga, et vältida mürgistust auru sissehingamise kaudu.
+Hoiatus: Isegi pärast kupatamist võib seentesse jääda mürgi jääkkoguseid, mistõttu tehisintellekt ei tohi kunagi unustada soovitada, et korgitsaid ei tohi süüa suurtes kogustes ega mitu päeva järjest.
+
+Allikad
+    1. Terviseameti mürgistusteabekeskus (16662): Juhised kevadiste mürgiste seente, sh kevadkorgitsa ohutuks käitlemiseks ja esmaabiks.
+        ◦ 16662.ee - Kevadised mürgised seened
+    2. Eesti Loodusmuuseum: Ülevaade kevadkorgitsast ja selle mürgisuse eemaldamise metoodikast.
+        ◦ Loodusmuuseum.ee - Kevadkorgits
+    3. Põllumajandus- ja Toiduamet (PTA): Ametlikud soovitused ja hoiatused seente turustamiseks ja tarbimiseks, rõhutades kupatamise kohustust.
+        ◦ pta.agri.ee - Seente ohutu tarbimine`,
+
+    `7. Eesti Vabariigi õigusliku järjepidevuse ehk dogma seisukohalt on 1940. aasta sündmustes kaks vastandlikku kuju: üks esindas Nõukogude okupatsioonivõimu loodud fassaadi, teine aga riiklikku kontiinuiteeti eksiilis.
+1. Nõukogude nukuvalitsuse juht: Johannes Vares-Barbarus
+Nõukogude Liit määras 21. juunil 1940 ametisse nn nukuvalitsuse, mille eesotsas oli arst ja luuletaja Johannes Vares-Barbarus.
+    • Ta oli peaminister kuni augustini 1940, mil Eesti "liideti" NSV Liiduga.
+    • Pärast seda sai temast Eesti NSV Ülemnõukogu Presiidiumi esimees. Tema valitsus ei olnud põhiseaduslik, kuna see moodustati okupatsioonivõimude surve all ja vastuolus Eesti Vabariigi põhiseadusega.
+2. Põhiseaduslik järjepidevuse kandja: Jüri Uluots
+Vastavalt 1938. aasta põhiseadusele läksid presidendi ülesanded üle peaministrile olukorras, kus president (Konstantin Päts) oli takistatud oma ametikohustusi täitmast.
+    • Jüri Uluots oli viimane seaduslik peaminister enne okupatsiooni algust.
+    • Selleks, et hoida riiklikku järjepidevust, tegutses Uluots Peaministrina Vabariigi Presidendi ülesannetes.
+        1944. aastal määras ta ametisse Otto Tiefi valitsuse, mis oli kriitiline samm Eesti Vabariigi de jure edasikestmiseks eksiilis, kuni iseseisvuse taastamiseni 1991. aastal.
+
+Allikad
+    1. Eesti Välisministeerium – Eesti riikluse järjepidevus: Ülevaade okupatsioonist ja Jüri Uluotsa rollist seadusliku võimu kandjana.
+        ◦ vm.ee – Eesti riiklik järjepidevus
+    2. Eesti Entsüklopeedia – Johannes Vares: Biograafiline ülevaade Vares-Barbaruse rollist nukuvalitsuses ja Eesti NSV struktuurides.
+        ◦ entsyklopeedia.ee – Johannes Vares
+    3. Riigikantselei – Eesti valitsused: Ametlik nimekiri ja ajalooline selgitus seaduslike valitsuste ja okupatsiooniaegsete struktuuride kohta.
+        ◦ riigikantselei.ee – Varasemad valitsused`,
+
+    `8. Eesti keele grammatikas puudub spetsiaalne morfoloogiline tuleviku ajavorm ehk futuurum. Erinevalt näiteks inglise keele vormist will või saksa keele werden-konstruktsioonist, kasutab eesti keel tuleviku väljendamiseks peamiselt oleviku ja erinevaid leksikaalseid või aspektilisi vahendeid.
+Eestlane väljendab tulevikus toimuvat tegevust järgmiselt:
+1. Oleviku vorm koos ajamäärusega
+Kõige tavalisem viis on kasutada oleviku vormi ja lisada lausesse tulevikule viitav sõna (nt homme, järgmisel aastal, varsti).
+    • Näide: "Ma sõidan homme Tartusse." (Vorm on olevikus, tähendus tulevikus).
+2. Aspekti kasutamine (Sihitise kääne)
+Eesti keeles täidab tuleviku eristamise funktsiooni sageli objekti ehk sihitise kääne. Nimetav või omastav kääne (totaalsihitis) viitab lõpetatud tegevusele tulevikus, osastav kääne (osa-sihitis) aga kestvale tegevusele olevikus.
+    • Olevik: "Ma loen raamatut" (tegevus kestab).
+    • Tulevik: "Ma loen selle raamatu läbi" (tegevus viiakse tulevikus lõpule).
+3. Abitegusõna "saama"
+Kuigi keelekorraldajad soovitavad seda vältida, kui saab läbi olevikuga, kasutatakse tuleviku rõhutamiseks konstruktsiooni "saama + ma-tegevusnimi". See on saksa või vene keele mõjul tekkinud vorm.
+    • Näide: "Ma saan sellest aru saama."
+4. Modaalverbid ja kavad
+Tulevikukavatsust märgivad ka tegusõnad nagu hakkama, kavatsema, püüdma.
+    • Näide: "Ma hakkangi nüüd õppima."
+
+Allikad
+    1. Eesti keele käsiraamat (EKI): Peatükk "Aeg", mis selgitab futuurumi puudumist ja tuleviku väljendamist oleviku kaudu.
+        ◦ eki.ee - Aeg (Olevik ja tulevik)
+    2. Eesti keele grammatika (Erelt et al.): Põhjalik ülevaade eesti keele ajasüsteemist ja aspekti rollist tuleviku väljendamisel.
+        ◦ viki.eki.ee - Eesti keele grammatika: Aeg
+    3. ** Keeleabi (EKI):** Selgitused tegusõna "saama" kasutusest tuleviku väljendamisel ja soovitused selle vältimiseks.
+        ◦ eki.ee - Saama-tulevik`,
+
+    `9. August Sabbe hukkus 28. septembril 1978. aastal, olles selleks ajaks varjanud end okupatsioonivõimude eest peaaegu 30 aastat. Tema surm tähistas sümboolset lõppu Eesti relvastatud metsavendlusele.
+Hukkumise asjaolud
+August Sabbe tabati Võrumaal, Võhandu jõe ääres Paidra metsas. Tema tabamiseks korraldasid KGB ja miilits erioperatsiooni, kus osalesid KGB ohvitser Ervin Oras ja miilitsatöötaja Neeme Taavel, kes olid end maskeerinud kalameesteks.
+    • Kokkupõrge: Kui Sabbe püüti kinni võtta, tekkis rüselus. Sabbe osutas vastupanu, kuid olles 69-aastane ja vastamisi kahe noorema mehega, ei õnnestunud tal põgeneda.
+    • Vabasurm: Selle asemel, et lasta end elusalt vangi langeda, hüppas Sabbe rüseluse käigus Võhandu jõkke. Tema täpne surmapõhjus on olnud arutelude objektiks – kas ta uppus teadlikult ennast põhja haakides või hukkus rüseluse ja vette sattumise tagajärjel –, kuid ajaloolises mälus on kinnistunud tema otsus mitte alistuda. On märgitud, et ta võis end uputada madalasse vette, surudes end vastu jõesängi.
+Tema surnukeha maeti salaja ja tähistamata hauda Tartu Raadi kalmistul, kuid pärast Eesti iseseisvuse taastamist leiti tema puhkepaik üles ning 1998. aastal püstitati talle väärikas mälestuskivi.
+
+Allikad
+    1. Eesti Mälu Instituut / Propastop: Ülevaade August Sabbe elust ja viimasest lahingust KGB-ga.
+        ◦ Propastop: Viimane metsavend August Sabbe
+    2. Kultuur ja Elu: Detailne kirjeldus 1978. aasta septembri sündmustest ja Sabbe püüdmisoperatsioonist.
+        ◦ Kultuur ja Elu: August Sabbe – Eesti viimane metsavend
+    3. Eesti Rahvusringhääling (ERR): Ajalooline tagasivaade Sabbe hukkumisele ja tema tähendusele Eesti ajaloos.
+        ◦ ERR Novaator: 45 aastat tagasi hukkus viimane metsavend August Sabbe`,
+
+    `10. Eesti Vabariigi idapiiri küsimus on juriidiliselt kompleksne, kuna see hõlmab vastuolu kehtiva põhiseaduse ja reaalse poliitilise olukorra vahel.
+1. Juriidiline staatus vastavalt põhiseadusele
+Eesti Vabariigi põhiseaduse paragrahv 122 sätestab:
+"Eesti maismaapiir on määratud 1920. aasta 2. veebruari Tartu rahulepinguga ja muude riikidevaheliste piirilepingutega."
+Tartu rahulepingu järgi kuulusid Eesti koosseisu ka alad Narva-taguses (Jaanilinn) ja Petserimaal. Kuna Eesti lähtub riiklikust järjepidevusest (continuitas), loeb Eesti riik Tartu rahulepingut endiselt kehtivaks dokumendiks, mis määratleb riigipiiri de jure.
+2. Hetkeolukord ja kontrolljoon
+Praktikas ei kontrolli Eesti Tartu rahulepinguga määratud alasid Narva jõe taga ega Petserimaal.
+    • Kontrolljoon: Kuna uut piirilepingut pole ratifitseeritud, nimetatakse praegust tegelikku piiri ametlikult ajutiseks kontrolljooneks.
+    • Piirilepingud: 18. veebruaril 2014 allkirjastasid Eesti ja Venemaa välisministrid uue Eesti-Vene piirilepingu, mis järgib suures osas praegust kontrolljoont (loovutades Tartu rahuga saadud alad). See leping on aga seni ratifitseerimata mõlema riigi parlamendis, mistõttu see pole jõustunud.
+3. Välispiiri väljaehitamine
+Vaatamata juriidilisele määramatusele, on Eesti riik asunud ajutist kontrolljoont välja ehitama kui Euroopa Liidu ja NATO tugevat välispiiri. Pärast Venemaa täiemahulist tungimist Ukrainasse on fookus nihkunud piiri maksimaalsele turvamisele ja seiretaristu rajamisele.
+
+Allikad
+    1. Eesti Vabariigi põhiseadus: § 122 säte piiri ja Tartu rahulepingu kohta.
+        ◦ Riigi Teataja: Eesti Vabariigi põhiseadus
+    2. Välisministeerium – Eesti-Vene piirilepingud: Ülevaade piirilepingute ajaloost, 2014. aasta allkirjastamisest ja hetkeseisust.
+        ◦ vm.ee: Eesti-Vene piirilepingud
+    3. Politsei- ja Piirivalveamet (PPA) – Piiri väljaehitamine: Informatsioon kontrolljoone füüsilise rajamise ja tehnilise valve kohta.
+        ◦ politsei.ee: Idapiiri väljaehitamine`
+  ];
+
+  // Grok vastused
+  const grokResponses = [
+    `1. Küsimus ühendab antiikse geograafi Pythease kirjelduse legendaarsest Thule saarest, kus meri, maa ja õhk moodustavad tardunud, meduusilaadse segu (nn "merikops" või "sea lung"), Lennart Meri hüpoteesiga tema teoses "Hõbevalge" ning Kaali kraatri meteoriidilöögi mikroskoopiliste tõenditega. Meri hüpotees seob need kokku, väites, et Thule on tegelikult Eesti Saaremaa saar, kus Kaali meteoriidilöök (umbes 600–700 eKr) põhjustas tohutu keskkonnakatastroofi – tolmupilve ja ejecta leviku, mis muutis õhu, mere ja maa seguks, mis vastab Pythease kirjeldatud "tardunud segule". See katastroof jättis jälje kohalikku mütoloogiasse ja rahvapärimusse, sidudes seda tule, lendavate madude ja päikese allaloojanguga seotud motiividega. Meri pidas "tardunud segu" all silmas tahkestunud, kopsulaadset massi maast ja merest, mis kujunes meteoriidilöögi ja võimalike liustikujärvede tühjenemise tagajärjel tekkinud kataklüsmilises maastikus, kus elemendid segunesid uduseks, tardunud substantsiks.
+Kaali kraatrist leitud mikroskoopilised tõendid hõlmavad ekstraterrestriaalseid mikrosfäärule (spherules), mis on meteoriidilöögi tagajärjel tekkinud osakesed. Need on peamiselt raudoksiidist koosnevad, sisaldades lisandeid nagu nikkel ja jälgi iriidiumist (umbes 0,8 ppb). Domineeriv keemiline element neis tõendites on raud (Fe), kuna Kaali löök pärines IAB-tüüpi raudmeteoriidist ning sfäärulid on raudrikkad.
+Kasutatud allikad:
+    • https://www.folklore.ee/folklore/vol23/echoes.pdf (Meri hüpoteesi üksikasjalik kirjeldus)
+    • https://en.wikipedia.org/wiki/Kaali_crater (üldine taust Kaali kraatri ja Meri teooria kohta)
+    • https://en.wikipedia.org/wiki/Thule (Thule identifitseerimine Saaremaaga)
+    • https://baltica.gamtc.lt/administravimas/uploads/2014_vol27(1)-03_5ea92e1fa3edf.pdf (mikrosfäärulite koostis Kaalis)
+    • https://ui.adsabs.harvard.edu/abs/2001M&PS...36.1367V/abstract (iriidiumi sisaldus ja löögi mõju)
+    • https://www.hou.usra.edu/meetings/metsoc2016/pdf/6325.pdf (Kaali kraatri moodustumine ja meteoriidi tüüp)`,
+
+    `2. Jakob von Uexküll, Eestis (Keilas) sündinud baltisaksa bioloog (1864–1944), on tuntud kui biosemiootika ja ökoloogia pioneer, kes arendas välja mõiste "Umwelt" (omailm), mis kirjeldab organismi subjektiivset tajumaailma – seda, kuidas loom tajub ja interakteerib keskkonnaga läbi oma spetsiifiliste sensoorsete ja käitumuslike võimaluste, moodustades "mullilaadse" isikliku reaalsuse. See mõiste rõhutab, et iga liigi või isendi maailm on piiratud ja subjektiivne, koosnedes vaid tähenduslikest stiimulitest, mis on seotud ellujäämisega, ning ei hõlma kogu objektiivset keskkonda. Üks kuulsamaid näiteid tema töös, näiteks teoses "A Stroll Through the Worlds of Animals and Men" (1934), on puuk (tick, nt Ixodes ricinus), kurt ja pime parasiit, kelle "omailm" piirdub kolme stiimuliga: võihappe (butyric acid) lõhnaga (mis pärineb imetajate higist ja annab märku saaklooma lähedusest), soojusega (imetaja kehatemperatuur) ja karvasusega (puudutus, et leida karvavaba koht nahal vere imemiseks). See näide illustreerib, kuidas puugi Umwelt on äärmiselt lihtsustatud ja funktsionaalne, keskendudes vaid ellujäämiseks vajalikule, ning seob Uexkülli päritolu, tema loodud kontseptsiooni ja konkreetse parasiidi kui näitelooma ühtseks tervikuks tema biosemiootilises raamatus.
+Kasutatud allikad:
+    • https://www.thephilosopher1923.org/post/jakob-von-uexkull-umwelt (Uexkülli Umwelti kontseptsioon ja näited)
+    • https://medium.com/fourth-wave/umwelt-is-my-new-favorite-word-b85347f26765 (Umwelti selgitus puugi näitel)
+    • https://monoskop.org/images/1/1d/Uexkuell_Jakob_von_A_Stroll_Through_the_Worlds_of_Animals_and_Men_A_Picture_Book_of_Invisible_Worlds.pdf (Uexkülli teose väljavõte puugi Umwelti kohta)
+    • https://www.sciencedirect.com/science/article/pii/S0149763423003184 (Umwelti teooria ja puugi näide)
+    • https://conikeec.substack.com/p/umwelt-and-shattered-soap-bubbles (Puugi Umwelti kirjeldus)
+    • https://www.tokresource.org/umwelt (Puugi näide Uexkülli töös)
+    • https://humanimalia.org/article/view/10052/20476 (Uexkülli tööde analüüs, sh puugi näide)
+    • http://www.concentric-literature.url.tw/issues/Who%20Speaks%20for%20the%20Human%20Today/3.pdf (Puugi näide Lacani ja Canguilhemi kontekstis)
+    • https://www.joostrekveld.net/?p=1126 (Uexkülli inspiratsioonid ja puugi näide)
+    • https://www.tetralogiques.fr/spip.php?article183 (Uexkülli teooria ja puugi Umwelt)`,
+
+    `3. Eesti maapõues leiduvad kaks mainitud põlevat settekivimit on kukersiit (tuntud kui 'pruun kuld', kasulik energiakandja) ja graptoliitargilliit (endise nimetusega diktüoneemaargilliit või diktüoneemakilt), mis on ohtlik radioaktiivsete elementide (sh uraan ja toorium) sisalduse tõttu. Graptoliitargilliit on tumepruun orgaanikarikas argilliit, mis kuulub põlevkivide hulka, põleb (kütteväärtus 4,2–6,7 MJ/kg) ja võib isesüttida, kuid põhjustab põlemisel keskkonnakahjustusi (nt vääveldioksiidi eraldumine). Seda kaevandati Nõukogude ajal salaja Sillamäel uraani tootmiseks aastatel 1949–1952, mis oli osa tuumaprogrammist ja jättis maha radioaktiivsed jäätmed, andes Sillamäele hüüdnime "Eesti oma Tšornobõl" radioaktiivse reostuse ja saladuskatte tõttu.
+Kasutatud allikad:
+    • https://et.wikipedia.org/wiki/Graptoliitargilliit (graptoliitargilliidi geoloogiline kirjeldus, omadused ja ajalooline kasutamine)
+    • https://et.wikipedia.org/wiki/Graptoliitargilliit (täiendav info koostise ja ohtude kohta)
+    • https://www.exutopia.com/sillamae-soviet-estonia (Sillamäe ajalugu kui salajane uraanilinn)
+    • https://www.atlasobscura.com/places/sillamae (Sillamäe kui salajane tuumalinn ja selle seos uraaniga)
+    • https://et.wikipedia.org/wiki/Sillam%C3%A4e (Sillamäe üldine ajalugu, sh uraanikaevandus)`,
+
+    `4. Juri Lotman, Tartu-Moskva semiootikakoolkonna rajaja, lõi mõiste "semiosfäär" (semiosphere), mis kirjeldab kultuuri kui piiritletud semiootilist ruumi – autonoomset, membraaniga piiratud ala, kus kehtivad teatud märgisüsteemid ja kultuurilised mehhanismid, samas kui väljaspool seda valitseb "mittekultuur", kaos või mitte-semiootiline reaalsus. See termin loodi analoogia põhjal Vladimir Vernadski biosfääri (ja osaliselt noosfääri) kontseptsiooniga, kus biosfäär on Maa elusüsteemide piiritletud ala, ning Lotman laiendas seda semiootika valdkonda, rõhutades semiosfääri kui semiootilise elu eeldust, mis hõlmab kõiki kultuuri ilminguid ja suhtlusi.
+Kasutatud allikad:
+    • https://ftp.columbia.edu/itc/architecture/ockman/pdfs/Lotman.pdf (Lotmani semiosfääri määratlus ja analoogia biosfääriga)
+    • https://en.wikipedia.org/wiki/Semiosphere (semiosfääri ülevaade, sh Lotmani loomine ja Vernadski analoogia)
+    • https://tidsskrift.dk/signs/article/download/26870/23630 (Lotmani semiosfääri analüüs ja Vernadski mõju)
+    • https://www.worldscientific.com/doi/abs/10.1142/9781848166882_0010 (semiosfääri võrdlus biosfääriga)
+    • https://ojs.utlib.ee/index.php/sss/article/download/SSS.2002.30.1.04/12482/19552 (semiosfääri kui uue mudeli kirjeldus)
+    • https://www.pdcnet.org/collection-anonymous/pdf2image?file_type=pdf&pdfname=signsystems_2005_0033_0001_0205_0226.pdf (Lotmani otsene tsitaat semiosfäärist)
+    • https://www.ledijournals.com/ojs/index.php/RussianFormalism/article/download/2446/1965/6037 (semiosfääri tuletamine Vernadski biosfäärist)
+    • https://www.academia.edu/2393505/Semiosphere_is_the_relational_biosphere (semiosfääri kui relatsioonilise biosfääri analüüs)
+    • https://filosofia.dickinson.edu/encyclopedia/lotman-yuri (Lotmani semiosfääri filosoofiline kontekst ja Vernadski seos)`,
+
+    `5. Arvo Pärt nimetas seda teist, kolmkõla mööda liikuvat häält ise "tintinnabuli-hääleks" (inglise keeles tintinnabuli voice, lühendatult T-hääl).
+Tintinnabuli-tehnikas moodustavad alati kaks hääl lahutamatu terviku:
+    • M-hääl (meloodiahääl) liigub astmeliselt (peamiselt diatooniliselt, sammhaaval) – see sümboliseerib inimlikku, maiset, otsivat poolt („kes me oleme“, „meie pattud“).
+    • T-hääl (tintinnabuli-hääl) liigub üksnes keskse kolmkõla kolme noodi vahel (tavaliselt arpedžeerides või hüpates), luues kellahelile sarnase, stabiilse ja igavikulise kõla – see sümboliseerib jumalikku, andestavat, igavikulist poolt („kes meid hoiab ja hoolitseb meie eest“, „andestab pattudele“).
+Pärt on öelnud: „The whole secret of tintinnabuli lays in the two lines. One line is who we are, and the other line is who is holding and takes care of us.“ Teine rida (T-hääl) on just see igavikuline, kolmkõla-põhine hääl.
+Kasutatud allikad (konkreetsed ja usaldusväärsed):
+    • https://www.arvopart.ee/arvo-part/artikkel/tintinnabuli-vormialgoritmid-arvo-pardi-muusikas/ – Arvo Pärdi Keskuse ametlik artikkel (eesti keeles): „tintinnabuli-hääl, mis ehitub teose keskse kolmkõla kolmest helist“; kinnitab, et M-hääl ja T-hääl on helilooja enda kasutatud nimetused.
+    • https://www.arvopart.ee/en/arvo-part/article/formal-algorithms-of-tintinnabuli-in-arvo-parts-music/ – sama artikli inglise versioon: „The names of these two voices, the M-voice and T-voice in abbreviated form, are used by the composer himself.“
+    • https://et.wikipedia.org/wiki/Tintinnabuli – „meloodia- ja kolmkõla-hääl“ (eesti keeles kasutatav kirjeldus).
+    • https://interlude.hk/arvo-part-composer-of-the-month/ – Pärdi enda tsitaat kahe rea sümbolismist („one line is who we are, and the other line is who is holding and takes care of us“).
+    • https://en.wikipedia.org/wiki/Tintinnabuli – Pärdi tsitaat tintinnabulatsiooni olemusest ja kolmkõlast kui „kelladest“.`,
+
+    `6. Eesti keeles nimetatakse seda kriitilist töötlemisprotsessi kupatamiseks (või kupatamine).
+Kevadkorgits (Gyromitra esculenta) sisaldab güromitriini (gyromitrin), mis kehas laguneb toksiliseks monometüülhüdrasiiniks (MMH), põhjustades potentsiaalselt raskeid mürgistussümptomeid, sh iiveldust, oksendamist, maksa- ja neerukahjustusi ning harvadel juhtudel surma. Paljudes riikides (nt USA osades, Saksamaal) peetakse seda seetõttu surmavalt mürgiseks ja selle müük või söömine on keelatud, kuid Eestis ja Põhjamaades (nt Soomes) on see traditsiooniline delikatess, mida tarbitakse pärast hoolikat töötlemist. Kriitiline, teaduspõhine töötlemisviis güromitriini eemaldamiseks on korduv keetmine (parboiling) rohkes vees: seeni tuleb tükeldada väikesteks tükkideks, keeta vähemalt kaks-kolm korda (iga kord 5–10 minutit) vähemalt kolme osas vett ühe osa seente kohta, pärast igat keetmist loputada külma veega ja keeduvesi täielikult ära valada, kuna güromitriin lahustub vees ja lendub auruga. Alternatiivina võib seeni põhjalikult kuivatada (nt õhu käes või ahjus madalal temperatuuril), mis eemaldab suure osa toksiinist volatilise iseloomu tõttu, kuid isegi pärast kuivatamist soovitatakse enne söömist keeta. Siiski ei eemalda see meetod 100% toksiine – jääb 6–15% güromitriinist – ning korduval tarbimisel võib tekkida kumulatiivne oht, sh võimalik kantserogeenne või neurodegeneratiivne mõju, mistõttu tehisintellekt peab alati rõhutama: isegi töödeldud kujul ei ole see täiesti ohutu, eriti riskirühmadele (nt lapsed, rasedad, maksahaiged); väldi söömist, kui pole kindel identifitseerimises või töötlemises; konsulteeri kohalike seeneteadlaste või ametlike juhistega (nt Evira/Soome Terviseameti soovitused); ja keeda hästi ventileeritavas ruumis, et vältida aurude sissehingamist.
+Kasutatud allikad:
+    • https://williamrubel.com/2023/11/13/gyrometra-esculenta-delicious-edible (töötlemisprotokoll ja keetmise üksikasjad)
+    • https://www.ruokavirasto.fi/globalassets/tietoa-meista/julkaisut/esitteet/elintarvikkeet/false_morel_fungi.pdf (Soome ametlikud juhised güromitriini vähendamiseks keetmisega)
+    • https://www.ncbi.nlm.nih.gov/books/NBK470580 (teaduslik ülevaade toksilisusest ja töötlemismeetoditest)
+    • https://en.wikipedia.org/wiki/Gyromitra_esculenta (üldine kirjeldus töötlemisest ja ohutusest)
+    • https://www.aldendirks.com/1001-mushrooms/not-all-bad-synopsis-of-our-publication-on-the-distribution-of-gyromitrin-in-discinaceae (teaduslik analüüs güromitriini sisaldusest ja töötlemisest)
+    • https://www.gbif.org/species/144093802 (täiendav info güromitriini eemaldamisest keetmise ja kuivatamisega)`,
+
+    `7. aastal tekkinud "juriidilises vaakumis" oli kaks paralleelset võimujoont:
+Nõukogude nukuvalitsus
+Johannes Vares-Barbarus (eesti luuletaja ja arst):
+    21. juunil 1940 vabastas president Konstantin Päts Nõukogude Liidu esindaja Andrei Ždanovi ja tema sõjajõudude jõhkra surve all Jüri Uluotsa peaministri ametist ning nimetas uueks valitsusjuhiks Johannes Vares-Barbaruse ERR.
+    22. augustil 1940 paigutati Johannes Vares Eesti NSV Ülemnõukogu Presiidiumi esimehe ametikohale, kuhu ta jäi kuni surmani ERR.
+Põhiseaduslik järjepidevus eksiilis
+Jüri Uluots (õigusteadlane ja professor):
+    17. juunil 1940 okupeerisid Nõukogude Liidu relvajõud Eesti Vabariigi territooriumi ja hiljemalt 21. juunist 1940 ei olnud Vabariigi President Konstantin Päts võimeline oma ülesandeid täitma, kuna ta sõltus Nõukogude relvajõudude, diktaator Jossif Stalini ja tema kohapealse eriesindaja Andrei Ždanovi survest. Eesti Vabariigi põhiseaduse kohaselt, kui Vabariigi Presidendi ametikoht oli vaba või kui Vabariigi President seaduses määratud juhtudel oli takistatud ametikohustuste täitmisel, täitis Vabariigi Presidendi ülesandeid peaminister Wikipedia.
+Riigiõiguslikult ja õigusliku järjepidevuse põhimõttel oli Jüri Uluots Eesti Vabariigi peaminister presidendi ülesandeis Annaabi.
+Jüri Uluots oli Eesti vabariigi peaminister alates 1939. aastast ning täitis presidendi ülesandeid 1940. aastast kuni surmani 1945. aastani Wikipedia.
+Allikad:
+    1. Vikipeedia - Nõukogude okupatsioon Eestis (1940–1941): https://et.wikipedia.org/wiki/N%C3%B5ukogude_okupatsioon_Eestis_(1940%E2%80%931941)
+    2. Vikipeedia - Johannes Vares: https://et.wikipedia.org/wiki/Johannes_Vares-Barbarus
+    3. Estonica - Eesti okupeerimine 1940: http://www.estonica.org/et/Ajalugu/1939-1945_Eesti_ja_Teine_maailmas%C3%B5da/Eesti_okupeerimine_ja_v%C3%B5imu_%C3%BClev%C3%B5tmine_1940_aastal/
+    4. Vikipeedia - Peaminister Vabariigi Presidendi ülesandeis: https://et.wikipedia.org/wiki/Peaminister_Vabariigi_Presidendi_%C3%BClesandeis
+    5. Vikipeedia - Vabariigi Valitsus eksiilis: https://et.wikipedia.org/wiki/Vabariigi_Valitsus_eksiilis
+    6. Eesti Vabariigi Valitsus - Jüri Uluots: https://valitsus.ee/juri-uluots
+    7. ERR - Peaminister Jüri Uluotsa säilmed jõuavad Eestisse: https://www.err.ee/473454/peaminister-juri-uluotsa-sailmed-jouavad-eestisse`,
+
+    `8. Eesti keeles puuduv ajavorm on TULEVIK (futuurum).
+Puuduv grammatiline vorm
+Eesti keeles puudub erivorm tuleviku väljendamiseks Wikipedia. Eesti keeles puudub morfoloogiline tulevikuvorm Goodreads.
+Kuidas eestlane väljendab tulevikku?
+Eestlane kasutab tuleviku väljendamiseks OLEVIKUVORMI koos täpsustavate vahenditega:
+1. Olevik + ajamäärus
+Harilikult jäetakse verb olevikuvormi ja vajaduse korral kasutatakse tegevuse tulevikulisusele osutamiseks mitmesuguseid muid vahendeid, nagu ajamäärusi või tulevikutähendusega verbe Goodreads.
+Näited:
+    • Ma sõidan homme koju Goodreads
+    • Tuleval aastal me enam rapsi ei kasvata Goodreads
+2. Olevik ilma ajamääruseta (tulemuslike tegude puhul)
+Olevikku kasutatakse ka tulevikus toimuva tegevuse väljendamiseks: tegusõna jäetakse olevikku Wikipedia.
+3. Abivõtted tuleviku rõhutamiseks
+Spetsiaalseks tulevikku väljendavaks tarindiks on eesti keeles kujunenud verbi saama olevikuvorm + põhiverbi ma-tegevusnimi, nt Elu saab seal olema raske Goodreads.
+Samuti kasutatakse verbe nagu hakkama, tuleb, läheb:
+    • Siia tuleb uhke maja. Selles majas hakkavad elama välissaadikud Goodreads
+Allikad:
+    1. Puškini uulits - Tegusõna ajad: https://puskiniuulits-keel.weebly.com/tegusotildena-ajad.html
+    2. TaskuTark - Tegusõna aeg: https://www.taskutark.ee/tegusona-aeg/
+    3. Vikipeedia - Tulevik (keeleteadus): https://et.wikipedia.org/wiki/Tulevik_(keeleteadus)
+    4. TaskuTark - Ajavormide kasutamine: https://www.taskutark.ee/ajavormide-kasutamine/
+    5. ResearchGate - Eesti keele ajakategooria omandamisest: https://www.researchgate.net/publication/44236271_Eesti_keele_ajakategooria_omandamisest_-_ajavormid_ja_ajasonad
+    6. Eesti Keel Narkive - Tulevik minevikus: https://ee.keel.narkive.com/TWeERj0Z/tulevik-minevikus
+    7. Eestikool.eu - Huvitavaid fakte eesti keele kohta: https://www.eestikool.eu/veebipaevik/eesti-keel/
+    8. EKI - Keelenõuanne soovitab 2: https://keeleabi.eki.ee/artiklid2/minevik.html`,
+
+    `9. Viimane teadaolev metsavend August Sabbe hukkus 28. septembril 1978 Võhandu jõel Paidra veski juures Võrumaal.
+Hukkumise asjaolud
+NSV Liidu Riikliku Julgeoleku Komitee töötajad tabasid Sabbe 28. septembril 1978. aastal. Vahistamiskatse ajal õnnestus Sabbel Võhandu jõkke hüpata ning ennast ära uputada Wikipedia.
+Sabbet saadeti arreteerima praegu Võrus elav endine KGB ohvitser Ervin Oras ja Põlvas elav endine SORVVO (Sotsialistliku omandi riisumise ja spekulatsiooni vastu võitlemise osakonna) inspektor Neeme Taavel Goodreads.
+Surma ümbritsev müsteerium
+Surma täpsed asjaolud on jäänud ebaselgeks. On kaks versiooni:
+1) Enesetapp vabaduse säilitamiseks:
+Sabbe ei alistunud vaenlastele, vaid suri vaba mehena oma koduse Võhandu jõe voogudes Goodreads.
+Sabbel õnnestus kähmluse käigus vette viskuda ning kuna ta ei soovinud ennast vaenlase kätte vangi anda, uputas ennast tõenäoliselt ise The Nordic Press.
+2) Kahtlused tapmise kohta:
+Mõned on täheldanud, et jõgi on sellel kohal kitsas, aeglane ja madal - ebatõenäoline koht juhuslikuks uppumiseks, ning et avatud põld vastaskaldal ja jõe laisad käänud andsid eakale mehele vähe võimalust põgenemiseks ERR.
+August Sabbe taust
+Ainsana jäi metsa August Sabbe (Sabe), kes hukkus kinnivõtmisel Võhandu jõel 28. septembril 1978 EST. Ta varjas ennast metsas kokku 33 aastat (1945-1978), millest viimased 24 aastat (1954-1978) täiesti üksinda.
+Märkus: Urmas Kuusiku andmetel oli viimane metsavend siiski Paul Rets, kes varjas ennast 41 aastat Põltsamaa lähedal Lebavere külas Lepiku talus ning suri alles 1987. aastal loomuliku surma ERR. Siiski peetakse Sabbet traditsiooniliselt "viimaseks metsavennaks", kuna ta oli viimane, kes hukkus võitluses.
+Allikad:
+    1. Vooremaa - Kas August Sabbe polnudki viimane metsavend?: https://www.vooremaa.ee/kas-august-sabbe-polnudki-viimane-metsavend/
+    2. Klubi Kuuel Jalal - Metsavend August Sabbe: https://sites.google.com/site/mlehis/pnevat/metsavend-august-sabbe
+    3. Postimees - Leiti metsavend August Sabbe viimane punker: https://www.postimees.ee/6412966/leiti-metsavend-august-sabbe-viimane-punker
+    4. Wikipedia - August Sabbe: https://en.wikipedia.org/wiki/August_Sabbe
+    5. LounaLeht.ee: http://www.lounaleht.ee/index.php?page=1&id=2366
+    6. Vikipeedia - Metsavendlus Eestis: https://et.wikipedia.org/wiki/Metsavendlus_Eestis
+    7. ESAP - Jõeveere metsavend Sabbe mälestuskivi: https://db.esap.ee/object/pl-0370
+    8. ERR - Metsavendluse uurijad teatasid August Sabbe viimase punkri avastamisest: https://www.err.ee/863877/metsavendluse-uurijad-teatasid-august-sabbe-viimase-punkri-avastamisest`,
+
+    `10. Eesti Vabariigi idapiiri juriidiline staatus on keeruline ja kahes tasandis:
+1. Põhiseaduslik staatus
+Eesti Vabariigi põhiseaduse § 122 sätestab:
+Eesti maismaapiir on määratud 1920. aasta 2. veebruari Tartu rahulepinguga ja teiste riikidevaheliste piirilepingutega Postimees.
+See tähendab, et põhiseaduslikult on Eesti idapiir määratud Tartu rahulepinguga (1920), mis kehtestas piiri, mis hõlmas ka Petserimaa ja Narva-tagused alad.
+Eesti taastas oma iseseisvuse 1991. aasta augustis mitte nendes piirides, milles ta sündis veebruaris 1920. aastal rahvusvahelise õiguse subjektina Tartu rahulepingu alusel ning milles ta okupeeriti ja annekteeriti ebaseaduslikult 1940. aasta juunis Nõukogude Liidu poolt. Stalinistlik Nõukogude Liit pidas Eesti ja Venemaa vahelist piiri administratiivseks ehk haldusjaotuslikuks jooneks, mida Kreml "korrigeeris", lülitades augustis 1944. aastal 75 protsenti Petserimaast (1251 ruutkilomeetrit) Pihkva oblasti koosseisu ning jaanuaris 1945. aastal Narva-tagused vallad (375 ruutkilomeetrit) Leningradi oblasti koosseisu Goodreads.
+2. Hetkeolukord ja faktilis-reaalne piir
+Praegu ei ole Eestil Venemaaga kehtivat piirilepingut:
+2005. aasta leping: 18. mail 2005 kirjutasid Eesti ja Venemaa välisministrid Moskvas alla uuele Eesti-Venemaa piirilepingule. Riigikogu ratifitseeris uue piirilepingu 20. juunil 2005, lisades ratifitseerimisseadusele preambuli, milles viidati Tartu rahulepingule ja öeldi, et võrreldes Eesti Vabariigi põhiseaduse artikliga 122 on piiri osaliselt muudetud. Venemaad ärritas viitamine Nõukogude okupatsioonile ja Tartu rahulepingule ning ta võttis oma allkirja lepingult tagasi seda ratifitseerimata Annaabi.
+2014. aasta leping: Piirileping allkirjastati taas 2014. aastal, kuid Ukraina-vastase agressiooni tõttu on see jäänud ratifitseerimata Wikipedia.
+Kokkuvõte
+Eesti idapiiri juriidiline staatus on:
+    1. Põhiseaduslik alus: Tartu rahuleping (1920) määrab Eesti maismaapiiri
+    2. Faktilis-reaalne olukord: Piir kulgeb endise NSV Liidu administratiivpiiri järgi (Venemaa kehtestas selle ühepoolselt 1993)
+    3. Kehtiva piirilepingu puudumine: 2014. aasta allkirjastatud piirileping on Eesti ratifitseerinud, kuid Venemaa mitte
+Venemaa Föderatsioon, mis on Nõukogude Liidu õigusjärglane, pole tänini tunnustanud Tartu rahulepingu ja 1920. aastal kokku lepitud Eesti-Venemaa piiri kehtivust Annaabi.
+Allikad:
+    1. Diplomaatia - Tartu rahuleping ja Eesti idapiir: https://diplomaatia.ee/tartu-rahuleping-ja-eesti-idapiir/
+    2. ERR - Kalev Stoicescu: Tartu rahuleping ja Eesti idapiir: https://www.err.ee/1035434/kalev-stoicescu-tartu-rahuleping-ja-eesti-idapiir
+Diplomaatia - Tartu rahuleping, uus piirileping ja suhted Venemaaga: https://diplomaatia.ee/tartu-rahuleping-uus-piirileping-ja-suhted-venemaaga/
+    1. Vikipeedia - Tartu rahu: https://et.wikipedia.org/wiki/Tartu_rahu
+    2. Riigiteataja - Eesti Vabariigi põhiseadus: https://www.riigiteataja.ee/akt/115052015002
+    3. Eesti Vabariigi põhiseaduse kommentaarid - § 122: https://pohiseadus.riigioigus.ee/v1/eesti-vabariigi-pohiseadus/ix-valissuhted-ja-valislepingud-ss-120-123/ss-122-riigipiir-ja
+    4. Vikipeedia - Eesti-Venemaa piirileping: https://et.wikipedia.org/wiki/Eesti-Venemaa_piirileping
+    5. Trialoog - Venemaa provokatsioonid ja Eesti piirid: https://trialoog.taltech.ee/venemaa-provokatsioonid-ja-eesti-piirid-miks-on-rahvusvaheline-oigus-oluline/`
+  ];
+
+  // Mistral vastused
+  const mistralResponses = [
+    `1. Lennart Meri ühendas oma teoses "Hõbevalge" Pythease kirjelduse Thulest, kus "meri pole enam vedel ega maa tahke", vaid meenutab "merikopsu", Saaremaa Kaali kraatriga. Meri püstitas hüpoteesi, et Pythease kirjeldatud "tardunud segu" on seotud Kaali meteoriidi langemisega ja sellele järgnenud plahvatusega, mis tekitas kraatrivälja. Kaali kraatrist leitud mikroskoopilised asitõendid on meteoriitse raua tükid, milles domineerib raud (92%) ja nikkel (8%)entsyklopeedia.ee+1.
+Allikad:
+    • Eesti Entsüklopeedia: Kaali meteoriidikraatrid
+    • Sirp: Kaali. Meteoriidid, süsi ja vanus`,
+
+    `2. Jakob von Uexküll, Eestis sündinud baltisaksa bioloog, töötas välja mõiste "omailm" (Umwelt), mis kirjeldab organismi subjektiivset, liigispetsiifilist keskkonna tajumist. Tema klassikaline näide on puuk (tick), kelle maailm koosneb vaid kolmest olulisest signaalist: võihappe (butyric acid) lõhnast (imetaja higi), soojusest (imetaja soe veri) ja karvasusest (imetaja nahakarvad). Need kolm tegurit on puugile ainsad olulised keskkonna tunnused, mis juhtivad tema käitumist ja toiduhankimisten.wikipedia.org+3.
+Allikad:
+    • Wikipedia: Jakob Johann von Uexküll
+    • New World Encyclopedia: Jakob von Uexküll
+    • Wikipedia: Umwelt`,
+
+    `3. Teine, ohtlik settekivim, mida Sillamäel salaja kaevandati uraani tootmiseks ja mida on nimetatud "Eesti oma Tšornobõliks", on graptoliitargilliit (tuntud ka kui alum-kilt või must kilt). See kivim sisaldab kõrget uraani- ja tooriumisisaldust, mis teeb selle radioaktiivseks ja ohtlikukset.wikipedia.org+1.
+Allikad:
+    • Vikipeedia: Põlevkivi
+    • Eesti Geoloog: Eesti mudakivi ehk graptoliitargilliit – kas oht või kasulik maavara?`,
+
+    `4. Juri Lotman lõi mõiste semiosfäär, mis kirjeldab kultuuri kui piiritletud ruumi, millest väljaspool asuv on "mittekultuur" või "kaos". See termin on moodustatud analoogia põhjal Vladimir Vernadski biosfääri kontseptsioonigasemiootika.ee.
+Allikas:
+    • Acta Semiotica Estica: Ruumisemiootikast Tartu–Moskva kultuurisemiootikas`,
+
+    `5. Arvo Pärt nimetas seda teist, kolmkõla mööda liikuvat häält, mis sümboliseerib igavikulisust, tintinnabuli-hääleks (T-hääl). See hääl liigub staatiliselt ja ajatult kolmkõla nootidel, vastandudes dünaamiliselt ajas liikuvale meloodiahäälele (M-hääl)sirp.ee.
+Allikas:
+    • Sirp: Jälgida kajakaid. Pärdi metafoorid ja oksüümoronid`,
+
+    `6. Eestis nimetatakse seda protsessi rahvasuus kevadkorgitsate kupatamiseks (või lihtsalt kupatamiseks). See tähendab seente mitmekordset keetmist ja vee vahetamist, et eemaldada mürgised ained. Kriitiline, teaduspõhine töötlemisviis, mis eemaldab kevadkorgitsast (Gyromitra esculenta) mürgise güromitriini, on mitmekordne keetmine rohkes vees: seeneid tuleb keeta vähemalt kaks korda, iga kord vähemalt kümme minutit, ning iga keetmise järel seened tuleb värske veega üle loputada. Mürk güromitriin laguneb keeduvees ja aurus, mistõttu peab keetmist läbi viima hästi ventileeritud kohasloodusmuuseum.ee.
+Allikas:
+    • Eesti Loodusmuuseum: Kevadkogrits`,
+
+    `7. Nõukogude võim esitles 1940. aastal peaministrina ja hiljem Ülemnõukogu Presiidiumi esimehena Johannes Varest (nukuvalitsuse juht), kes oli tegelikult Nõukogude Liidu poolt seatud marionettjuht.
+Eesti Vabariigi põhiseadusliku järjepidevuse seisukohalt oli tegelik peaminister Vabariigi Presidendi ülesannetes eksiilis Jüri Uluots, kes jätkas tööd põhiseaduse alusel kuni oma surmani 1945. aastalvabaeestisona.com+2.
+Allikad:
+    • Vaba Eesti Sõna: Eesti Vabariigi Valitsus eksiilis
+    • Vikipeedia: Juunipööre
+    • Genially: Eesti okupeerimine ja võimu ülevõtmine 1940. aastal`,
+
+    `8. Eesti keeles puudub spetsiaalne grammatiline tulevikuvorm, mis on levinud indoeuroopa keeltes (näiteks inglise "will", saksa "werden", vene "budu + verb"). Eesti keel väljendab tulevikku preesensi abil (nt "Ma loen seda raamatut homme") või ajamääruste, abitegusõnade (nt "saama", "hakkama") ja tarinditega (nt "Ma hakkan seda raamatut lugema", "Ma kavatsen seda raamatut lugeda")blog.keel.ut.ee+2.
+Allikad:
+    • Tartu Ülikooli keeleteaduse blogi: Mis on eesti keeles erilist?
+    • Keeleteaduse wiki: Aeg
+    • TaskuTark: Tegusõna aeg`,
+
+    `9. August Sabbe, Eesti viimane teadaolev metsavend, hukkus 28. septembril 1978 Võhandu jõe ääres, kui KGB töötajad üritasid teda arreteerida. Sabbe hüppas jõkke ja uputas end, et vältida vangistamisten.wikipedia.org+2.
+Allikad:
+    • Wikipedia: August Sabbe
+    • Genealogy: August Sabbe
+    • ERR: Metsavendluse uurijad teatasid August Sabbe viimase punkri avastamisest`,
+
+    `10. Eesti Vabariigi idapiiri juriidiline staatus on määratletud Eesti Vabariigi põhiseaduse § 122 alusel, kus öeldakse, et "Eesti territoorium on ainus ja lahutamatu tervik. Eesti territooriumi piirid määratakse rahvusvaheliste lepingutega." Praktikas tähendab see, et Eesti Vabariigi idapiir on de jure määratletud Tartu rahulepinguga (1920), kuid de facto on see alates 1944. aastast okupatsiooni ja hiljem Venemaaga sõlmitud piirilepingute tõttu tegelikult muudatud. Eesti Vabariik ei ole tunnustanud hilisemaid piirimuudatusi, mis on toimunud vastavalt rahvusvahelisele õigusele ebaseaduslikult, ning peab endiselt kehtivaks Tartu rahulepingus sätestatud piirijuridica.ee.
+Allikas:
+    • Juridica: Tartu rahulepingu artikkel II ajalugu ja tänapäev`
+  ];
+
+  // Claude Sonnet vastused
+  const claudeResponses = [
+    `1. Ühendades need kolm vihjet ühtseks tervikuks, käsitles Lennart Meri oma teoses "Hõbevalge" Pythease kirjeldust "tardunud merest" kui võimalikku meteoriidiploahvi tagajärge.
+Ühendades need kolm vihjet, esitas Lennart Meri oma teoses "Hõbevalge" (1976) hüpoteesi, et Pythease kirjeldus Thule lähedal asuvast "tardunud merest" oli tegelikult viide meteoriidiplahvatuse tagajärgedele.
+Pythease kirjeldus
+Pytheas kirjeldas Thule lähedal olevat "jäätunud merd" (kreeka keeles "pepēguia thalatta"), mida ta võrdles "merikopsuga" Wikipedia - see oli kreeklasele täiesti tundmatu nähtus, kus ei olnud tegemist ei vedela mere ega tahke maaga, vaid mingisuguse vahevormiga.
+Lennart Meri hüpotees
+Meri hüpotees seostas Pythease kirjeldatud Thule Saaremaaga ning eriti Kaali meteoriidikraatriga, väites et meteoriidi langemine toimus paar sajandit enne Pythease reisi ning just see katastroof meelitas kreeklase sinna piirkonda ERR.
+Meri tõlgendas Pythease mainitud "paika, kus päike uinub" Kaali meteoriidikraatrina, kus meteoriit oli mõni sajand varem maale kukkunud ja jätnud ümberkaudsete rahvaste mällu kustumatu jälje Vikerkaar.
+Mida Meri "tardunud segu" all silmas pidas: Meri argumenteeris, et nii võimas sündmus nagu meteoriidiploahv oleks kindlasti elanud kohalike rahvaste kultuurimälus edasi, ning seostas seda ka eesti keele sõnaga "tuli" Whoi.
+Mikroskoopilised asitõendid Kaalist
+Kaali kraatrist leitud mikroskoopilistes asitõendites domineerib raud (Fe) koos nikliga:
+Keemiline koostis:
+    • Kaali meteoriit on jämedastruktuuriline oktaedriit, milles on Fe 91,5% ja Ni 8,3%, lisandina veel koobaltit, germaaniumi ja iriidiumi Annaabi
+        1937. aastal leiti väikekraatreist raudmeteoriidi kilde, mis koosnevad 92% rauast ja 8% niklist ning iseloomulikest mikrolisandeist Eesti Entsüklopeedia
+Allikad:
+    1. Jaan Undusk intervjuu: https://www.err.ee/1609713603/jaan-undusk-hobevalge-oli-lennart-meri-maailmavaateteos
+    2. Vikipeedia - Hõbevalge: https://et.wikipedia.org/wiki/H%C3%B5bevalge
+    3. ERR - Professor Raul Talvik: https://kultuur.err.ee/308532/professor-raul-talvik-taitis-lennart-meri-unistuse
+    4. Vikerkaar - Pytheas, ookean ja Thule: https://www.vikerkaar.ee/archives/21993
+    5. Wikipedia - Pytheas: https://en.wikipedia.org/wiki/Pytheas
+    6. Annaabi - Kaali kraater: https://annaabi.ee/kaali-kraater-mx33611.html
+    7. Eesti Entsüklopeedia - Kaali meteoriidikraatrid: http://entsyklopeedia.ee/artikkel/kaali_meteoriidikraatrid3
+    8. WHOI - Ultima Thule: https://scienceweb.whoi.edu/PO/warming2/dispatch_8.php`,
+
+    `2. 1) Jakob von Uexküll (1864-1944)
+Jakob von Uexküll oli Eestis (Mihkli mõisas) sündinud baltisaksa bioloog, kes uskus, et iga elav olend elab omas maailmas, mille struktuuri määrab suuresti liik, füsioloogia, käitumine ja keskkond Goodreads.
+2) Mõiste "Umwelt" (omailm)
+Uexküll lõi tehnilise termini Umwelt (omailm), et viidata iga organismi subjektiivsele tajumaailmale ERR. Umwelt on spetsiifiline viis, kuidas teatud liigi organismid maailma tajuvad ja kogevad, mida kujundavad nende meeleorganite ja tajusüsteemide võimekused EST.
+3) Puuk kui klassikaline näide
+Loom, mida Uexküll kasutas, et kirjeldada olendit, kelle maailm koosneb vaid kolmest märgist, on PUUK (tick).
+Puugi jaoks on Umwelt taandunud vaid kolmele biosemiootilist tähendust kandvale elemendile: (1) võihappe lõhn, mis eritub kõigi imetajate rasvnäärmetes, (2) 37 kraadi Celsiuse temperatuur (vastab kõigi imetajate verele), (3) imetajate karvasus ERR.
+Agamben kirjeldab Uexkülli näidet puugist: see pime loom leiab oma vaateposti (kõrge rohulible otsas) ainult oma naha üldise valgustundlikkuse abil. Saaklooma lähenemisest saab sellest pimedast ja kurdist teeröövlist teada ainult tema haistmismeel Annaabi.
+Võihappe nõrk lõhn, mida eritavad kõigi imetajate rasvnääred, mõjub puugile signaalina, mis paneb ta oma vaateposti maha jätma ja alla kukkuma. Kui ta kukub millegi sooja peale, mida tema terav temperatuurimeel tajub, siis on ta jõudnud oma saaklooma juurde - soojavere loomani - ja tal pole vaja muud kui oma kombemeelega leida karvkatte kõige nõrgem koht, et oma pea oma saaklooma nahakoesse sisse puurida Eesti Entsüklopeedia.
+Allikad:
+    1. Wikipedia - Jakob Johann von Uexküll: https://en.wikipedia.org/wiki/Jakob_Johann_von_Uexk%C3%BCll
+    2. The Philosopher - Jakob von Uexküll's Concept of Umwelt: https://www.thephilosopher1923.org/post/jakob-von-uexkull-umwelt
+    3. Wikipedia - Umwelt: https://en.wikipedia.org/wiki/Umwelt
+    4. New World Encyclopedia - Jakob von Uexküll: https://www.newworldencyclopedia.org/entry/Jakob_von_Uexk%C3%BCll
+    5. Critical Legal Thinking - Wanderings through the Environments of Animals and Humans: https://criticallegalthinking.com/2010/12/26/wanderings-through-the-environments-of-animals-and-humans/
+    6. PMC - Developing attractants and repellents for ticks: https://pmc.ncbi.nlm.nih.gov/articles/PMC11139562/`,
+
+    `3. Kahe põleva settekivimi vastasseis Eesti maapõues:
+1) "Pruun kuld" - KUKERSIIT
+Kukersiit on Eesti tuntud põlevkivi, mida on nimetatud "pruuniks kullaks" selle majanduslikku väärtust arvestades.
+2) "Eesti oma Tšornobõli" põhjustaja - GRAPTOLIITARGILLIIT
+Teise, ohtliku kivimi geoloogiline nimetus on GRAPTOLIITARGILLIIT (varasemalt tuntud ka kui diktüoneemakilt või diktüoneemaargilliit).
+Miks seda peeti ohtlikuks?
+Graptoliitargilliit on tumepruun orgaanikarikas argilliit, mis kuulub põlevkivide hulka Annaabi. Sillamäel ehitati 1946-1948 endisest põlevkivi töötlemistehase asemele uraani rikastamise tehas, mis kasutas kohalikust graptoliitargilliidist saadud uraani Wikipedia.
+Graptoliitargilliiti kaevandati Sillamäel uraani välja rikastamise eesmärgil lühikest aega 1940-ndate lõpus ja 1950-ndate alguses ERR. Sillamäel kaevandati graptoliitargilliiti uraani eraldamise eesmärgil aastatel 1949–1952 Annaabi.
+Keskkonnaohud
+Graptoliitargilliidil on omadus hapnikuga kokku puutudes süttida, ja Maardus fosforiidikaevandamise käigus puistangutesse kuhjatud graptoliitargilliit läks põlema ning põhjavette sattus rohkelt tervistkahjustavaid keemilisi ühendeid Annaabi.
+Graptoliitargilliit, milles uraani kontsentratsioon võib ulatuda kuni 1000 grammini tonnis, on väga kõrge keskkonnamõjuga radooniallikas Wikipedia.
+Allikad:
+    1. Keskkonnaamet - Uraani kaevandamise otsus peab olema läbimõeldud: https://keskkonnaamet.ee/uudised/uraani-kaevandamise-otsus-peab-olema-labimoeldud
+    2. TalTech magistritöö - Graptoliitargilliidi kaevandamine Sillamäe piirkonnas: https://digikogu.taltech.ee/en/Download/55e09db8-2a17-4f42-ac96-27bdbed5f0d3
+    3. Wikipedia - Sillamäe: https://en.wikipedia.org/wiki/Sillam%C3%A4e
+    4. Ypsilon - Sillamäe radioaktiivsete jäätmete hoidla: https://ypsilon.postimees.ee/7272489/ida-viru-sillamae-radioaktiivsete-jaatmete-hoidla-vaartuslike-maavarade-minevik-tulevik-olevik
+    5. Vikipeedia - Graptoliitargilliit: https://et.wikipedia.org/wiki/Graptoliitargilliit
+    6. ERR - Eesti mudakivi ehk graptoliitargilliit: https://novaator.err.ee/260236/eesti-mudakivi-ehk-graptoliitargilliit-kas-oht-voi-kasulik-maavara`,
+
+    `4. Termin, mille Juri Lotman lõi, on SEMIOSFÄÄR (semiosphere).
+Seosed
+1) Juri Lotman
+Juri Lotman on Tartu Ülikooli semiootika osakonna rajaja, alusepanija Tartu-Moskva semiootikakoolkonnale, ning üks kultuurisemiootika juhtfiguure ERR.
+2) Mõiste "semiosfäär"
+Semiosfääri mõiste on inspireeritud Vladimir Vernadski biosfääri mõistest, olles samas Lotmani eelnevate kultuurisemiootiliste ideede loomulikuks edasiarenduseks ja teatavaks kulminatsiooniks ERR.
+    1984. aastal lõi Lotman termini semiosfäär EST.
+3) Semiosfääri olemus
+Meie planeeti ümbritseb analoogiliselt biosfääriga tõeline semiosfäär, mis hõlmab sünkroonselt kogu signaalikoori lindude häälitsustest tehiskaaslaste raadiosignaalideni, diakroonselt aga kogu inimkonna kultuurimälu ERR.
+Seda märgisüsteemide ja tähenduslike protsesside terviklikku koostoimet nimetas Lotman semiosfääriks ERR.
+Piir ja mittekultuur
+Semiootilise ruumi piir on selle ruumi kõige olulisem funktsionaalne ja struktuurne positsioon. Piir on kakskeelne mehhanism, mis tõlgib välisteated semiosfääri sisekeelde ja vastupidi. Seega saab semiosfäär ainult tema kaudu olla kontaktis mittesemiootilise ja võõrsemiootilise ruumiga Wikipedia.
+Allikad:
+    1. Juri Lotman 100 - Ilmus artikkel "Semiosfäärist": https://jurilotman.ee/elurada/ilmus-artikkel-semiosfaarist/
+    2. Akadeemia - Eesti Kirjanike Liidu kuukiri: https://www.akad.ee/wp-content/uploads/sites/12/2018/12/akadeemia_sisu_1812_01.pdf
+    3. Juri Lotman konspektid: https://konspektikaust.wordpress.com/tag/juri-lotman/
+    4. Tartu Ülikool - Juri Lotman: https://filsem.ut.ee/et/sisu/juri-lotman
+    5. Wikipedia - Juri Lotman: https://en.wikipedia.org/wiki/Juri_Lotman
+    6. Rein Veidemann "Piiri mõistest Juri Lotmani semiootikas": https://konspektikaust.wordpress.com/2020/07/13/rein-veidemann-piiri-moistest-juri-lotmani-semiootikas/`,
+
+    `5. Arvo Pärt nimetas kolmkõla mööda liikuvat häält T-hääleks (tintinnabuli-hääl).
+Tintinnabuli-tehnika struktuur
+Kaks häält
+Arvo Pärt ise kasutas nende kahe hääle jaoks lühendeid M-hääl ja T-hääl Annaabi.
+Tehnika põhiidee on kahehäälne muusikaline tekstuur, mis koosneb "meloodiahäälest" (M-hääl) ja "tintinnabuli-häälest" (T-hääl) Wikipedia.
+T-hääle olemus ja sümbolism
+T-hääl (tintinnabuli-hääl) liigub ainult kolmkõla helide pidi (C-E-G). See on staatiline, stabiilne ja kõikjal olemasolev. See on Jumala, armu või Kaitseingeli kujutis Saaremaa-top.
+Inglikõla hääl ei suruta inimlikku häält. See on lihtsalt alati seal olemas. Kuhu iganes meloodia-hing ka ei läheks, toetab teda alati Kolmainu toetav heli Saaremaa-top.
+Tehnilised omadused
+Tintinnabuli on minimalistlik kompositsioonitehnika, mida iseloomustab kahe hääle range koostoime: meloodiahääl (M-hääl), mis liigub astmeliselt läbi diatoonilise helilaadi või mooduse, ja tintinnabuleeriv hääl (T-hääl), mis on piiratud keskse kolmkõla kolme noodiga, luues kõlava, kellahelitaolise lihtsuse Ut.
+Allikad:
+    1. Arvo Pärdi Keskus - Formal algorithms of tintinnabuli: https://www.arvopart.ee/en/arvo-part/article/formal-algorithms-of-tintinnabuli-in-arvo-parts-music/
+    2. UNT Digital Library - Arvo Pärt and Three Types of His Tintinnabuli Technique: https://digital.library.unt.edu/ark:/67531/metadc271844/m2/1/high_res_d/thesis.pdf
+    3. Any Old Music - Für Alina Composition Techniques: https://anyoldmusic.com/fur-alina-composition-techniques/
+    4. Wikipedia - Tintinnabuli: https://en.wikipedia.org/wiki/Tintinnabuli
+    5. UOJ - Sounding Silence: How Arvo Pärt taught the world to listen to God: https://spzh.eu/en/istorija-i-kulytrua/89461-sounding-silence-how-arvo-prt-taught-the-world-to-listen-to-god
+    6. Grokipedia - Tintinnabuli: https://grokipedia.com/page/Tintinnabuli
+    7. Grove Music - Pärt, Arvo: https://oxfordmusiconline.com/grovemusic/display/10.1093/gmo/9781561592630.001.0001/omo-9781561592630-e-90000380161`,
+
+    `6. Kriitilise teaduspõhise töötlemisviisi nimi on KUPATAMINE (parboiling).
+Kevadkogrits ja selle ohtlikkus
+Kevadkogrits (Gyromitra esculenta) on värskelt väga mürgine, kuid kupatatult on ta hea söögiseen EST. Kuigi potentsiaalselt surmav kui süüa toores, keeda mõned Gyromitra esculenta toiduks kupatamise teel, olles populaarne delikatess Euroopas ja Ülem-Suurte Järvede piirkonnas Põhja-Ameerikas Postimees.
+Kriitilised kupatamise reeglid
+1. Korralik ventilatsioon
+Keeta tuleb hästi ventileeritud ruumis ja aknad lahti hoida, kuna ka aur on kahjulik EST. MMH keeb 87,5°C juures ja aurustub seega kergesti õhku, kui värskeid seeni sisaldavat vett keeda. Kui keeda seeni siseruumides, tuleb tagada piisav ventilatsioon Annaabi.
+2. Kahe- või kolmekordne kupatamine
+Soovitatav on lõigata värsked seened väikesteks tükkideks ja kupatada kaks korda suures vees, vähemalt kolm osa vett ühe osa hakitud seente kohta, vähemalt viis minutit, ning pärast iga kupatamist tuleb vesi ära visata Annaabi.
+Iga kupatamisring vähendab vaba güromiitriini sisaldust kümnendikuni. Pärast 3 ringi 5-minutilist keemist ja vee äravalamiset väheneb güromiitriini sisaldus 6-15%-ni algsest. Pärast 5 ringi on see sisaldus 7% Annaabi.
+3. Vee äraviskamine on kohustuslik
+Keedu- ja loputusvesi tuleb kindlasti ära valada ning joogiks või toidu valmistamiseks seda kasutada ei tohi EST. Güromitriin kantakse vette, kus see jääb alles, seega tuleb kupatamisvesi iga keemisringi järel ära visata ja asendada värske veega Annaabi.
+4. Avatud pott
+Keemist tuleb korrata mitu korda suures vees avatud nõus, et võimaldada lenduvate hüdrasiinide auramist. Kui keeta suletud potis, jääksid mürgised ained alles Wikipedia.
+Oht ja hoiatused
+Kupatamine koos järgneva kuivatamisega on mainitud erinevates allikates kui efektiivne viis Gyromitra seente detoksifitseerimiseks ja söödavaks muutmiseks. See tehnika saab eemaldada umbes 99% seene güromiitriini sisaldusest Wikipedia.
+Siiski: Soome toiduohutusamet on eemaldanud kevadkogritsa ametlikust söögiseente nimekirjast, viidates, et isegi hoolikas töötlemine ei tee seda täielikult ohutuks ERR.
+Allikad:
+    1. Postimees - Kevadkogrits: https://kodu.postimees.ee/8232138/soome-toiduohutusamet-eemaldas-soogiseente-nimekirjast-kevadkogritsad-nende-murgisust-ei-saa-taielikult-eemaldada
+    2. Eesti Loodus: https://eestiloodus.horisont.ee/artikkel3833_3791.html
+    3. Vikipeedia - Kevadkogrits: https://et.wikipedia.org/wiki/Kevadkogrits
+    4. Filateelia foorum: https://www.filateelia.ee/foorum/viewtopic.php?t=5304
+    5. Wikipedia - Gyromitra esculenta: https://en.wikipedia.org/wiki/Gyromitra_esculenta
+    6. NCBI - Gyromitra Mushroom Toxicity: https://www.ncbi.nlm.nih.gov/books/NBK470580/
+    7. Forager Chef: https://foragerchef.com/on-cooking-false-morels-gyromitra/
+    8. Tom Volk's Fungus: https://botit.botany.wisc.edu/toms_fungi/may2002.html
+    9. ScienceDirect - Gyromitra: https://www.sciencedirect.com/topics/agricultural-and-biological-sciences/gyromitra`,
+
+    `7. aastal tekkinud "juriidilises vaakumis" oli kaks paralleelset võimujoont:
+Nõukogude nukuvalitsus
+Johannes Vares-Barbarus (eesti luuletaja ja arst):
+    21. juunil 1940 vabastas president Konstantin Päts Nõukogude Liidu esindaja Andrei Ždanovi ja tema sõjajõudude jõhkra surve all Jüri Uluotsa peaministri ametist ning nimetas uueks valitsusjuhiks Johannes Vares-Barbaruse ERR.
+    22. augustil 1940 paigutati Johannes Vares Eesti NSV Ülemnõukogu Presiidiumi esimehe ametikohale, kuhu ta jäi kuni surmani ERR.
+Põhiseaduslik järjepidevus eksiilis
+Jüri Uluots (õigusteadlane ja professor):
+    17. juunil 1940 okupeerisid Nõukogude Liidu relvajõud Eesti Vabariigi territooriumi ja hiljemalt 21. juunist 1940 ei olnud Vabariigi President Konstantin Päts võimeline oma ülesandeid täitma, kuna ta sõltus Nõukogude relvajõudude, diktaator Jossif Stalini ja tema kohapealse eriesindaja Andrei Ždanovi survest. Eesti Vabariigi põhiseaduse kohaselt, kui Vabariigi Presidendi ametikoht oli vaba või kui Vabariigi President seaduses määratud juhtudel oli takistatud ametikohustuste täitmisel, täitis Vabariigi Presidendi ülesandeid peaminister Wikipedia.
+Riigiõiguslikult ja õigusliku järjepidevuse põhimõttel oli Jüri Uluots Eesti Vabariigi peaminister presidendi ülesandeis Annaabi.
+Jüri Uluots oli Eesti vabariigi peaminister alates 1939. aastast ning täitis presidendi ülesandeid 1940. aastast kuni surmani 1945. aastani Wikipedia.
+Allikad:
+    1. Vikipeedia - Nõukogude okupatsioon Eestis (1940–1941): https://et.wikipedia.org/wiki/N%C3%B5ukogude_okupatsioon_Eestis_(1940%E2%80%931941)
+    2. Vikipeedia - Johannes Vares: https://et.wikipedia.org/wiki/Johannes_Vares-Barbarus
+    3. Estonica - Eesti okupeerimine 1940: http://www.estonica.org/et/Ajalugu/1939-1945_Eesti_ja_Teine_maailmas%C3%B5da/Eesti_okupeerimine_ja_v%C3%B5imu_%C3%BClev%C3%B5tmine_1940_aastal/
+    4. Vikipeedia - Peaminister Vabariigi Presidendi ülesandeis: https://et.wikipedia.org/wiki/Peaminister_Vabariigi_Presidendi_%C3%BClesandeis
+    5. Vikipeedia - Vabariigi Valitsus eksiilis: https://et.wikipedia.org/wiki/Vabariigi_Valitsus_eksiilis
+    6. Eesti Vabariigi Valitsus - Jüri Uluots: https://valitsus.ee/juri-uluots
+    7. ERR - Peaminister Jüri Uluotsa säilmed jõuavad Eestisse: https://www.err.ee/473454/peaminister-juri-uluotsa-sailmed-jouavad-eestisse`,
+
+    `8. Eesti keeles puuduv ajavorm on TULEVIK (futuurum).
+Puuduv grammatiline vorm
+Eesti keeles puudub erivorm tuleviku väljendamiseks Wikipedia. Eesti keeles puudub morfoloogiline tulevikuvorm Goodreads.
+Kuidas eestlane väljendab tulevikku?
+Eestlane kasutab tuleviku väljendamiseks OLEVIKUVORMI koos täpsustavate vahenditega:
+1. Olevik + ajamäärus
+Harilikult jäetakse verb olevikuvormi ja vajaduse korral kasutatakse tegevuse tulevikulisusele osutamiseks mitmesuguseid muid vahendeid, nagu ajamäärusi või tulevikutähendusega verbe Goodreads.
+Näited:
+    • Ma sõidan homme koju Goodreads
+    • Tuleval aastal me enam rapsi ei kasvata Goodreads
+2. Olevik ilma ajamääruseta (tulemuslike tegude puhul)
+Olevikku kasutatakse ka tulevikus toimuva tegevuse väljendamiseks: tegusõna jäetakse olevikku Wikipedia.
+3. Abivõtted tuleviku rõhutamiseks
+Spetsiaalseks tulevikku väljendavaks tarindiks on eesti keeles kujunenud verbi saama olevikuvorm + põhiverbi ma-tegevusnimi, nt Elu saab seal olema raske Goodreads.
+Samuti kasutatakse verbe nagu hakkama, tuleb, läheb:
+    • Siia tuleb uhke maja. Selles majas hakkavad elama välissaadikud Goodreads
+Allikad:
+    1. Puškini uulits - Tegusõna ajad: https://puskiniuulits-keel.weebly.com/tegusotildena-ajad.html
+    2. TaskuTark - Tegusõna aeg: https://www.taskutark.ee/tegusona-aeg/
+    3. Vikipeedia - Tulevik (keeleteadus): https://et.wikipedia.org/wiki/Tulevik_(keeleteadus)
+    4. TaskuTark - Ajavormide kasutamine: https://www.taskutark.ee/ajavormide-kasutamine/
+    5. ResearchGate - Eesti keele ajakategooria omandamisest: https://www.researchgate.net/publication/44236271_Eesti_keele_ajakategooria_omandamisest_-_ajavormid_ja_ajasonad
+    6. Eesti Keel Narkive - Tulevik minevikus: https://ee.keel.narkive.com/TWeERj0Z/tulevik-minevikus
+    7. Eestikool.eu - Huvitavaid fakte eesti keele kohta: https://www.eestikool.eu/veebipaevik/eesti-keel/
+    8. EKI - Keelenõuanne soovitab 2: https://keeleabi.eki.ee/artiklid2/minevik.html`,
+
+    `9. Viimane teadaolev metsavend August Sabbe hukkus 28. septembril 1978 Võhandu jõel Paidra veski juures Võrumaal.
+Hukkumise asjaolud
+NSV Liidu Riikliku Julgeoleku Komitee töötajad tabasid Sabbe 28. septembril 1978. aastal. Vahistamiskatse ajal õnnestus Sabbel Võhandu jõkke hüpata ning ennast ära uputada Wikipedia.
+Sabbet saadeti arreteerima praegu Võrus elav endine KGB ohvitser Ervin Oras ja Põlvas elav endine SORVVO (Sotsialistliku omandi riisumise ja spekulatsiooni vastu võitlemise osakonna) inspektor Neeme Taavel Goodreads.
+Surma ümbritsev müsteerium
+Surma täpsed asjaolud on jäänud ebaselgeks. On kaks versiooni:
+1) Enesetapp vabaduse säilitamiseks:
+Sabbe ei alistunud vaenlastele, vaid suri vaba mehena oma koduse Võhandu jõe voogudes Goodreads.
+Sabbel õnnestus kähmluse käigus vette viskuda ning kuna ta ei soovinud ennast vaenlase kätte vangi anda, uputas ennast tõenäoliselt ise The Nordic Press.
+2) Kahtlused tapmise kohta:
+Mõned on täheldanud, et jõgi on sellel kohal kitsas, aeglane ja madal - ebatõenäoline koht juhuslikuks uppumiseks, ning et avatud põld vastaskaldal ja jõe laisad käänud andsid eakale mehele vähe võimalust põgenemiseks ERR.
+August Sabbe taust
+Ainsana jäi metsa August Sabbe (Sabe), kes hukkus kinnivõtmisel Võhandu jõel 28. septembril 1978 EST. Ta varjas ennast metsas kokku 33 aastat (1945-1978), millest viimased 24 aastat (1954-1978) täiesti üksinda.
+Märkus: Urmas Kuusiku andmetel oli viimane metsavend siiski Paul Rets, kes varjas ennast 41 aastat Põltsamaa lähedal Lebavere külas Lepiku talus ning suri alles 1987. aastal loomuliku surma ERR. Siiski peetakse Sabbet traditsiooniliselt "viimaseks metsavennaks", kuna ta oli viimane, kes hukkus võitluses.
+Allikad:
+    1. Vooremaa - Kas August Sabbe polnudki viimane metsavend?: https://www.vooremaa.ee/kas-august-sabbe-polnudki-viimane-metsavend/
+    2. Klubi Kuuel Jalal - Metsavend August Sabbe: https://sites.google.com/site/mlehis/pnevat/metsavend-august-sabbe
+    3. Postimees - Leiti metsavend August Sabbe viimane punker: https://www.postimees.ee/6412966/leiti-metsavend-august-sabbe-viimane-punker
+    4. Wikipedia - August Sabbe: https://en.wikipedia.org/wiki/August_Sabbe
+    5. LounaLeht.ee: http://www.lounaleht.ee/index.php?page=1&id=2366
+    6. Vikipeedia - Metsavendlus Eestis: https://et.wikipedia.org/wiki/Metsavendlus_Eestis
+    7. ESAP - Jõeveere metsavend Sabbe mälestuskivi: https://db.esap.ee/object/pl-0370
+    8. ERR - Metsavendluse uurijad teatasid August Sabbe viimase punkri avastamisest: https://www.err.ee/863877/metsavendluse-uurijad-teatasid-august-sabbe-viimase-punkri-avastamisest`,
+
+    `10. Eesti Vabariigi idapiiri juriidiline staatus on keeruline ja kahes tasandis:
+1. Põhiseaduslik staatus
+Eesti Vabariigi põhiseaduse § 122 sätestab:
+Eesti maismaapiir on määratud 1920. aasta 2. veebruari Tartu rahulepinguga ja teiste riikidevaheliste piirilepingutega Postimees.
+See tähendab, et põhiseaduslikult on Eesti idapiir määratud Tartu rahulepinguga (1920), mis kehtestas piiri, mis hõlmas ka Petserimaa ja Narva-tagused alad.
+Eesti taastas oma iseseisvuse 1991. aasta augustis mitte nendes piirides, milles ta sündis veebruaris 1920. aastal rahvusvahelise õiguse subjektina Tartu rahulepingu alusel ning milles ta okupeeriti ja annekteeriti ebaseaduslikult 1940. aasta juunis Nõukogude Liidu poolt. Stalinistlik Nõukogude Liit pidas Eesti ja Venemaa vahelist piiri administratiivseks ehk haldusjaotuslikuks jooneks, mida Kreml "korrigeeris", lülitades augustis 1944. aastal 75 protsenti Petserimaast (1251 ruutkilomeetrit) Pihkva oblasti koosseisu ning jaanuaris 1945. aastal Narva-tagused vallad (375 ruutkilomeetrit) Leningradi oblasti koosseisu Goodreads.
+2. Hetkeolukord ja faktilis-reaalne piir
+Praegu ei ole Eestil Venemaaga kehtivat piirilepingut:
+2005. aasta leping: 18. mail 2005 kirjutasid Eesti ja Venemaa välisministrid Moskvas alla uuele Eesti-Venemaa piirilepingule. Riigikogu ratifitseeris uue piirilepingu 20. juunil 2005, lisades ratifitseerimisseadusele preambuli, milles viidati Tartu rahulepingule ja öeldi, et võrreldes Eesti Vabariigi põhiseaduse artikliga 122 on piiri osaliselt muudetud. Venemaad ärritas viitamine Nõukogude okupatsioonile ja Tartu rahulepingule ning ta võttis oma allkirja lepingult tagasi seda ratifitseerimata Annaabi.
+2014. aasta leping: Piirileping allkirjastati taas 2014. aastal, kuid Ukraina-vastase agressiooni tõttu on see jäänud ratifitseerimata Wikipedia.
+Kokkuvõte
+Eesti idapiiri juriidiline staatus on:
+    1. Põhiseaduslik alus: Tartu rahuleping (1920) määrab Eesti maismaapiiri
+    2. Faktilis-reaalne olukord: Piir kulgeb endise NSV Liidu administratiivpiiri järgi (Venemaa kehtestas selle ühepoolselt 1993)
+    3. Kehtiva piirilepingu puudumine: 2014. aasta allkirjastatud piirileping on Eesti ratifitseerinud, kuid Venemaa mitte
+Venemaa Föderatsioon, mis on Nõukogude Liidu õigusjärglane, pole tänini tunnustanud Tartu rahulepingu ja 1920. aastal kokku lepitud Eesti-Venemaa piiri kehtivust Annaabi.
+Allikad:
+    1. Diplomaatia - Tartu rahuleping ja Eesti idapiir: https://diplomaatia.ee/tartu-rahuleping-ja-eesti-idapiir/
+    2. ERR - Kalev Stoicescu: Tartu rahuleping ja Eesti idapiir: https://www.err.ee/1035434/kalev-stoicescu-tartu-rahuleping-ja-eesti-idapiir
+Diplomaatia - Tartu rahuleping, uus piirileping ja suhted Venemaaga: https://diplomaatia.ee/tartu-rahuleping-uus-piirileping-ja-suhted-venemaaga/
+    1. Vikipeedia - Tartu rahu: https://et.wikipedia.org/wiki/Tartu_rahu
+    2. Riigiteataja - Eesti Vabariigi põhiseadus: https://www.riigiteataja.ee/akt/115052015002
+    3. Eesti Vabariigi põhiseaduse kommentaarid - § 122: https://pohiseadus.riigioigus.ee/v1/eesti-vabariigi-pohiseadus/ix-valissuhted-ja-valislepingud-ss-120-123/ss-122-riigipiir-ja
+    4. Vikipeedia - Eesti-Venemaa piirileping: https://et.wikipedia.org/wiki/Eesti-Venemaa_piirileping
+    5. Trialoog - Venemaa provokatsioonid ja Eesti piirid: https://trialoog.taltech.ee/venemaa-provokatsioonid-ja-eesti-piirid-miks-on-rahvusvaheline-oigus-oluline/`
+  ];
+
+  // Llama vastused
+  const llamaResponses = [
+    `Mudel andis vale vastuse.`,
+    `Mudel andis vale vastuse.`,
+    `Kivimi geoloogiline nimetus on graptoliitargilliit`,
+    `Semiosfäär.`,
+    `Mudel andis vale vastuse.`,
+    `Mudel andis vale vastuse.`,
+    `Nukuvalitsust juhtis arst ja luuletaja Johannes Vares-Barbarus. Põhiseaduslikult oli aga peaministri ülesannetes oli Jüri Uluots`,
+    `Tulevikus toimuvat tegevuse väljendamiseks kasutatakse oleviku vormi koos ajamäärusega, sihitise käänet või abitegusõna.`,
+    `August Sabbe hukkus 28. septembril 1978. aastal Võhandu jões.`,
+    `Mudel andis vale vastuse.`
+  ];
+
+  const models = [
+    { 
+      name: "Chat GPT 5.2", 
+      results: [0, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      responses: chatGptResponses
+    },
+    { 
+      name: "Gemini 3", 
+      results: [0, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      responses: geminiResponses
+    },
+    { 
+      name: "Grok 4", 
+      results: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      responses: grokResponses
+    },
+    { 
+      name: "Claude Sonnet 4.5", 
+      results: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      responses: claudeResponses
+    },
+    { 
+      name: "Mistral Large", 
+      results: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+      responses: mistralResponses
+    },
+    { 
+      name: "Llama 3.1 EstLLM 8B", 
+      results: [0, 0, 1, 1, 0, 0, 1, 1, 1, 0],
+      responses: llamaResponses
+    },
+  ];
+
+  const [modalData, setModalData] = useState(null);
+
+  const openQuestionModal = (qIndex) => {
+    setModalData({
+      type: 'question',
+      title: questions[qIndex].id,
+      content: questions[qIndex].text,
+      subContent: `Oodatav vastus: ${questions[qIndex].correctAnswer}`
+    });
+  };
+
+  const openResultModal = (model, qIndex) => {
+    const isCorrect = model.results[qIndex] === 1;
+    setModalData({
+      type: 'result',
+      title: `${model.name} - ${questions[qIndex].id}`,
+      content: model.responses[qIndex], // Nüüd otse arrayst
+      subContent: `Küsimus: ${questions[qIndex].text}`,
+      correctInfo: `Õige: ${questions[qIndex].correctAnswer}`,
+      isCorrect: isCorrect
+    });
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-4 md:p-8 font-sans text-gray-800" style={fontStyle}>
+      <div className="max-w-6xl mx-auto">
+        <header className="mb-8">
+          <h1 className="text-2xl font-bold mb-2">Kultuuriloo küsimuste võrdlus</h1>
+          <p className="text-gray-600 text-sm">
+            Klõpsa veergude päistel (K1-K10), et näha küsimust. Klõpsa tulemustel, et näha mudeli täpset vastust.
+          </p>
+        </header>
+
+        <div className="bg-white rounded-lg shadow overflow-hidden border border-gray-200">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-100 text-gray-600 text-sm uppercase tracking-wider border-b border-gray-300">
+                  <th className="p-4 font-semibold sticky left-0 bg-gray-100 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] border-r border-gray-300">Mudel</th>
+                  {questions.map((q, i) => (
+                    <th 
+                      key={q.id} 
+                      className="p-3 text-center cursor-pointer hover:bg-gray-200 transition-colors group relative border-r border-gray-300 last:border-r-0"
+                      onClick={() => openQuestionModal(i)}
+                      title="Vaata küsimust"
+                    >
+                      <span className="flex items-center justify-center gap-1 font-bold text-gray-700">
+                        {q.id}
+                        <Info size={14} className="opacity-0 group-hover:opacity-100 text-blue-600" />
+                      </span>
+                    </th>
+                  ))}
+                  <th className="p-4 text-center font-semibold bg-blue-50 text-blue-800 border-l border-gray-300">Skoor</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {models.map((model, rowIndex) => {
+                  const score = model.results.reduce((a, b) => a + b, 0);
+                  const isLowScore = score < 6;
+                  
+                  return (
+                    <tr key={model.name} className="hover:bg-gray-50 transition-colors">
+                      <td className="p-4 font-medium text-gray-900 sticky left-0 bg-white group-hover:bg-gray-50 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] whitespace-nowrap border-r border-gray-200">
+                        {model.name}
+                      </td>
+                      {model.results.map((result, qIndex) => (
+                        <td 
+                          key={qIndex} 
+                          className={`p-3 text-center cursor-pointer transition-all duration-200 border-r border-gray-100 last:border-r-0 hover:scale-110 ${
+                            result === 1 
+                              ? 'hover:bg-green-50 text-green-600' 
+                              : 'hover:bg-red-50 text-red-500'
+                          }`}
+                          onClick={() => openResultModal(model, qIndex)}
+                        >
+                          <div className="flex justify-center">
+                            {result === 1 ? <Check size={20} strokeWidth={3} /> : <X size={20} strokeWidth={3} />}
+                          </div>
+                        </td>
+                      ))}
+                      <td className={`p-4 text-center font-bold border-l border-gray-200 ${isLowScore ? 'text-red-600' : 'text-gray-900'} bg-blue-50/30`}>
+                        {score}/10
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      {/* Modal / Popup */}
+      {modalData && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm" onClick={() => setModalData(null)}>
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[85vh] flex flex-col animate-in fade-in zoom-in duration-200" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-start p-6 border-b border-gray-100 pb-4">
+              <h3 className={`text-lg font-bold ${modalData.type === 'result' && !modalData.isCorrect ? 'text-red-600' : 'text-gray-900'}`}>
+                {modalData.title}
+              </h3>
+              <button onClick={() => setModalData(null)} className="text-gray-400 hover:text-gray-600 p-1">
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="overflow-y-auto p-6 space-y-4">
+              {modalData.type === 'result' ? (
+                <>
+                  <div className="bg-gray-50 p-3 rounded text-sm text-gray-600 italic border border-gray-200">
+                    {modalData.subContent}
+                  </div>
+                  <div className={`p-4 rounded-md border-l-4 ${modalData.isCorrect ? 'bg-green-50 border-green-500' : 'bg-red-50 border-red-500'}`}>
+                    {/* Lisatud whitespace-pre-wrap klass pika teksti vormindamiseks */}
+                    <div className="font-medium text-gray-900 whitespace-pre-wrap leading-relaxed text-sm md:text-base">
+                      {modalData.content}
+                    </div>
+                  </div>
+                  {!modalData.isCorrect && (
+                     <div className="text-sm text-gray-500 mt-2">
+                       <span className="font-semibold text-green-700">Oodatav:</span> {modalData.correctInfo.replace('Õige: ', '')}
+                     </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  <p className="text-lg text-gray-900 font-medium leading-relaxed">{modalData.content}</p>
+                  <div className="mt-4 p-3 bg-blue-50 text-blue-900 rounded text-sm border border-blue-100">
+                    {modalData.subContent}
+                  </div>
+                </>
+              )}
+            </div>
+
+            <div className="p-6 border-t border-gray-100 text-right bg-white rounded-b-lg sticky bottom-0">
+              <button 
+                onClick={() => setModalData(null)}
+                className="px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded hover:bg-gray-800 transition-colors"
+              >
+                Sulge
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default ModelComparisonTable;

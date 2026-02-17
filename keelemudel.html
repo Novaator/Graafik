@@ -20,28 +20,29 @@
         body {
             font-family: 'Fira Sans', sans-serif;
             margin: 0;
-            padding: 20px;
+            padding: 10px;
             background-color: var(--bg-color);
             color: var(--text-color);
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start; /* Joondame üles, et vältida vertikaalset tsentreerimist pikas konteineris */
             min-height: 100vh;
         }
 
         .container {
-            max-width: 900px;
+            max-width: 670px; /* Optimeeritud sihtlaiusele */
             width: 100%;
             text-align: center;
         }
 
-        /* Grid layout for icons */
+        /* Flex layout for icons - Compact Row */
         .model-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
-            gap: 25px;
-            margin-bottom: 20px;
-            padding: 20px 0;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px; /* Väiksem vahe */
+            margin-bottom: 10px;
+            padding: 10px 0 5px 0;
         }
 
         .model-card {
@@ -49,49 +50,55 @@
             flex-direction: column;
             align-items: center;
             cursor: pointer;
-            transition: transform 0.2s ease;
-            padding: 15px 10px;
+            transition: transform 0.2s ease, background-color 0.2s;
+            padding: 8px 4px;
             border-radius: 8px;
+            width: 95px; /* Fikseeritud laius, et mahtuda 6tk ritta (6x95 + vahed < 670) */
         }
 
         .model-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-3px);
             background-color: #f5f5f5;
         }
 
         .icon-circle {
-            width: 64px;
-            height: 64px;
+            width: 48px; /* Väiksemad ikoonid (enne 64px) */
+            height: 48px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
             color: white;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         
         /* Ikoonide SVG stiilid */
         .icon-circle svg {
-            width: 36px;
-            height: 36px;
+            width: 26px; /* Väiksem SVG (enne 36px) */
+            height: 26px;
             fill: currentColor;
+        }
+        
+        /* Claude täht */
+        .icon-circle span {
+            font-size: 24px !important;
         }
 
         .model-name {
-            font-size: 0.95rem;
+            font-size: 0.8rem; /* Veidi väiksem font */
             font-weight: 600;
             color: #333;
+            line-height: 1.2;
         }
 
         .footer-note {
-            font-size: 0.8rem;
-            color: #666;
-            margin-top: 30px;
+            font-size: 0.75rem;
+            color: #888;
+            margin-top: 5px; /* Tunduvalt lähemale */
             font-style: italic;
-            border-top: 1px solid var(--border-color);
-            padding-top: 10px;
-            display: inline-block;
+            padding-top: 0;
+            display: block;
         }
 
         /* Modal Styles */
@@ -118,14 +125,14 @@
 
         .modal-content {
             background-color: white;
-            padding: 30px;
+            padding: 25px;
             border-radius: 8px;
-            max-width: 600px;
+            max-width: 500px;
             width: 90%;
             position: relative;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.25);
             text-align: left;
-            transform: scale(0.9);
+            transform: scale(0.95);
             transition: transform 0.3s ease;
         }
 
@@ -136,13 +143,14 @@
         .close-btn {
             position: absolute;
             top: 15px;
-            right: 20px;
+            right: 15px;
             font-size: 24px;
             cursor: pointer;
-            color: #888;
+            color: #999;
             background: none;
             border: none;
             padding: 0;
+            line-height: 1;
         }
 
         .close-btn:hover {
@@ -151,27 +159,28 @@
 
         .modal-title {
             margin-top: 0;
-            margin-bottom: 15px;
-            font-size: 1.5rem;
-            border-bottom: 2px solid var(--border-color);
-            padding-bottom: 10px;
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
             display: flex;
             align-items: center;
             gap: 10px;
+            color: #111;
         }
 
         .modal-body {
-            line-height: 1.6;
-            font-size: 1rem;
-            color: #2c2c2c;
+            line-height: 1.5;
+            font-size: 0.95rem;
+            color: #333;
         }
 
         /* Brand Colors & Logos */
         .bg-gpt { background-color: #10a37f; }
-        .bg-gemini { background: linear-gradient(135deg, #1d4ed8, #9333ea); } /* Tumedam gradient paremaks kontrastiks */
+        .bg-gemini { background: linear-gradient(135deg, #1d4ed8, #9333ea); }
         .bg-grok { background-color: #000000; }
         .bg-claude { background-color: #d97757; }
-        .bg-mistral { background-color: #fcd34d; color: #000 !important; } /* Mistral kollane + must ikoon */
+        .bg-mistral { background-color: #fcd34d; color: #000 !important; }
         .bg-est { background-color: #0072CE; }
 
     </style>
@@ -200,14 +209,6 @@
             <div class="model-name">Gemini 3</div>
         </div>
 
-        <!-- Claude: Stylized C -->
-        <div class="model-card" onclick="openModal('claude')">
-            <div class="icon-circle bg-claude">
-                <span style="font-family: serif; font-size: 32px; font-weight: bold;">C</span>
-            </div>
-            <div class="model-name">Claude Sonnet 4.5</div>
-        </div>
-
         <!-- Grok: The slash / block -->
         <div class="model-card" onclick="openModal('grok')">
             <div class="icon-circle bg-grok">
@@ -216,6 +217,14 @@
                 </svg>
             </div>
             <div class="model-name">Grok 4</div>
+        </div>
+
+        <!-- Claude: Stylized C -->
+        <div class="model-card" onclick="openModal('claude')">
+            <div class="icon-circle bg-claude">
+                <span style="font-family: serif; font-size: 24px; font-weight: bold;">C</span>
+            </div>
+            <div class="model-name">Claude 4.5</div>
         </div>
 
         <!-- Mistral: The Wave/Scribble Logo -->
@@ -238,7 +247,7 @@
     </div>
 
     <div class="footer-note">
-        Klõpsa täpsemat kirjelduse nägemiseks ikoonil.
+        Klõpsa ikoonil, et näha mudeli täpsemat kirjeldust.
     </div>
 </div>
 

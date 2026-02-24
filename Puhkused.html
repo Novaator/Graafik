@@ -63,6 +63,7 @@
     );
 
     // --- KONFIGURATSIOON ---
+    // Asenda allolev väärtus enda Google Scripti aadressiga. See peab algama kujul "https://script.google.com/..."
     const GOOGLE_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbwMgwz2tQWY61JybbJuFr3qyaKNtIrCaBmxP3x7m6lfd-bXedpKVWv5DVBIoLSzmep6/exec'; 
 
     const MONTHS = [
@@ -96,7 +97,8 @@
       const [syncStatus, setSyncStatus] = useState(null);
 
       useEffect(() => {
-        if (GOOGLE_SHEETS_URL === 'https://script.google.com/macros/s/AKfycbwMgwz2tQWY61JybbJuFr3qyaKNtIrCaBmxP3x7m6lfd-bXedpKVWv5DVBIoLSzmep6/exec') {
+        // Kontrollime, et URL oleks vähemalt algselt korrektne
+        if (!GOOGLE_SHEETS_URL.startsWith('https://script.google.com')) {
           setIsLoading(false);
           return; 
         }
@@ -116,8 +118,9 @@
       }, []);
 
       const saveToCloud = async () => {
-        if (GOOGLE_SHEETS_URL === 'https://script.google.com/macros/s/AKfycbwMgwz2tQWY61JybbJuFr3qyaKNtIrCaBmxP3x7m6lfd-bXedpKVWv5DVBIoLSzmep6/exec') {
-          alert("Seadista esmalt Google Sheets URL koodis (rida 85).");
+        // Rangem valideerimine URL-i osas
+        if (!GOOGLE_SHEETS_URL.startsWith('https://script.google.com')) {
+          alert("Konfiguratsiooni viga: Sisestatud GOOGLE_SHEETS_URL ei tundu olevat korrektne Google Scripti aadress. Kopeeri õige aadress faili algusesse (rida ~74).");
           return;
         }
 

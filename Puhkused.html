@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ERR Teadustoimetuse Puhkused</title>
+  <title>ERR toimetuse puhkused</title>
   
   <!-- Font -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -116,7 +116,7 @@
       }, []);
 
       const saveToCloud = async () => {
-        if (GOOGLE_SHEETS_URL === 'Shttps://script.google.com/macros/s/AKfycbyb5MPANaTJJT2Z5eFIS-aJ6uBDColnZ0kujUTDecGMwg7Cnm9JjfDBfAivo7x6des6/exec') {
+        if (GOOGLE_SHEETS_URL === 'SINU_GOOGLE_SCRIPT_URL_SIIA') {
           alert("Seadista esmalt Google Sheets URL koodis (rida 85).");
           return;
         }
@@ -366,16 +366,21 @@
                     {WEEKS.map(week => {
                       const absenceCount = getAbsenceCount(week);
                       const isBoundary = MONTH_BOUNDARIES.includes(week);
+                      // Tükeldame kuupäevade stringi sidekriipsu kohalt
+                      const [startDate, endDate] = getWeekDateRange(week).split('-');
+                      
                       return (
                         <th 
                           key={week} 
                           className={`border-b border-emerald-200 px-1 py-3 text-center min-w-[64px] transition-colors ${getHeaderColorClass(absenceCount)} ${isBoundary ? 'border-r-2 border-r-emerald-300' : 'border-r border-r-emerald-100'}`}
                           title={`${absenceCount} toimetaja(t) puhkusel`}
                         >
-                          <div className="text-xs font-semibold opacity-90">N {week}</div>
-                          <div className="text-[10px] font-normal opacity-70 mt-0.5 tracking-tighter">{getWeekDateRange(week)}</div>
+                          <div className="text-xs font-bold opacity-90 mb-1 pb-1 border-b border-black/10 mx-1">N {week}</div>
+                          <div className="text-xs font-medium opacity-80 leading-snug">
+                            {startDate}<br/>{endDate}
+                          </div>
                           {absenceCount > 0 && (
-                            <div className="text-[10px] mt-1.5 bg-black/15 rounded-full w-5 h-5 mx-auto flex items-center justify-center font-bold">
+                            <div className="text-xs mt-2 bg-black/15 rounded-full w-5 h-5 mx-auto flex items-center justify-center font-bold shadow-sm">
                               {absenceCount}
                             </div>
                           )}

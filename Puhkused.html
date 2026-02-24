@@ -63,7 +63,7 @@
     );
 
     // --- KONFIGURATSIOON ---
-    const GOOGLE_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbzQ2NtGtvYzpbQ3zsSJppakKfFTm8TbrWo2XYbwQlR0-BANxRNNhvTPvawTBBz0LdK2/exec'; 
+    const GOOGLE_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbwMgwz2tQWY61JybbJuFr3qyaKNtIrCaBmxP3x7m6lfd-bXedpKVWv5DVBIoLSzmep6/exec'; 
 
     const MONTHS = [
       { name: 'Mai', span: 3, start: 20, end: 22 },
@@ -96,7 +96,7 @@
       const [syncStatus, setSyncStatus] = useState(null);
 
       useEffect(() => {
-        if (GOOGLE_SHEETS_URL === 'https://script.google.com/macros/s/AKfycbzQ2NtGtvYzpbQ3zsSJppakKfFTm8TbrWo2XYbwQlR0-BANxRNNhvTPvawTBBz0LdK2/exec') {
+        if (GOOGLE_SHEETS_URL === 'https://script.google.com/macros/s/AKfycbwMgwz2tQWY61JybbJuFr3qyaKNtIrCaBmxP3x7m6lfd-bXedpKVWv5DVBIoLSzmep6/exec') {
           setIsLoading(false);
           return; 
         }
@@ -116,7 +116,7 @@
       }, []);
 
       const saveToCloud = async () => {
-        if (GOOGLE_SHEETS_URL === 'https://script.google.com/macros/s/AKfycbzQ2NtGtvYzpbQ3zsSJppakKfFTm8TbrWo2XYbwQlR0-BANxRNNhvTPvawTBBz0LdK2/exec') {
+        if (GOOGLE_SHEETS_URL === 'https://script.google.com/macros/s/AKfycbwMgwz2tQWY61JybbJuFr3qyaKNtIrCaBmxP3x7m6lfd-bXedpKVWv5DVBIoLSzmep6/exec') {
           alert("Seadista esmalt Google Sheets URL koodis (rida 85).");
           return;
         }

@@ -63,7 +63,7 @@
     );
 
     // --- KONFIGURATSIOON ---
-    const GOOGLE_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbyb5MPANaTJJT2Z5eFIS-aJ6uBDColnZ0kujUTDecGMwg7Cnm9JjfDBfAivo7x6des6/exec'; 
+    const GOOGLE_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbzQ2NtGtvYzpbQ3zsSJppakKfFTm8TbrWo2XYbwQlR0-BANxRNNhvTPvawTBBz0LdK2/exec'; 
 
     const MONTHS = [
       { name: 'Mai', span: 3, start: 20, end: 22 },
@@ -96,7 +96,7 @@
       const [syncStatus, setSyncStatus] = useState(null);
 
       useEffect(() => {
-        if (GOOGLE_SHEETS_URL === 'https://script.google.com/macros/s/AKfycbyb5MPANaTJJT2Z5eFIS-aJ6uBDColnZ0kujUTDecGMwg7Cnm9JjfDBfAivo7x6des6/exec') {
+        if (GOOGLE_SHEETS_URL === 'https://script.google.com/macros/s/AKfycbzQ2NtGtvYzpbQ3zsSJppakKfFTm8TbrWo2XYbwQlR0-BANxRNNhvTPvawTBBz0LdK2/exec') {
           setIsLoading(false);
           return; 
         }
@@ -116,7 +116,7 @@
       }, []);
 
       const saveToCloud = async () => {
-        if (GOOGLE_SHEETS_URL === 'SINU_GOOGLE_SCRIPT_URL_SIIA') {
+        if (GOOGLE_SHEETS_URL === 'https://script.google.com/macros/s/AKfycbzQ2NtGtvYzpbQ3zsSJppakKfFTm8TbrWo2XYbwQlR0-BANxRNNhvTPvawTBBz0LdK2/exec') {
           alert("Seadista esmalt Google Sheets URL koodis (rida 85).");
           return;
         }
@@ -234,9 +234,9 @@
       };
 
       const getHeaderColorClass = (count) => {
-        if (count >= 4) return 'bg-rose-900 text-white border-rose-950 font-bold';
-        if (count === 3) return 'bg-rose-500 text-white border-rose-600 font-bold';
-        if (count === 2) return 'bg-amber-400 text-emerald-950 border-amber-500 font-bold';
+        if (count >= 5) return 'bg-rose-900 text-white border-rose-950 font-bold';
+        if (count === 4) return 'bg-rose-500 text-white border-rose-600 font-bold';
+        if (count === 3) return 'bg-amber-400 text-emerald-950 border-amber-500 font-bold';
         return 'bg-emerald-50 text-emerald-800 border-emerald-200';
       };
 

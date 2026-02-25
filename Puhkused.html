@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ERR toimetuse puhkused</title>
+  <title>ERR Teadustoimetuse Puhkused</title>
   
   <!-- Font -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -46,9 +46,6 @@
     const IconTrash2 = ({size=24, className=""}) => (
       <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
     );
-    const IconGripHorizontal = ({size=24, className=""}) => (
-      <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="9" r="1"/><circle cx="19" cy="9" r="1"/><circle cx="5" cy="9" r="1"/><circle cx="12" cy="15" r="1"/><circle cx="19" cy="15" r="1"/><circle cx="5" cy="15" r="1"/></svg>
-    );
     const IconAlertTriangle = ({size=24, className=""}) => (
       <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
     );
@@ -61,9 +58,20 @@
     const IconCloudOff = ({size=24, className=""}) => (
       <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m2 2 20 20"/><path d="M5.782 5.782A7 7 0 0 0 9 19h8.5a4.5 4.5 0 0 0 1.306-.193"/><path d="M21.532 16.5A4.5 4.5 0 0 0 17.5 10h-1.79A7.008 7.008 0 0 0 10 5.07"/></svg>
     );
+    const IconClipboard = ({size=24, className=""}) => (
+      <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+    );
+    const IconCopy = ({size=24, className=""}) => (
+      <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+    );
+    const IconCheck = ({size=24, className=""}) => (
+      <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+    );
+    const IconMousePointerClick = ({size=24, className=""}) => (
+      <svg width={size} height={size} className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 4.1 12 6"/><path d="m5.1 8-2.9-.8"/><path d="m6 12-1.9 2"/><path d="M7.2 2.2 8 5.1"/><path d="M9.037 9.69a.498.498 0 0 1 .653-.653l11 4.5a.5.5 0 0 1-.074.949l-4.349 1.041a1 1 0 0 0-.74.739l-1.04 4.35a.5.5 0 0 1-.95.074z"/></svg>
+    );
 
     // --- KONFIGURATSIOON ---
-    // Asenda allolev väärtus enda Google Scripti aadressiga. See peab algama kujul "https://script.google.com/..."
     const GOOGLE_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbwMgwz2tQWY61JybbJuFr3qyaKNtIrCaBmxP3x7m6lfd-bXedpKVWv5DVBIoLSzmep6/exec'; 
 
     const MONTHS = [
@@ -77,6 +85,20 @@
     const WEEKS = Array.from({ length: 19 }, (_, i) => i + 20);
     const MONTH_BOUNDARIES = [22, 26, 31, 35];
 
+    // ISO nädala arvutamine
+    const parseDateToWeek = (day, month, year = 2026) => {
+      const d = new Date(year, month - 1, day);
+      const target = new Date(d.valueOf());
+      const dayNr = (d.getDay() + 6) % 7;
+      target.setDate(target.getDate() - dayNr + 3);
+      const firstThursday = target.valueOf();
+      target.setMonth(0, 1);
+      if (target.getDay() !== 4) {
+        target.setMonth(0, 1 + ((4 - target.getDay()) + 7) % 7);
+      }
+      return 1 + Math.ceil((firstThursday - target) / 604800000);
+    };
+
     const getWeekDateRange = (weekNo, year = 2026) => {
       const jan4 = new Date(year, 0, 4);
       const day = jan4.getDay() || 7;
@@ -88,6 +110,75 @@
       return `${format(targetMonday)}-${format(targetSunday)}`;
     };
 
+    const getMultiWeekDateRange = (startWeek, len) => {
+      const startStr = getWeekDateRange(startWeek).split('-')[0];
+      const endStr = getWeekDateRange(startWeek + len - 1).split('-')[1];
+      return `${startStr}-${endStr}`;
+    };
+
+    // TUUMIKLOOGIKA: Automaatne puhkuseplokkide pakkimine
+    const packWeeks = (selectedWeeks) => {
+      const emptyBlocks = [
+        { id: 'v1', len: 2, color: 'bg-emerald-600 border-emerald-700 text-white hover:bg-emerald-500 shadow-md', label: '2N', startWeek: null },
+        { id: 'v2', len: 1, color: 'bg-teal-500 border-teal-600 text-white hover:bg-teal-400 shadow-md', label: '1N', startWeek: null },
+        { id: 'v3', len: 1, color: 'bg-teal-500 border-teal-600 text-white hover:bg-teal-400 shadow-md', label: '1N', startWeek: null },
+        { id: 'v4', len: 1, color: 'bg-teal-500 border-teal-600 text-white hover:bg-teal-400 shadow-md', label: '1N', startWeek: null }
+      ];
+      
+      if (!selectedWeeks || selectedWeeks.length === 0) return emptyBlocks;
+      if (selectedWeeks.length > 5) return null; // Füüsiline limiit: 5 nädalat
+
+      // Sorteerime ja grupeerime järjestikused nädalad segmentideks
+      const sorted = [...new Set(selectedWeeks)].sort((a, b) => a - b);
+      const segments = [];
+      let currentSeg = [];
+
+      for (let i = 0; i < sorted.length; i++) {
+        if (currentSeg.length === 0) {
+          currentSeg.push(sorted[i]);
+        } else if (sorted[i] === currentSeg[currentSeg.length - 1] + 1) {
+          currentSeg.push(sorted[i]);
+        } else {
+          segments.push(currentSeg);
+          currentSeg = [sorted[i]];
+        }
+      }
+      if (currentSeg.length > 0) segments.push(currentSeg);
+
+      let used2N = false;
+      let startWeek2N = null;
+      let weeks1N = [];
+
+      // Eraldame ressurssi nutikalt: esimene 2+ pikkusega segment saab 2N ploki
+      for (let i = 0; i < segments.length; i++) {
+        if (!used2N && segments[i].length >= 2) {
+          used2N = true;
+          startWeek2N = segments[i][0];
+          for (let j = 2; j < segments[i].length; j++) {
+            weeks1N.push(segments[i][j]);
+          }
+        } else {
+          for (let j = 0; j < segments[i].length; j++) {
+            weeks1N.push(segments[i][j]);
+          }
+        }
+      }
+
+      // Valideerime, et meil jätkub 1N plokke
+      if (weeks1N.length > 3) return null; 
+      
+      // Kui meil on rohkem kui 3 nädalat valitud, aga 2N plokki ei läinud vaja 
+      // (kõik on eraldiseisvad 1N), on see viga, sest meil on vaid kolm 1N klotsi
+      if (!used2N && sorted.length > 3) return null;
+
+      return [
+        { ...emptyBlocks[0], startWeek: startWeek2N },
+        { ...emptyBlocks[1], startWeek: weeks1N[0] || null },
+        { ...emptyBlocks[2], startWeek: weeks1N[1] || null },
+        { ...emptyBlocks[3], startWeek: weeks1N[2] || null }
+      ];
+    };
+
     function App() {
       const [employees, setEmployees] = useState([]);
       const [newName, setNewName] = useState('');
@@ -96,31 +187,55 @@
       const [isSaving, setIsSaving] = useState(false);
       const [syncStatus, setSyncStatus] = useState(null);
 
-      useEffect(() => {
-        // Kontrollime, et URL oleks vähemalt algselt korrektne
-        if (!GOOGLE_SHEETS_URL.startsWith('https://script.google.com')) {
-          setIsLoading(false);
-          return; 
-        }
+      const [showPaste, setShowPaste] = useState(false);
+      const [pasteText, setPasteText] = useState('');
+      const [copyStatus, setCopyStatus] = useState(false);
+      const [confirmClear, setConfirmClear] = useState(false);
 
-        fetch(GOOGLE_SHEETS_URL)
-          .then(res => res.json())
-          .then(data => {
+      useEffect(() => {
+        const loadData = async () => {
+          const localBackup = localStorage.getItem('err_vacations_backup');
+
+          if (!GOOGLE_SHEETS_URL.startsWith('https://script.google.com')) {
+            if (localBackup) {
+              try {
+                setEmployees(JSON.parse(localBackup));
+              } catch (e) { console.error("Lokaalse mälu viga", e); }
+            }
+            setIsLoading(false);
+            return; 
+          }
+
+          try {
+            const res = await fetch(GOOGLE_SHEETS_URL);
+            const data = await res.json();
             if (Array.isArray(data)) {
               setEmployees(data);
+              localStorage.setItem('err_vacations_backup', JSON.stringify(data));
             }
-          })
-          .catch(err => {
-            console.error("Viga andmete laadimisel:", err);
+          } catch (err) {
+            console.error("Viga andmete laadimisel serverist:", err);
             setSyncStatus('error');
-          })
-          .finally(() => setIsLoading(false));
+            if (localBackup) {
+              try { setEmployees(JSON.parse(localBackup)); } catch (e) {}
+            }
+          } finally {
+            setIsLoading(false);
+          }
+        };
+        loadData();
       }, []);
 
+      useEffect(() => {
+        if (!isLoading) {
+          localStorage.setItem('err_vacations_backup', JSON.stringify(employees));
+        }
+      }, [employees, isLoading]);
+
       const saveToCloud = async () => {
-        // Rangem valideerimine URL-i osas
         if (!GOOGLE_SHEETS_URL.startsWith('https://script.google.com')) {
-          alert("Konfiguratsiooni viga: Sisestatud GOOGLE_SHEETS_URL ei tundu olevat korrektne Google Scripti aadress. Kopeeri õige aadress faili algusesse (rida ~74).");
+          setSyncStatus('error');
+          setTimeout(() => setSyncStatus(null), 4000);
           return;
         }
 
@@ -132,103 +247,155 @@
             body: JSON.stringify(employees),
             headers: { 'Content-Type': 'text/plain;charset=utf-8' } 
           });
-          
           const result = await response.json();
           if (result.status === 'ok') {
             setSyncStatus('success');
             setTimeout(() => setSyncStatus(null), 3000); 
-          } else {
-            throw new Error("Salvestamine ebaõnnestus serveris");
-          }
+          } else { throw new Error("Salvestamine ebaõnnestus"); }
         } catch (err) {
-          console.error("Viga salvestamisel:", err);
           setSyncStatus('error');
         } finally {
           setIsSaving(false);
         }
       };
 
+      const copyToClipboard = () => {
+        let text = "Teadustoimetuse puhkused:\n\n";
+        employees.forEach(emp => {
+          const activeVacs = emp.vacations
+            .filter(v => v.startWeek !== null)
+            .sort((a, b) => a.startWeek - b.startWeek);
+            
+          if (activeVacs.length > 0) {
+            const dateStrings = activeVacs.map(v => getMultiWeekDateRange(v.startWeek, v.len)).join(', ');
+            text += `${emp.name}: ${dateStrings}\n`;
+          } else {
+            text += `${emp.name}: Määramata\n`;
+          }
+        });
+
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-999999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+          document.execCommand('copy');
+          setCopyStatus(true);
+          setTimeout(() => setCopyStatus(false), 2000);
+        } catch (err) {}
+        textArea.remove();
+      };
+
+      const handleClearAll = () => {
+        if (!confirmClear) {
+          setConfirmClear(true);
+          setTimeout(() => setConfirmClear(false), 3000);
+          return;
+        }
+        setEmployees([]);
+        setConfirmClear(false);
+      };
+
       const addEmployee = (e) => {
         e.preventDefault();
         const cleanName = newName.trim();
         if (!cleanName) return;
-        
-        const newEmp = {
+        setEmployees([...employees, {
           id: crypto.randomUUID(),
           name: cleanName,
-          vacations: [
-            { id: 'v1', len: 2, color: 'bg-emerald-600 border-emerald-700 text-white hover:bg-emerald-500 shadow-md', label: '2N', startWeek: null },
-            { id: 'v2', len: 1, color: 'bg-teal-500 border-teal-600 text-white hover:bg-teal-400 shadow-md', label: '', startWeek: null },
-            { id: 'v3', len: 1, color: 'bg-teal-500 border-teal-600 text-white hover:bg-teal-400 shadow-md', label: '', startWeek: null },
-            { id: 'v4', len: 1, color: 'bg-teal-500 border-teal-600 text-white hover:bg-teal-400 shadow-md', label: '', startWeek: null }
-          ]
-        };
-        
-        setEmployees([...employees, newEmp]);
+          vacations: packWeeks([])
+        }]);
         setNewName('');
+      };
+
+      const handlePasteImport = () => {
+        if (!pasteText.trim()) return;
+        const lines = pasteText.split('\n');
+        const newEmployees = [];
+        let currentEmployee = null;
+        const dateRegex = /(\d{1,2})\.(\d{1,2})(?:\.\d{2,4})?\s*-\s*(\d{1,2})\.(\d{1,2})(?:\.\d{2,4})?/g;
+
+        lines.forEach(line => {
+          const tLine = line.trim();
+          if (!tLine) return;
+
+          const matches = [...tLine.matchAll(dateRegex)];
+          const namePart = tLine.replace(dateRegex, '').replace(/[,:-]+$/, '').trim();
+
+          if (namePart) {
+            if (currentEmployee) newEmployees.push(currentEmployee);
+            currentEmployee = {
+              id: crypto.randomUUID(),
+              name: namePart,
+              vacations: packWeeks([])
+            };
+          }
+
+          if (matches.length > 0 && currentEmployee) {
+            let requestedWeeks = new Set();
+            matches.forEach(match => {
+              const startWeek = Math.min(parseDateToWeek(parseInt(match[1], 10), parseInt(match[2], 10)), parseDateToWeek(parseInt(match[3], 10), parseInt(match[4], 10)));
+              const endWeek = Math.max(parseDateToWeek(parseInt(match[1], 10), parseInt(match[2], 10)), parseDateToWeek(parseInt(match[3], 10), parseInt(match[4], 10)));
+              for(let w = startWeek; w <= endWeek; w++) requestedWeeks.add(w);
+            });
+
+            let validWeeks = [];
+            let sortedReq = Array.from(requestedWeeks).sort((a,b) => a-b);
+            // Proovime lisada nädalaid ükshaaval. Kui algoritm "plahvatab", katkestame ja salvestame senise edukaima seisu.
+            for(let w of sortedReq) {
+              if (w >= 20 && w <= 38 && packWeeks([...validWeeks, w])) {
+                validWeeks.push(w);
+              }
+            }
+            currentEmployee.vacations = packWeeks(validWeeks);
+          }
+        });
+
+        if (currentEmployee) newEmployees.push(currentEmployee);
+        if (newEmployees.length > 0) setEmployees(prev => [...prev, ...newEmployees]);
+        
+        setPasteText('');
+        setShowPaste(false);
       };
 
       const removeEmployee = (id) => {
         setEmployees(employees.filter(emp => emp.id !== id));
       };
 
-      const handleDragStart = (e, empId, vacId, len) => {
-        e.dataTransfer.setData('application/json', JSON.stringify({ empId, vacId, len }));
-      };
+      // Nutikas klõpsamise loogika
+      const handleCellClick = (empId, targetWeek) => {
+        setEmployees(employees.map(emp => {
+          if (emp.id !== empId) return emp;
 
-      const handleDropOnGrid = (e, targetEmpId, targetWeek) => {
-        e.preventDefault();
-        try {
-          const data = JSON.parse(e.dataTransfer.getData('application/json'));
-          if (data.empId !== targetEmpId) return;
-          if (targetWeek + data.len - 1 > 38) return;
-
-          setEmployees(employees.map(emp => {
-            if (emp.id !== targetEmpId) return emp;
-            const overlap = emp.vacations.some(v => {
-              if (v.id === data.vacId || v.startWeek === null) return false;
-              const start1 = targetWeek;
-              const end1 = targetWeek + data.len - 1;
-              const start2 = v.startWeek;
-              const end2 = v.startWeek + v.len - 1;
-              return Math.max(start1, start2) <= Math.min(end1, end2);
-            });
-
-            if (overlap) return emp;
-
-            return {
-              ...emp,
-              vacations: emp.vacations.map(v => 
-                v.id === data.vacId ? { ...v, startWeek: targetWeek } : v
-              )
-            };
-          }));
-        } catch (err) {
-          console.error(err);
-        }
-      };
-
-      const handleDropOnSidebar = (e) => {
-        e.preventDefault();
-        try {
-          const data = JSON.parse(e.dataTransfer.getData('application/json'));
-          setEmployees(employees.map(emp => {
-            if (emp.id === data.empId) {
-              return {
-                ...emp,
-                vacations: emp.vacations.map(v => 
-                  v.id === data.vacId ? { ...v, startWeek: null } : v
-                )
-              };
+          // Kogume kõik hetkel valitud nädalad (ükskõik mis plokis nad on)
+          let currentWeeks = [];
+          emp.vacations.forEach(v => {
+            if (v.startWeek !== null) {
+              for (let i = 0; i < v.len; i++) currentWeeks.push(v.startWeek + i);
             }
-            return emp;
-          }));
-        } catch (err) {
-          console.error(err);
-        }
-      };
+          });
 
-      const allowDrop = (e) => e.preventDefault();
+          // Kui nädalal klõpsati, eemaldame selle. Kui see puudub, lisame selle massiivi.
+          let newWeeks;
+          if (currentWeeks.includes(targetWeek)) {
+            newWeeks = currentWeeks.filter(w => w !== targetWeek);
+          } else {
+            newWeeks = [...currentWeeks, targetWeek];
+          }
+
+          // Küsime algoritmilt, kas uut nädalate kombinatsiooni saab edukalt klotsideks pakkida
+          const packed = packWeeks(newWeeks);
+          if (packed) {
+            return { ...emp, vacations: packed };
+          }
+          
+          // Kui pakkimine ebaõnnestus (nt töötaja tahab 6 nädalat puhata), ignoreerime klõpsu
+          return emp;
+        }));
+      };
 
       const getAbsenceCount = (week) => {
         return employees.filter(emp => 
@@ -256,35 +423,42 @@
         <div className="flex h-screen w-full bg-emerald-100/40 text-sm text-emerald-950 overflow-hidden">
           
           {/* TÖÖLAUD / SIDEBAR */}
-          <div 
-            className="w-80 bg-emerald-50/80 border-r border-emerald-200 flex flex-col p-5 z-10 shadow-[4px_0_24px_-10px_rgba(0,0,0,0.1)] backdrop-blur-sm"
-            onDragOver={allowDrop}
-            onDrop={handleDropOnSidebar}
-          >
+          <div className="w-80 bg-emerald-50/80 border-r border-emerald-200 flex flex-col p-5 z-10 shadow-[4px_0_24px_-10px_rgba(0,0,0,0.1)] backdrop-blur-sm relative">
             <div className="flex justify-between items-start mb-6">
               <h1 className="text-2xl font-bold text-emerald-900 tracking-tight leading-none">
                 Puhkuste<br/>planeerija
               </h1>
               
-              <button
-                onClick={saveToCloud}
-                disabled={isSaving}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold shadow-sm transition-all
-                  ${isSaving ? 'bg-emerald-200 text-emerald-600 cursor-not-allowed' : 
-                    syncStatus === 'error' ? 'bg-rose-100 text-rose-700 hover:bg-rose-200' :
-                    syncStatus === 'success' ? 'bg-teal-100 text-teal-700' :
-                    'bg-emerald-600 text-white hover:bg-emerald-700 active:scale-95'}`}
-              >
-                {isSaving ? <IconLoader2 size={14} className="animate-spin" /> : 
-                 syncStatus === 'error' ? <IconCloudOff size={14} /> : 
-                 <IconSave size={14} />}
-                {isSaving ? 'Salvestan...' : 
-                 syncStatus === 'error' ? 'Viga!' :
-                 syncStatus === 'success' ? 'Salvestatud' : 'Salvesta'}
-              </button>
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={saveToCloud}
+                  disabled={isSaving}
+                  className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold shadow-sm transition-all w-28
+                    ${isSaving ? 'bg-emerald-200 text-emerald-600 cursor-not-allowed' : 
+                      syncStatus === 'error' ? 'bg-rose-100 text-rose-700 hover:bg-rose-200' :
+                      syncStatus === 'success' ? 'bg-teal-100 text-teal-700' :
+                      'bg-emerald-600 text-white hover:bg-emerald-700 active:scale-95'}`}
+                >
+                  {isSaving ? <IconLoader2 size={14} className="animate-spin" /> : 
+                   syncStatus === 'error' ? <IconCloudOff size={14} /> : 
+                   <IconSave size={14} />}
+                  {isSaving ? 'Salvestan...' : 
+                   syncStatus === 'error' ? 'Viga!' :
+                   syncStatus === 'success' ? 'Salvestatud' : 'Salvesta'}
+                </button>
+
+                <button
+                  onClick={copyToClipboard}
+                  className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold shadow-sm transition-all w-28
+                    ${copyStatus ? 'bg-teal-100 text-teal-700' : 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200 active:scale-95'}`}
+                >
+                  {copyStatus ? <IconCheck size={14} /> : <IconCopy size={14} />}
+                  {copyStatus ? 'Kopeeritud' : 'Eksport'}
+                </button>
+              </div>
             </div>
             
-            <form onSubmit={addEmployee} className="flex gap-2 mb-6">
+            <form onSubmit={addEmployee} className="flex gap-2 mb-3">
               <input
                 type="text"
                 value={newName}
@@ -300,7 +474,34 @@
               </button>
             </form>
 
-            <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+            <div className="mb-4">
+              <button 
+                onClick={() => setShowPaste(!showPaste)}
+                className="flex items-center gap-1 text-xs text-emerald-600 hover:text-emerald-800 font-medium transition-colors"
+              >
+                <IconClipboard size={14} />
+                {showPaste ? 'Peida import' : 'Impordi massiliselt tekstist'}
+              </button>
+              
+              {showPaste && (
+                <div className="mt-2 flex flex-col gap-2">
+                  <textarea
+                    value={pasteText}
+                    onChange={(e) => setPasteText(e.target.value)}
+                    placeholder={`Jaan-Juhan\n01.06-14.06\n02.08-21.08\n\nMari Maasikas\n15.06-21.06`}
+                    className="w-full h-32 text-xs px-3 py-2 border border-emerald-300 rounded-xl bg-white shadow-inner focus:outline-none focus:ring-2 focus:ring-emerald-500 custom-scrollbar resize-none placeholder:text-emerald-300/80"
+                  />
+                  <button 
+                    onClick={handlePasteImport}
+                    className="w-full py-2 bg-emerald-100 text-emerald-800 border border-emerald-300 font-semibold rounded-xl hover:bg-emerald-200 transition-colors shadow-sm text-xs"
+                  >
+                    Töötle andmed
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar pb-16">
               {employees.length === 0 ? (
                 <div className="text-emerald-600/60 italic text-center mt-10">
                   Andmestik on tühi. Täida tabel töötajatega.
@@ -318,40 +519,53 @@
                         </button>
                       </div>
                       
-                      <div className="flex gap-2 min-h-8">
-                        {unplacedVacations.map(v => (
-                          <div
-                            key={v.id}
-                            draggable
-                            onDragStart={(e) => handleDragStart(e, emp.id, v.id, v.len)}
-                            className={`h-8 rounded-lg border flex items-center justify-center cursor-grab active:cursor-grabbing transition-colors ${v.color} ${v.len === 2 ? 'w-16' : 'w-10'}`}
-                            title={`Lohista graafikusse (${emp.name}, pikkus: ${v.len} nädalat)`}
-                          >
-                            {v.label && <span className="text-xs font-bold mr-1">{v.label}</span>}
-                            <IconGripHorizontal size={14} className="opacity-70" />
+                      {unplacedVacations.length > 0 ? (
+                        <div className="flex flex-col gap-2">
+                          <span className="text-[10px] uppercase font-bold text-emerald-400 tracking-wider">Määramata reserv:</span>
+                          <div className="flex gap-2">
+                            {unplacedVacations.map(v => (
+                              <div
+                                key={v.id}
+                                className={`h-6 rounded-md border flex items-center justify-center transition-colors opacity-40 ${v.color} ${v.len === 2 ? 'w-10' : 'w-6'}`}
+                                title={`Määramata pikkusega plokk: ${v.len} nädalat`}
+                              >
+                                {v.label && <span className="text-[10px] font-bold">{v.label}</span>}
+                              </div>
+                            ))}
                           </div>
-                        ))}
-                        {unplacedVacations.length === 0 && (
-                          <span className="text-xs text-emerald-500/70 flex items-center gap-1 font-medium">
-                            Kõik puhkused planeeritud.
-                          </span>
-                        )}
-                      </div>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-emerald-500/70 flex items-center gap-1 font-medium">
+                          Kogu limiit ammendatud.
+                        </span>
+                      )}
                     </div>
                   );
                 })
               )}
             </div>
             
-            <div className="mt-4 p-4 bg-emerald-100/50 rounded-xl text-xs text-emerald-800 shadow-inner border border-emerald-200/50 leading-relaxed">
-              <IconAlertTriangle size={16} className="inline mr-1.5 mb-1 text-emerald-600" />
-              Salvestamiseks vajuta üleval nuppu. Automaatselt midagi ei salvestu.
+            <div className="absolute bottom-5 left-5 right-5 mt-4 pt-4 border-t border-emerald-200/50">
+              <button
+                onClick={handleClearAll}
+                className={`w-full py-2 rounded-xl text-xs font-semibold shadow-sm transition-all flex items-center justify-center gap-1
+                  ${confirmClear ? 'bg-rose-600 text-white hover:bg-rose-700' : 'bg-emerald-100 text-emerald-700 hover:bg-rose-100 hover:text-rose-700'}`}
+              >
+                <IconTrash2 size={14} />
+                {confirmClear ? 'Oled kindel? Kustuta kõik!' : 'Tühjenda tabel'}
+              </button>
             </div>
           </div>
 
           {/* PÕHIGRAAFIK */}
           <div className="flex-1 overflow-auto relative p-6">
             <div className="min-w-max bg-white rounded-2xl shadow-xl border border-emerald-100 overflow-hidden">
+              
+              <div className="bg-emerald-100/30 p-3 border-b border-emerald-100 flex items-center justify-center gap-2 text-xs text-emerald-800 font-medium">
+                <IconMousePointerClick size={16} className="text-emerald-600" />
+                <span>Puhkuse lisamiseks või eemaldamiseks klõpsa graafikus lahtril. Süsteem ühendab kõrvuti asuvad nädalad automaatselt pikemaks plokiks.</span>
+              </div>
+
               <table className="border-collapse w-full">
                 <thead className="sticky top-0 z-20 bg-emerald-50 shadow-sm">
                   <tr>
@@ -369,7 +583,6 @@
                     {WEEKS.map(week => {
                       const absenceCount = getAbsenceCount(week);
                       const isBoundary = MONTH_BOUNDARIES.includes(week);
-                      // Tükeldame kuupäevade stringi sidekriipsu kohalt
                       const [startDate, endDate] = getWeekDateRange(week).split('-');
                       
                       return (
@@ -414,24 +627,20 @@
                         return (
                           <td 
                             key={`${emp.id}-${week}`}
-                            className={`border-b border-emerald-50 min-w-[64px] h-14 relative p-1.5 ${isBoundary ? 'border-r-2 border-r-emerald-200' : 'border-r border-r-emerald-50'}`}
-                            onDragOver={allowDrop}
-                            onDrop={(e) => handleDropOnGrid(e, emp.id, week)}
+                            className={`border-b border-emerald-50 min-w-[64px] h-14 relative p-1.5 cursor-pointer hover:bg-emerald-100/50 transition-colors ${isBoundary ? 'border-r-2 border-r-emerald-200' : 'border-r border-r-emerald-50'}`}
+                            onClick={() => handleCellClick(emp.id, week)}
                           >
                             {activeVacation && (
                               <div 
-                                draggable
-                                onDragStart={(e) => handleDragStart(e, emp.id, activeVacation.id, activeVacation.len)}
-                                className={`absolute top-1.5 bottom-1.5 left-1.5 rounded-lg border shadow-sm flex items-center justify-center cursor-grab active:cursor-grabbing z-10 transition-transform hover:scale-[1.02] ${activeVacation.color}`}
+                                className={`absolute top-1.5 bottom-1.5 left-1.5 rounded-lg border shadow-sm flex items-center justify-center z-10 transition-transform hover:scale-[1.02] ${activeVacation.color}`}
                                 style={{ width: `calc(${activeVacation.len * 100}% - 12px + ${(activeVacation.len - 1) * 1}px)` }}
-                                title="Lohista teise nädalasse või tagasi paneeli"
+                                title="Klõpsa eemaldamiseks"
                               >
-                                {activeVacation.label && <span className="text-xs font-bold mr-1.5">{activeVacation.label}</span>}
-                                <IconGripHorizontal size={14} className="opacity-60" />
+                                {activeVacation.label && <span className="text-xs font-bold">{activeVacation.label}</span>}
                               </div>
                             )}
                             {!isCovered && (
-                              <div className="w-full h-full border-2 border-dashed border-transparent hover:border-emerald-200 rounded-lg transition-colors" />
+                              <div className="w-full h-full rounded-lg transition-colors" />
                             )}
                           </td>
                         );

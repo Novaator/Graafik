@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Püha paanika</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #0f172a;
+            color: #e2e8f0;
+            touch-action: none;
+            font-family: 'Comic Sans MS', 'Comic Sans', cursive;
+        }
+        #gameCanvas {
+            display: block;
+            background-color: #5c0f1e; /* Tume bordoo */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            max-width: 100%;
+            max-height: 70vh;
+            image-rendering: pixelated;
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center h-screen w-screen p-4">
+
+    <div class="text-center mb-2 w-full max-w-4xl">
+        <h1 class="text-4xl font-bold tracking-tight text-slate-100 mb-4">Püha paanika</h1>
+    </div>
+
+    <div class="mb-4 flex flex-col items-center gap-2 z-10">
+        <div class="flex flex-wrap justify-center items-center gap-2 mb-2">
+            <label for="csvUpload" class="cursor-pointer bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded border border-slate-500 transition-colors text-sm font-semibold shadow-lg">
+                📁 Failist (.csv)
+            </label>
+            <input type="file" id="csvUpload" accept=".csv" class="hidden">
+            
+            <input type="text" id="csvUrlInput" placeholder="Kleebi siia Google Sheets 'Publish to web' CSV link" class="px-3 py-2 bg-slate-800 text-white border border-slate-600 rounded text-sm w-72 focus:outline-none focus:border-pink-500">
+            <button id="urlLoadBtn" class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded border border-slate-500 transition-colors text-sm font-semibold shadow-lg">
+                🌐 Laadi pilvest
+            </button>
+        </div>
+        <p id="uploadStatus" class="text-xs text-slate-400 text-center">Laaditud maailm: Vihik1.csv (Koodi sisse ehitatud)</p>
+    </div>
+
+    <div id="lifeCounter" class="text-xl text-pink-500 font-bold mb-2 hidden drop-shadow-md">
+        Mul on vähemalt 0 elu! Huvitav, mitu veel?
+    </div>
+
+    <div class="relative w-full max-w-4xl flex justify-center items-center">
+        <canvas id="gameCanvas" width="800" height="600" class="rounded-lg border-2 border-slate-700"></canvas>
+        
+        <div id="overlay" class="absolute inset-0 flex items-center justify-center bg-slate-900/90 rounded-lg hidden backdrop-blur-md transition-opacity">
+            <div class="text-center p-8 bg-slate-800 border border-slate-600 rounded-xl shadow-2xl max-w-md">
+                <div id="statusIcon" class="text-7xl mb-4 hidden drop-shadow-lg">🦄</div>
+                <h2 id="overlayTitle" class="text-3xl font-bold mb-2 text-white">Staatus</h2>
+                <p id="overlayDesc" class="text-slate-300 mb-6 text-lg">Info puudub.</p>
+                <button id="restartBtn" class="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition-colors w-full sm:w-auto text-xl shadow-lg border-b-4 border-red-800 active:border-b-0 active:translate-y-1">
+                    Anna mulle uus elu!
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.onload = function() {
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+            const overlay = document.getElementById('overlay');
+            const overlayTitle = document.getElementById('overlayTitle');
+            const overlayDesc = document.getElementById('overlayDesc');
+            const statusIcon = document.getElementById('statusIcon');
+            const restartBtn = document.getElementById('restartBtn');
+            const uploadInput = document.getElementById('csvUpload');
+            const uploadStatus = document.getElementById('uploadStatus');
+            const lifeCounterElement = document.getElementById('lifeCounter');
+            const urlLoadBtn = document.getElementById('urlLoadBtn');
+            const csvUrlInput = document.getElementById('csvUrlInput');
+
+            // KUI TAHAD VAIKIMISI PILVEST LAADIDA, KLEEEBI OMA AVALDATUD CSV LINK SIIA
+            // Näide: "https://docs.google.com/spreadsheets/d/e/2PACX-.../pub?output=csv"
+            const DEFAULT_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vS_CR1W7uRw9eZuJ0l_g38_J1XnNB3TG7PaIkGESGLIxsZerzZ7P4PgbJYsLAwKCLs0R9lLaXJArHic/pub?output=csv"; 
+
+            const MAX_CANVAS_WIDTH = 900;
+            const MAX_CANVAS_HEIGHT = 600;
+
+            let ROWS = 0;
+            let COLS = 0;
+            let TILE_SIZE = 25;
+            let map = [];
+            let gameState = 0; 
+            let animationFrameId;
+            let deathCount = 0;
+
+            let movingUnicorns = [];
+            let staticUnicorns = [];
+            let rainbows = [];
+            let flowers = [];
+            let paths = []; 
+
+            let player = {
+                x: 0, y: 0,
+                size: 14, speed: 3.5, 
+                dirX: 0, dirY: 0,
+                lastDirX: 1, lastDirY: 0,
+                isSpaceHeld: false
+            };
+
+            class MovingUnicorn {
+                constructor(c, r, vx, vy, min_c, max_c, min_r, max_r) {
+                    this.size = Math.floor(TILE_SIZE * 0.8);
+                    this.x = c * TILE_SIZE + (TILE_SIZE - this.size) / 2;
+                    this.y = r * TILE_SIZE + (TILE_SIZE - this.size) / 2;
+                    this.vx = vx;
+                    this.vy = vy;
+                    
+                    this.min_c = min_c;
+                    this.max_c = max_c;
+                    this.min_r = min_r;
+                    this.max_r = max_r;
+
+                    this.updateBounds();
+                }
+
+                updateBounds() {
+                    this.minX = this.min_c * TILE_SIZE;
+                    this.maxX = this.max_c * TILE_SIZE + TILE_SIZE - this.size;
+                    this.minY = this.min_r * TILE_SIZE;
+                    this.maxY = this.max_r * TILE_SIZE + TILE_SIZE - this.size;
+                }
+
+                update() {
+                    this.x += this.vx;
+                    if (this.x < this.minX || this.x > this.maxX) {
+                        this.x -= this.vx;
+                        this.vx *= -1;
+                    }
+                    
+                    this.y += this.vy;
+                    if (this.y < this.minY || this.y > this.maxY) {
+                        this.y -= this.vy;
+                        this.vy *= -1;
+                    }
+                }
+
+                draw(ctx) {
+                    ctx.shadowBlur = 10;
+                    ctx.shadowColor = '#ff00ea';
+                    ctx.font = `${this.size}px sans-serif`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('🦄', this.x + this.size / 2, this.y + this.size / 2 + 1); 
+                    ctx.shadowBlur = 0; 
+                }
+            }
+
+            class StaticUnicorn {
+                constructor(c, r) {
+                    this.c = c;
+                    this.r = r;
+                    this.size = Math.floor(TILE_SIZE * 0.8);
+                    this.x = c * TILE_SIZE + (TILE_SIZE - this.size) / 2;
+                    this.y = r * TILE_SIZE + (TILE_SIZE - this.size) / 2;
+                    this.lastShot = 0;
+                    this.cooldown = 2000; // Iga 2 sekundi tagant
+                }
+
+                update(time) {
+                    if (time - this.lastShot > this.cooldown) {
+                        const speed = Math.max(2, TILE_SIZE * 0.12);
+                        // Tulistab neljas suunas korraga
+                        const dirs = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+                        for (let d of dirs) {
+                            rainbows.push(new RainbowProjectile(
+                                this.x + this.size / 2,
+                                this.y + this.size / 2,
+                                d[0] * speed, 
+                                d[1] * speed
+                            ));
+                        }
+                        this.lastShot = time;
+                    }
+                }
+
+                draw(ctx) {
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = '#ff0000';
+                    ctx.font = `${this.size}px sans-serif`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('🦄', this.x + this.size / 2, this.y + this.size / 2 + 1);
+                    ctx.shadowBlur = 0;
+                }
+            }
+
+            class RainbowProjectile {
+                constructor(x, y, vx, vy) {
+                    this.size = Math.max(4, Math.floor(TILE_SIZE * 0.3));
+                    this.x = x - this.size / 2;
+                    this.y = y - this.size / 2;
+                    this.vx = vx;
+                    this.vy = vy;
+                    this.colors = ['#ff0000', '#ff7f00', '#ffff00', '#00ff00', '#0000ff', '#4b0082', '#9400d3'];
+                    this.colorIndex = 0;
+                }
+
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    this.colorIndex = (this.colorIndex + 1) % this.colors.length;
+                }
+
+                draw(ctx) {
+                    ctx.fillStyle = this.colors[this.colorIndex];
+                    ctx.fillRect(this.x, this.y, this.size, this.size);
+                    ctx.shadowBlur = 5;
+                    ctx.shadowColor = this.colors[this.colorIndex];
+                    ctx.fillRect(this.x, this.y, this.size, this.size);
+                    ctx.shadowBlur = 0;
+                }
+            }
+
+            function loadMapFromCSV(csvText) {
+                const lines = csvText.trim().split('\n').map(l => l.trim()).filter(l => l.length > 0);
+                ROWS = lines.length;
+                
+                let maxCols = 0;
+                const parsedLines = lines.map(line => {
+                    const cells = line.split(/[,;]/).map(c => c.replace(/["']/g, '').trim());
+                    if (cells.length > maxCols) maxCols = cells.length;
+                    return cells;
+                });
+                
+                parsedLines.forEach(cells => {
+                    while(cells.length < maxCols) cells.push('O');
+                });
+                COLS = maxCols;
+
+                let tileW = Math.floor(MAX_CANVAS_WIDTH / COLS);
+                let tileH = Math.floor(MAX_CANVAS_HEIGHT / ROWS);
+                TILE_SIZE = Math.min(tileW, tileH);
+                if (TILE_SIZE < 10) TILE_SIZE = 10; 
+
+                canvas.width = COLS * TILE_SIZE;
+                canvas.height = ROWS * TILE_SIZE;
+
+                player.size = Math.floor(TILE_SIZE * 0.6);
+                player.speed = TILE_SIZE * 0.15;
+
+                map = [];
+                staticUnicorns = [];
+                let movingUnicornData = [];
+                paths = [];
+
+                for(let r=0; r<ROWS; r++){
+                    let row = [];
+                    for(let c=0; c<COLS; c++){
+                        let val = parsedLines[r][c] || 'O';
+                        
+                        if(val === 'O') row.push(1); 
+                        else if(val === 'A') row.push(2); 
+                        else if(val === 'E') row.push(3); 
+                        else if(val === 'T') row.push(0); 
+                        else if(val === 'P') row.push(5); 
+                        else if(val === 'T-S') { 
+                            row.push(6); 
+                            staticUnicorns.push(new StaticUnicorn(c, r));
+                        }
+                        else if(val.includes('-l')) {
+                            if(val.startsWith('P')) row.push(5);
+                            else row.push(0); 
+                            
+                            if(val.includes('-M-l')) {
+                                movingUnicornData.push({c, r, val});
+                            }
+                        } else {
+                            row.push(1); 
+                        }
+                    }
+                    map.push(row);
+                }
+
+                movingUnicorns = [];
+                for(let mu of movingUnicornData){
+                    let {c, r} = mu;
+                    let min_c = c, max_c = c, min_r = r, max_r = r;
+                    
+                    let temp_c = c;
+                    while(temp_c > 0 && parsedLines[r][temp_c - 1] && parsedLines[r][temp_c - 1].includes('-l')) temp_c--;
+                    min_c = temp_c;
+                    
+                    temp_c = c;
+                    while(temp_c < COLS - 1 && parsedLines[r][temp_c + 1] && parsedLines[r][temp_c + 1].includes('-l')) temp_c++;
+                    max_c = temp_c;
+                    
+                    let temp_r = r;
+                    while(temp_r > 0 && parsedLines[temp_r - 1][c] && parsedLines[temp_r - 1][c].includes('-l')) temp_r--;
+                    min_r = temp_r;
+                    
+                    temp_r = r;
+                    while(temp_r < ROWS - 1 && parsedLines[temp_r + 1][c] && parsedLines[temp_r + 1][c].includes('-l')) temp_r++;
+                    max_r = temp_r;
+                    
+                    let vx = 0, vy = 0;
+                    let speed = TILE_SIZE * 0.1; 
+                    
+                    if (max_c > min_c) {
+                        vx = speed; 
+                        paths.push({c1: min_c, r1: r, c2: max_c, r2: r, spawnC: c, spawnR: r});
+                    } else if (max_r > min_r) {
+                        vy = speed;
+                        paths.push({c1: c, r1: min_r, c2: c, r2: max_r, spawnC: c, spawnR: r});
+                    } else {
+                        paths.push({c1: c, r1: r, c2: c, r2: r, spawnC: c, spawnR: r});
+                    }
+                    
+                    movingUnicorns.push(new MovingUnicorn(c, r, vx, vy, min_c, max_c, min_r, max_r));
+                }
+
+                initGame();
+            }
+
+            const defaultCSV = `O;O;O;O;O;O;O;O;O;O;O;O;O;O;O;O;O;O;O;O;O;O;O;O;O;O;O;O
+O;O;O;O;O;O;O;O;O;O;O;O;O;O;O;O;O;O;O;O;O;O;O;O;O;O;O;O
+O;O;O;T-l;T;T;T;O;T;T;T;T-l;O;T;P;P;P;T;T;T;T;P;T;O;O;T;O;O
+O;O;O;T-l;O;O;T;O;T;O;O;T-l;O;T;O;O;O;O;O;O;T;O;T;O;O;T;O;O
+O;O;A;T-l;O;O;T;O;T;O;O;T-l;O;T;O;O;O;O;O;O;T;O;T;O;O;T;O;O
+O;O;O;T-l;O;O;T;O;T;O;O;T-l;O;T;O;O;O;O;O;O;T;O;T;O;O;T;O;O
+O;O;O;T-l;T;T;T;O;T-l;T-l;T-M-l;T-l;O;T;O;O;O;O;O;O;T;O;T;O;O;T;O;O
+O;O;O;O;O;O;O;O;O;O;O;T-l;O;T;O;O;O;O;O;O;T;O;T;O;O;T;O;O
+O;O;O;O;O;O;O;O;O;O;O;T-l;O;T;O;O;O;O;O;O;T;O;T;O;O;T;O;O
+O;O;O;O;O;O;O;O;T-S;O;O;T-l;O;T;O;O;O;O;O;O;T;O;T;T;T;T;O;O
+O;O;O;O;O;O;O;O;T;O;O;T-l;O;T;T;T;T;T;T;T;T;O;O;O;O;T;O;O
+O;O;O;O;O;O;O;O;T;T;T;T-l;O;O;O;O;O;O;O;O;O;O;E;T;T;T;O;O
+O;O;O;O;O;O;O;O;O;O;O;O;O;O;O;O;O;O;O;O;O;O;O;O;O;O;O;O`;
+
+            uploadInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    loadMapFromCSV(e.target.result);
+                    uploadStatus.innerText = `Laaditud maailm: ${file.name}`;
+                };
+                reader.readAsText(file);
+            });
+
+            async function fetchMapFromUrl(url) {
+                try {
+                    uploadStatus.innerText = 'Sikutan andmeid võrgust...';
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error(`HTTP viga! Staatus: ${response.status}`);
+                    const text = await response.text();
+                    loadMapFromCSV(text);
+                    uploadStatus.innerText = `Laaditud maailm: Veebiallikast`;
+                } catch (error) {
+                    uploadStatus.innerText = `Viga: Võrguühendus või CORS. Kasutasid ikka 'Publish to web' .csv linki? Lülitun tagasi lokaalsele kaardile.`;
+                    console.error('Andmete laadimine ebaõnnestus:', error);
+                    loadMapFromCSV(defaultCSV); // Tagavara
+                }
+            }
+
+            urlLoadBtn.addEventListener('click', () => {
+                const url = csvUrlInput.value.trim();
+                if (url) fetchMapFromUrl(url);
+            });
+
+            function initGame() {
+                gameState = 0;
+                overlay.classList.add('hidden');
+                rainbows = [];
+                flowers = [];
+                
+                let foundStart = false;
+                for (let r = 0; r < ROWS; r++) {
+                    for (let c = 0; c < COLS; c++) {
+                        if (map[r][c] === 2) {
+                            player.x = c * TILE_SIZE + (TILE_SIZE - player.size) / 2;
+                            player.y = r * TILE_SIZE + (TILE_SIZE - player.size) / 2;
+                            foundStart = true;
+                        }
+                    }
+                }
+                
+                if (!foundStart) {
+                    player.x = TILE_SIZE; player.y = TILE_SIZE; 
+                }
+
+                player.dirX = 0;
+                player.dirY = 0;
+                player.lastDirX = 1;
+                player.lastDirY = 0;
+
+                if (animationFrameId) cancelAnimationFrame(animationFrameId);
+                gameLoop(performance.now());
+            }
+
+            // Tavamängija füüsikakokkupõrge (arvestab kive ja staatilisi ükssarvikuid)
+            function checkWallCollision(newX, newY, size) {
+                const left = Math.floor(newX / TILE_SIZE);
+                const right = Math.floor((newX + size - 0.1) / TILE_SIZE);
+                const top = Math.floor(newY / TILE_SIZE);
+                const bottom = Math.floor((newY + size - 0.1) / TILE_SIZE);
+
+                for (let r = top; r <= bottom; r++) {
+                    for (let c = left; c <= right; c++) {
+                        if (r >= 0 && r < ROWS && c >= 0 && c < COLS) {
+                            if (map[r][c] === 1 || map[r][c] === 6) return true;
+                        } else {
+                            return true; 
+                        }
+                    }
+                }
+                return false;
+            }
+
+            // Mürskude füüsikakokkupõrge (ignoreerib 6. tüüpi kivi ehk staatilist ükssarvikut)
+            function checkProjectileWallCollision(newX, newY, size) {
+                const left = Math.floor(newX / TILE_SIZE);
+                const right = Math.floor((newX + size - 0.1) / TILE_SIZE);
+                const top = Math.floor(newY / TILE_SIZE);
+                const bottom = Math.floor((newY + size - 0.1) / TILE_SIZE);
+
+                for (let r = top; r <= bottom; r++) {
+                    for (let c = left; c <= right; c++) {
+                        if (r >= 0 && r < ROWS && c >= 0 && c < COLS) {
+                            if (map[r][c] === 1) return true; 
+                        } else {
+                            return true; 
+                        }
+                    }
+                }
+                return false;
+            }
+
+            function rectIntersect(x1, y1, s1, x2, y2, s2) {
+                return x1 < x2 + s2 && x1 + s1 > x2 && y1 < y2 + s2 && y1 + s1 > y2;
+            }
+
+            function update(time) {
+                if (gameState !== 0) return;
+
+                if (player.dirX !== 0 || player.dirY !== 0) {
+                    player.lastDirX = player.dirX;
+                    player.lastDirY = player.dirY;
+                }
+
+                if (player.dirX !== 0) {
+                    player.x += player.dirX * player.speed;
+                    if (checkWallCollision(player.x, player.y, player.size)) {
+                        player.x -= player.dirX * player.speed;
+                        player.dirX = 0; 
+                    }
+                }
+
+                if (player.dirY !== 0) {
+                    player.y += player.dirY * player.speed;
+                    if (checkWallCollision(player.x, player.y, player.size)) {
+                        player.y -= player.dirY * player.speed;
+                        player.dirY = 0;
+                    }
+                }
+
+                const gridC = Math.floor((player.x + player.size / 2) / TILE_SIZE);
+                const gridR = Math.floor((player.y + player.size / 2) / TILE_SIZE);
+
+                if (player.dirX === 0 && player.dirY === 0 && !player.isSpaceHeld) {
+                    if (map[gridR] && map[gridR][gridC] === 5) {
+                        gameState = 1;
+                        showEndScreen("Bioloogiline häving", "Oh, ei! Kas ma ei olegi Jeesus?", true);
+                        return;
+                    }
+                }
+
+                for (let i = flowers.length - 1; i >= 0; i--) {
+                    let f = flowers[i];
+                    f.x += f.vx;
+                    f.y += f.vy;
+
+                    if (checkProjectileWallCollision(f.x - f.size/2, f.y - f.size/2, f.size)) {
+                        flowers.splice(i, 1);
+                        continue;
+                    }
+
+                    let hit = false;
+                    for (let j = movingUnicorns.length - 1; j >= 0; j--) {
+                        let mu = movingUnicorns[j];
+                        if (rectIntersect(f.x - f.size/2, f.y - f.size/2, f.size, mu.x, mu.y, mu.size)) {
+                            movingUnicorns.splice(j, 1);
+                            hit = true; break;
+                        }
+                    }
+                    if (hit) { flowers.splice(i, 1); continue; }
+
+                    for (let j = staticUnicorns.length - 1; j >= 0; j--) {
+                        let su = staticUnicorns[j];
+                        if (rectIntersect(f.x - f.size/2, f.y - f.size/2, f.size, su.x, su.y, su.size)) {
+                            staticUnicorns.splice(j, 1);
+                            hit = true; break;
+                        }
+                    }
+                    if (hit) { flowers.splice(i, 1); continue; }
+                }
+
+                for (let uni of movingUnicorns) {
+                    uni.update();
+                    if (rectIntersect(player.x, player.y, player.size, uni.x, uni.y, uni.size)) {
+                        gameState = 1;
+                        showEndScreen("Bioloogiline häving", "Oh, ei! Equus Hallucinatio embas su kallistustega surnuks", true);
+                        return;
+                    }
+                }
+
+                for (let su of staticUnicorns) {
+                    su.update(time);
+                }
+
+                for (let i = rainbows.length - 1; i >= 0; i--) {
+                    let rb = rainbows[i];
+                    rb.update();
+                    
+                    if (checkProjectileWallCollision(rb.x, rb.y, rb.size)) {
+                        rainbows.splice(i, 1);
+                        continue;
+                    }
+                    
+                    if (rectIntersect(player.x, player.y, player.size, rb.x, rb.y, rb.size)) {
+                        gameState = 1;
+                        showEndScreen("Fataalne kiirgus", "Kuidas küll julged mõelda, et suudad mu vikerkaart trotsida?!", true);
+                        return;
+                    }
+                }
+
+                if (gridR >= 0 && gridR < ROWS && gridC >= 0 && gridC < COLS) {
+                    if (map[gridR][gridC] === 3) {
+                        gameState = 2;
+                        showEndScreen("Eksperimentaalne läbimurre", "Oh, jaa!, Oh, jaa! Hästi panen! Olen vähemalt terve järgmine aasta sama äge ja võluv!", false);
+                    }
+                }
+            }
+
+            function draw() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                for (let r = 0; r < ROWS; r++) {
+                    for (let c = 0; c < COLS; c++) {
+                        const tile = map[r][c];
+                        const x = c * TILE_SIZE;
+                        const y = r * TILE_SIZE;
+
+                        if (tile === 1) ctx.fillStyle = '#5c0f1e'; // Tume bordoo
+                        else if (tile === 2) ctx.fillStyle = '#03f279'; 
+                        else if (tile === 3) ctx.fillStyle = '#14532d'; 
+                        else if (tile === 0) ctx.fillStyle = '#fb923c'; 
+                        else if (tile === 5) ctx.fillStyle = '#22d3ee'; 
+                        else if (tile === 6) {
+                            ctx.fillStyle = '#fb923c'; 
+                            ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+                            ctx.fillStyle = '#ff0000'; 
+                        ctx.fillRect(x + 2, y + 2, TILE_SIZE - 4, TILE_SIZE - 4);
+                    }
+                    
+                    if (tile !== 6) ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+                }
+            }
+
+            for (let su of staticUnicorns) su.draw(ctx);
+            for (let uni of movingUnicorns) uni.draw(ctx);
+            for (let rb of rainbows) rb.draw(ctx);
+
+            for (let f of flowers) {
+                    ctx.font = `${f.size}px sans-serif`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('🌸', f.x, f.y);
+                }
+
+                const px = player.x;
+                const py = player.y;
+                const ps = player.size;
+                
+                ctx.fillStyle = '#ef4444';
+                ctx.beginPath();
+                ctx.moveTo(px + ps / 2, py + ps);
+                ctx.lineTo(px, py + ps);
+                ctx.lineTo(px + ps / 2, py + ps * 0.2);
+                ctx.lineTo(px + ps, py + ps);
+                ctx.fill();
+
+                ctx.fillStyle = '#ffedd5';
+                ctx.beginPath();
+                ctx.arc(px + ps / 2, py + ps * 0.35, ps * 0.35, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = '#171717';
+                ctx.beginPath();
+                ctx.arc(px + ps / 2, py - ps * 0.05, ps * 0.2, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.strokeStyle = '#171717';
+                ctx.lineWidth = Math.max(1, ps * 0.08);
+                ctx.beginPath();
+                ctx.moveTo(px + ps * 0.25, py + ps * 0.25);
+                ctx.lineTo(px + ps * 0.5, py + ps * 0.35);
+                ctx.lineTo(px + ps * 0.75, py + ps * 0.25);
+                ctx.stroke();
+
+                ctx.fillStyle = '#171717';
+                ctx.beginPath();
+                ctx.arc(px + ps * 0.35, py + ps * 0.4, ps * 0.08, 0, Math.PI * 2);
+                ctx.arc(px + ps * 0.65, py + ps * 0.4, ps * 0.08, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            function gameLoop(time) {
+                update(time);
+                draw();
+                if (gameState === 0) {
+                    animationFrameId = requestAnimationFrame(gameLoop);
+                }
+            }
+
+            function showEndScreen(title, desc, isDeath) {
+                overlayTitle.innerText = title;
+                overlayDesc.innerText = desc;
+                
+                if (isDeath) {
+                    deathCount++;
+                    lifeCounterElement.innerText = `Mul on vähemalt ${deathCount} elu! Huvitav, mitu veel?`;
+                    lifeCounterElement.classList.remove('hidden');
+
+                    overlayTitle.className = 'text-4xl font-bold mb-4 text-red-500';
+                    statusIcon.innerText = '🦄';
+                    statusIcon.classList.remove('hidden');
+                } else {
+                    overlayTitle.className = 'text-4xl font-bold mb-4 text-green-500';
+                    statusIcon.innerText = '🌸';
+                    statusIcon.classList.remove('hidden');
+                }
+                
+                overlay.classList.remove('hidden');
+            }
+
+            window.addEventListener('keydown', e => {
+                if (e.code === 'Space') {
+                    e.preventDefault(); 
+                    if (gameState !== 0) return;
+                    if (!player.isSpaceHeld) {
+                        flowers.push({
+                            x: player.x + player.size / 2,
+                            y: player.y + player.size / 2,
+                            vx: player.lastDirX * TILE_SIZE * 0.3,
+                            vy: player.lastDirY * TILE_SIZE * 0.3,
+                            size: Math.max(12, TILE_SIZE * 0.6)
+                        });
+                    }
+                    player.isSpaceHeld = true;
+                    return; 
+                }
+
+                if (gameState !== 0) return;
+                if (['ArrowUp', 'w', 'W'].includes(e.key)) { player.dirX = 0; player.dirY = -1; }
+                if (['ArrowDown', 's', 'S'].includes(e.key)) { player.dirX = 0; player.dirY = 1; }
+                if (['ArrowLeft', 'a', 'A'].includes(e.key)) { player.dirX = -1; player.dirY = 0; }
+                if (['ArrowRight', 'd', 'D'].includes(e.key)) { player.dirX = 1; player.dirY = 0; }
+            });
+
+            window.addEventListener('keyup', e => {
+                if (e.code === 'Space') {
+                    player.isSpaceHeld = false;
+                }
+            });
+
+            let touchStartX = null;
+            let touchStartY = null;
+
+            canvas.addEventListener('touchstart', e => {
+                if (gameState !== 0) return;
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+            }, {passive: false});
+
+            canvas.addEventListener('touchmove', e => {
+                if (gameState !== 0 || !touchStartX || !touchStartY) return;
+                e.preventDefault(); 
+                let diffX = e.touches[0].clientX - touchStartX;
+                let diffY = e.touches[0].clientY - touchStartY;
+                if (Math.abs(diffX) > 20 || Math.abs(diffY) > 20) {
+                    if (Math.abs(diffX) > Math.abs(diffY)) {
+                        player.dirX = Math.sign(diffX);
+                        player.dirY = 0;
+                    } else {
+                        player.dirX = 0;
+                        player.dirY = Math.sign(diffY);
+                    }
+                    touchStartX = null;
+                    touchStartY = null;
+                }
+            }, {passive: false});
+
+            canvas.addEventListener('touchend', () => {
+                touchStartX = null;
+                touchStartY = null;
+            });
+
+            restartBtn.addEventListener('click', initGame);
+
+            // Initsialiseerimise loogika
+            if (DEFAULT_SHEET_URL) {
+                fetchMapFromUrl(DEFAULT_SHEET_URL);
+            } else {
+                loadMapFromCSV(defaultCSV);
+                uploadStatus.innerText = 'Laaditud maailm: Lokaalne Vihik1.csv varukoopia';
+            }
+        };
+    </script>
+</body>
+</html>

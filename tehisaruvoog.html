@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TI topograafia ja töövoog</title>
+    
+    <!-- Laeme Fira Sans fondi -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+
+    <!-- Laeme Vis-network teegi otse CDN-ist -->
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+
+    <style>
+        /* Tume, kliiniline baasstiil lõuendile */
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #08080a;
+            font-family: 'Fira Sans', sans-serif;
+            overflow: hidden;
+        }
+
+        #network-canvas {
+            width: 100vw;
+            height: 100vh;
+            outline: none;
+        }
+
+        /* Tühjaks tehtud UI layer (et säilitada struktuur, aga peita tekst) */
+        #ui-layer {
+            display: none;
+        }
+
+        /* --- Modaalakna (infoakna) stiilid (1.75x suurem, uued värvid) --- */
+        #info-modal {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 787px; /* 450px * 1.75 */
+            max-width: 95vw;
+            background-color: #e9eae0; /* Uus heledam taust */
+            border: 1px solid #c0c0c0;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+            color: #0e4714; /* Uus tumeroheline tekstivärv */
+            z-index: 1000;
+            border-radius: 8px;
+            flex-direction: column;
+            font-family: 'Fira Sans', sans-serif;
+        }
+        
+        #info-modal.visible {
+            display: flex;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 26px 35px; /* Suurendatud padding */
+            border-bottom: 2px solid rgba(14, 71, 20, 0.1);
+            background: rgba(14, 71, 20, 0.05);
+            border-radius: 8px 8px 0 0;
+        }
+
+        .modal-header h2 { 
+            margin: 0; 
+            font-size: 31px; /* 18px * 1.75 */
+            color: #0e4714; 
+            font-weight: 700;
+        }
+
+        #modal-close {
+            background: none; 
+            border: none; 
+            color: #d32f2f; /* Punane rist */
+            font-size: 35px; /* 20px * 1.75 */
+            cursor: pointer; 
+            padding: 0; 
+            line-height: 1;
+        }
+
+        #modal-close:hover { 
+            color: #ff0000; 
+        }
+
+        .modal-body {
+            padding: 35px; /* 20px * 1.75 */
+            font-size: 24.5px; /* 14px * 1.75 */
+            line-height: 1.6;
+            min-height: 210px;
+            color: #0e4714;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+        
+        /* Pildid ja lingid modaalaknas */
+        .modal-body img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 6px;
+            margin-top: 26px;
+            border: 1px solid rgba(14, 71, 20, 0.2);
+        }
+
+        .modal-body a {
+            color: #0056b3; /* Tume sinine loetavaks kontrastiks heledal taustal */
+            text-decoration: underline;
+            font-weight: 700;
+        }
+
+        .modal-body a:hover {
+            color: #003d82;
+        }
+
+        /* Listid modaalaknas */
+        .modal-body ul {
+            padding-left: 35px;
+            margin-top: 15px;
+            margin-bottom: 25px;
+            color: #0e4714;
+        }
+
+        .modal-body li {
+            margin-bottom: 14px;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: space-between;
+            padding: 26px 35px;
+            border-top: 2px solid rgba(14, 71, 20, 0.1);
+            background: rgba(14, 71, 20, 0.05);
+            border-radius: 0 0 8px 8px;
+        }
+
+        .modal-footer button {
+            background: #0e4714; /* Tume roheline nupp */
+            color: #e9eae0; /* Hele tekst nupul */
+            border: none;
+            padding: 14px 28px; 
+            cursor: pointer; 
+            border-radius: 5px;
+            text-transform: uppercase; 
+            font-size: 19px; /* 11px * 1.75 */
+            letter-spacing: 1px;
+            font-family: 'Fira Sans', sans-serif;
+            font-weight: 500;
+        }
+
+        .modal-footer button:hover:not(:disabled) { 
+            background: #15691d; 
+        }
+
+        .modal-footer button:disabled { 
+            opacity: 0.3; 
+            cursor: not-allowed; 
+        }
+    </style>
+</head>
+<body>
+
+    <div id="network-canvas"></div>
+
+    <div id="info-modal">
+        <div class="modal-header">
+            <h2 id="modal-title">Sõlme Pealkiri</h2>
+            <button id="modal-close" title="Sulge aken">✖</button>
+        </div>
+        <div class="modal-body">
+            <div id="modal-text">Siia tuleb sisu...</div>
+        </div>
+        <div class="modal-footer">
+            <button id="modal-prev">⬅ Tagasi</button>
+            <button id="modal-next">Edasi ➡</button>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. SÕLMED (NODES) ---
+        const nodes = new vis.DataSet([
+            // Klaster 1: Psühholoogia
+            { id: 110, label: 'Promptiinseneeria', group: 'psühholoogia' },
+            { id: 111, label: 'Kiired mudelid', group: 'psühholoogia' },
+            { id: 112, label: 'Pro ja mõtlevad\nmudelid', group: 'psühholoogia' },
+            { id: 113, label: 'Üldehitaja', group: 'psühholoogia' },
+            { id: 114, label: 'Spetsialistid', group: 'psühholoogia' },
+            { id: 115, label: 'Ühisjooned', group: 'psühholoogia' },
+
+            // Klaster 2: Teadusajakirjaniku Tehas (Tsükkel)
+            { id: 201, label: 'PDF triaaž', group: 'tehas' },
+            { id: 203, label: 'Intervjuukonstruktor', group: 'tehas' },
+            { id: 204, label: 'TTÜ\ntranskriptsioon', group: 'tehas' },
+            { id: 205, label: 'Intervjuutoimetaja', group: 'tehas' },
+            { id: 206, label: 'Süntees', group: 'tehas' },
+            { id: 207, label: 'Tsitaadikaevur', group: 'tehas' },
+            { id: 208, label: 'Faktikontroll', group: 'tehas' },
+            { id: 209, label: 'Kergtoimetaja', group: 'tehas' },
+            { id: 210, label: 'Pealkirjastaja', group: 'tehas' },
+
+            // Klaster 3: Turg (Konvergents)
+            { id: 310, label: 'Mudelite\nkonvergents', group: 'turg' },
+            { id: 311, label: 'Gemini\neelised', group: 'turg' },
+            { id: 312, label: 'Grounding', group: 'turg' },
+
+            // Klaster 4: Eraldiseisev eluiga
+            { id: 501, label: 'Promptide eluiga', group: 'roosa' }
+        ]);
+
+        // --- 2. SEOSED (EDGES) ---
+        const edges = new vis.DataSet([
+            // Klaster 1 seosed
+            { from: 110, to: 111 },
+            { from: 110, to: 112 },
+            { from: 112, to: 113 },
+            { from: 112, to: 114 },
+            { from: 114, to: 115 },
+
+            // Klaster 2 seosed (Konveier läheb ringi)
+            { from: 201, to: 203 },
+            { from: 203, to: 204 },
+            { from: 204, to: 205 },
+            { from: 205, to: 206 },
+            { from: 206, to: 207 },
+            { from: 207, to: 208 },
+            { from: 208, to: 209 },
+            { from: 209, to: 210 },
+            { from: 210, to: 201 }, // Pealkirjast tagasi triaaži
+
+            // Klaster 3 seosed
+            { from: 310, to: 311 },
+            { from: 311, to: 312 }
+        ]);
+
+        const data = { nodes: nodes, edges: edges };
+
+        // --- 3. KONFIGURATSIOON (OPTIONS) ---
+        const options = {
+            nodes: {
+                shape: 'box',
+                margin: 15,
+                borderWidth: 2,
+                borderWidthSelected: 4,
+                font: { color: '#ffffff', size: 16, face: "'Fira Sans', sans-serif", multi: true },
+                shadow: { enabled: true, color: 'rgba(0,0,0,0.8)', size: 15, x: 3, y: 3 }
+            },
+            edges: {
+                width: 2,
+                arrows: { to: { enabled: true, scaleFactor: 0.8 } },
+                color: { color: '#444455', highlight: '#ffffff', hover: '#888899' },
+                smooth: { type: 'continuous', roundness: 0.5 }
+            },
+            groups: {
+                psühholoogia: {
+                    color: { background: '#1a0505', border: '#ff4444', highlight: { background: '#330a0a', border: '#ff6666' }, hover: { background: '#2a0808', border: '#ff4444' } },
+                    font: { color: '#ffdddd' }
+                },
+                tehas: {
+                    color: { background: '#041515', border: '#00ffcc', highlight: { background: '#082a2a', border: '#33ffdd' }, hover: { background: '#062020', border: '#00ffcc' } },
+                    font: { color: '#ccffff' }
+                },
+                turg: { 
+                    color: { background: '#1a1100', border: '#ffaa00', highlight: { background: '#332200', border: '#ffcc33' }, hover: { background: '#2a1a00', border: '#ffaa00' } },
+                    font: { color: '#ffeedd' }
+                },
+                roosa: { // Eraldiseisev roosa raamiga slaid
+                    color: { background: '#170510', border: '#ff3399', highlight: { background: '#2e0a20', border: '#ff66b2' }, hover: { background: '#220818', border: '#ff3399' } },
+                    font: { color: '#ffdbee' }
+                }
+            },
+            interaction: {
+                hover: true, dragNodes: true, dragView: true, zoomView: true, hideEdgesOnDrag: false, tooltipDelay: 200
+            },
+            physics: {
+                enabled: true, solver: 'forceAtlas2Based',
+                forceAtlas2Based: { gravitationalConstant: -100, centralGravity: 0.005, springLength: 250, springConstant: 0.04, damping: 0.8 },
+                stabilization: { enabled: true, iterations: 200, updateInterval: 50, onlyDynamicEdges: false, fit: true }
+            }
+        };
+
+        // --- 4. KÄIVITAMINE ---
+        const container = document.getElementById('network-canvas');
+        
+        // Laeme fontide valmimise ära, et Vis.js saaks õiged laiused arvutada
+        document.fonts.ready.then(function() {
+            const network = new vis.Network(container, data, options);
+
+            network.on("doubleClick", function (params) {
+                network.fit({ animation: { duration: 800, easingFunction: 'easeInOutQuad' } });
+            });
+
+            // --- 5. MODAALAKNA LOOGIKA JA SISU ---
+            const modal = document.getElementById('info-modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalText = document.getElementById('modal-text');
+            const btnClose = document.getElementById('modal-close');
+            const btnPrev = document.getElementById('modal-prev');
+            const btnNext = document.getElementById('modal-next');
+
+            const nodeContent = {};
+            const presentationChain = [];
+
+            const allNodes = nodes.get().sort((a, b) => a.id - b.id);
+            
+            allNodes.forEach(node => {
+                presentationChain.push(node.id);
+                const cleanTitle = node.label.replace(/\n/g, ' ');
+                nodeContent[node.id] = {
+                    title: cleanTitle,
+                    text: `<p>Sisu lisamata: ${cleanTitle}</p>` // Varuvariant
+                };
+            });
+
+            // --- SÕLMEDE SISU DEFINITSIOONID ---
+
+            // Klaster 1
+            nodeContent[110].title = "Promptiinseneeria";
+            nodeContent[110].text = `
+                <ul>
+                    <li>Taltsutades tõenäosusi</li>
+                    <li>Suur illusionist</li>
+                    <li>Loomingulisuse tasakaalupunkt</li>
+                </ul>
+                <img src="https://s.err.ee/photo/orig/2026/03/03/3236285h6fb2.png" alt="Promptiinseneeria">
+            `;
+
+            nodeContent[111].title = "Kiired mudelid";
+            nodeContent[111].text = `
+                <ul>
+                    <li>Tähelepanuhäirega abiline</li>
+                    <li>3–4 reegli piirang</li>
+                    <li>Tuim otsetõlge, kirjavead & SEO</li>
+                </ul>
+            `;
+
+            nodeContent[112].title = "Pro ja mõtlevad mudelid";
+            nodeContent[112].text = `
+                <ul>
+                    <li>Sisekoosolek: mustand enne esitlust</li>
+                    <li>Hallutsinatsioonipidur</li>
+                    <li>Tingimuslik loogika</li>
+                    <li>25–35 reegli piirang</li>
+                </ul>
+            `;
+
+            nodeContent[113].title = "Üldehitaja";
+            nodeContent[113].text = `
+                <ul>
+                    <li>Monoliitkäskude katastroof</li>
+                    <li>TI tähelepanumajandus</li>
+                    <li>Kognitiivsed lühised</li>
+                    <li>Valet värvi katastroof</li>
+                </ul>
+                <img src="https://s.err.ee/photo/orig/2026/03/03/3236288h4672.png" alt="Üldehitaja">
+            `;
+
+            nodeContent[114].title = "Spetsialistid";
+            nodeContent[114].text = `
+                <ul>
+                    <li>Agendipõhine konveier</li>
+                    <li>Isolatsioon hoiab fookust</li>
+                    <li>Palgasõdurite hierarhia</li>
+                    <li>Inimene kui peatoimetaja</li>
+                </ul>
+                <img src="https://s.err.ee/photo/orig/2026/03/03/3236294h7c61.png" alt="Spetsialistid">
+            `;
+
+            nodeContent[115].title = "Ühisjooned";
+            nodeContent[115].text = `
+                <ul>
+                    <li>Roll - piira latentset ruumi</li>
+                    <li>Töövoog - tekita sundmõtteid</li>
+                    <li>Vektorid - reegel & hea vs halb näide</li>
+                    <li>Kuldreeglid - värskenda mälu</li>
+                </ul>
+                <img src="https://s.err.ee/photo/orig/2026/03/03/3236297he9b2.png" alt="Ühisjooned">
+            `;
+
+            // Klaster 2 (Tehas)
+            nodeContent[201].title = "PDF triaaž";
+            nodeContent[201].text = `
+                <ul>
+                    <li>Surnult sündinud ideed</li>
+                    <li>Popteaduslik lakmustest</li>
+                    <li>Elu on liiga lühike</li>
+                    <li><a href="https://gemini.google.com/share/33b548496143" target="_blank">Ablation of black-Si by (Gauss-)Bessel femtosecond laser beams</a></li>
+                </ul>
+            `;
+
+            nodeContent[203].title = "Intervjuukonstruktor";
+            nodeContent[203].text = `
+                <ul>
+                    <li>Murrab rutiini</li>
+                    <li>Päästab pressiteatest</li>
+                    <li>Lihtsus ja ühiskondlik kasu</li>
+                    <li>Tehniline suitsukate</li>
+                    <li><a href="https://gemini.google.com/share/b3131069859d" target="_blank">NÄIDE</a></li>
+                </ul>
+            `;
+
+            nodeContent[204].title = "TTÜ transkriptsioon";
+            nodeContent[204].text = `
+                <ul>
+                    <li>Häälikud vs hallutsinatsioonid</li>
+                    <li>Globaalse AI pimeala</li>
+                    <li>7% vs 25% veamäär</li>
+                </ul>
+            `;
+
+            nodeContent[205].title = "Intervjuutoimetaja";
+            nodeContent[205].text = `
+                <ul>
+                    <li>Diagnoosfaas ja pidurid</li>
+                    <li>Parasiitsõnade ja ääööde tapamaja</li>
+                    <li>Säilitab lollust ja isikupära</li>
+                    <li>Pidev aruandlus</li>
+                    <li>kohalik kontekst</li>
+                    <li><a href="https://gemini.google.com/share/d7868f4d0f46" target="_blank">NÄIDE</a></li>
+                </ul>
+            `;
+
+            nodeContent[206].title = "Süntees";
+            nodeContent[206].text = `
+                <ul>
+                    <li>Hennoste filter ja fookused</li>
+                    <li>Toorandmete ja emotsiooni ristand</li>
+                    <li>Novaatori stiiliraamat</li>
+                    <li>Hallutsinatsiooni keeld</li>
+                    <li>Ühistöö lähtepunkt</li>
+                    <li><a href="https://gemini.google.com/share/9bee87c17306" target="_blank">NÄIDE</a></li>
+                </ul>
+            `;
+
+            nodeContent[207].title = "Tsitaadikaevur";
+            nodeContent[207].text = `
+                <ul>
+                    <li>Väsimatu arhivaar</li>
+                    <li>Leiab konteksti</li>
+                    <li>Taastab koloriidi</li>
+                    <li>Unustatud detailid</li>
+                    <li><a href="https://gemini.google.com/share/5622dba826cc" target="_blank">NÄIDE</a></li>
+                </ul>
+            `;
+
+            nodeContent[208].title = "Faktikontroll";
+            nodeContent[208].text = `
+                <ul>
+                    <li>NotebookLM-i ristküsitlus</li>
+                    <li>Hallutsinatsioonikütt</li>
+                    <li>Halvad analoogiad</li>
+                    <li>Uuringus pole seda kirjas</li>
+                    <li><a href="https://gemini.google.com/share/8d75f7f775dc" target="_blank">NÄIDE</a></li>
+                </ul>
+            `;
+
+            nodeContent[209].title = "Kergtoimetaja";
+            nodeContent[209].text = `
+                <ul>
+                    <li>Teada-tuntud parasiitsõnade giljotiin</li>
+                    <li>Minimaalse sekkumise printsiip</li>
+                    <li>Sisseehitatud ERR-i dogmad</li>
+                    <li>Muudatuste autopsiaraport</li>
+                    <li><a href="https://gemini.google.com/share/70a1497abb4b" target="_blank">NÄIDE</a></li>
+                </ul>
+            `;
+
+            nodeContent[210].title = "Pealkirjastaja";
+            nodeContent[210].text = `
+                <ul>
+                    <li>ERR-i stiilikorsett</li>
+                    <li>Flirt klõpsulõksudega</li>
+                    <li>12 vaatenurka, üks valik</li>
+                    <li><a href="https://gemini.google.com/share/acbdf5fb6a2d" target="_blank">NÄIDE</a></li>
+                </ul>
+            `;
+
+            // Klaster 3 (Turg)
+            nodeContent[310].title = "Mudelite konvergents";
+            nodeContent[310].text = `
+                <ul>
+                    <li>Hiidmälu - kontekstiakna suurus</li>
+                    <li>Ülesleitud "keskosa"</li>
+                    <li>Purunenud keeltebarjäär</li>
+                    <li>Võrreldav hinnakiri</li>
+                </ul>
+            `;
+
+            nodeContent[311].title = "Gemini eelised";
+            nodeContent[311].text = `
+                <ul>
+                    <li>Google'i ökosüsteem</li>
+                    <li>NotebookLM</li>
+                    <li>Loomupärane multimodaalsus</li>
+                    <li>Claude, OpenAI ja Grok...</li>
+                </ul>
+            `;
+
+            nodeContent[312].title = "Grounding";
+            nodeContent[312].text = `
+                <ul>
+                    <li>Grounding ehk faktiline ankurdamine</li>
+                    <li>Hallutsinatsioonifilter</li>
+                    <li>NotebookLM-i DNA</li>
+                    <li>Klikitav läbipaistvus</li>
+                </ul>
+            `;
+
+            // Klaster 4 (Eraldiseisev Eluiga)
+            nodeContent[501].title = "Promptide eluiga";
+            nodeContent[501].text = `
+                <ul>
+                    <li>Intellektuaalomandi illusioon</li>
+                    <li>Promptitriiv ja mudeli evolutsioon</li>
+                    <li>Algoritmiline monokultuur</li>
+                    <li>Jagage tellinguid, mitte tapeeti</li>
+                </ul>
+            `;
+
+            let currentNodeIndex = -1;
+
+            function openModal(nodeId) {
+                const content = nodeContent[nodeId];
+                if (!content) return;
+
+                modalTitle.innerText = content.title;
+                modalText.innerHTML = content.text;
+                modal.classList.add('visible');
+
+                currentNodeIndex = presentationChain.indexOf(nodeId);
+                btnPrev.disabled = (currentNodeIndex <= 0);
+                btnNext.disabled = (currentNodeIndex === -1 || currentNodeIndex >= presentationChain.length - 1);
+
+                network.selectNodes([nodeId]);
+                network.focus(nodeId, { 
+                    scale: 1.2, 
+                    animation: { duration: 400, easingFunction: 'easeInOutQuad' } 
+                });
+            }
+
+            network.on("click", function (params) {
+                if (params.nodes.length > 0) {
+                    openModal(params.nodes[0]);
+                } else {
+                    modal.classList.remove('visible');
+                }
+            });
+
+            btnClose.addEventListener('click', () => modal.classList.remove('visible'));
+            
+            btnPrev.addEventListener('click', () => {
+                if (currentNodeIndex > 0) openModal(presentationChain[currentNodeIndex - 1]);
+            });
+            
+            btnNext.addEventListener('click', () => {
+                if (currentNodeIndex < presentationChain.length - 1) openModal(presentationChain[currentNodeIndex + 1]);
+            });
+        });
+
+    </script>
+</body>
+</html>
+```

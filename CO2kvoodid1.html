@@ -41,7 +41,7 @@
 <div class="widget-container" id="mainContainer">
     <div style="margin-bottom: 1rem;">
         <h2 style="font-size: 1.25rem; font-weight: 700; color: #1f2937; margin-bottom: 0.25rem;">Perioodi 2021-2029 laekumistest otsustatud meetmete finantsandmed</h2>
-        <p style="font-size: 0.875rem; color: #6b7280; margin: 0;">Klõpsa tulbal või meetme nimel, et näha lisainfot ja täpset summat.</p>
+        <p style="font-size: 0.875rem; color: #6b7280; margin: 0;">Klõpsa tulbal või meetme nimel, et näha lisainfot ja täpset summat. Info sulgemiseks klõpsa taustal.</p>
     </div>
 
     <!-- Siia renderdatakse graafik -->
@@ -51,8 +51,17 @@
 </div>
 
 <script>
+// Kasutame lipukest, et vältida mitmekordset joonistamist
+let isChartInitialized = false;
+
 function initChart() {
+    if (isChartInitialized) return;
+
     try {
+        if (typeof Chart === 'undefined') {
+            throw new Error("Chart.js teeki ei leitud. Kontrolli, kas süsteem lubab väliseid skripte (cdn.jsdelivr.net).");
+        }
+
         Chart.defaults.font.family = "'Fira Sans', -apple-system, sans-serif";
 
         const data = [
@@ -153,9 +162,14 @@ function initChart() {
         const canvas = document.getElementById('co2Chart');
         if (!canvas) throw new Error("Viga: Elementi '<canvas id=\"co2Chart\">' ei eksisteeri hetkel DOM-is.");
         
+        // Puhastame vana graafiku mälust, kui initsialiseerime uuesti
+        if (window.co2ChartInstance) {
+            window.co2ChartInstance.destroy();
+        }
+        
         const ctx = canvas.getContext('2d');
 
-        new Chart(ctx, {
+        window.co2ChartInstance = new Chart(ctx, {
             type: 'bar',
             data: {
                 labels: data.map(d => d.category),
@@ -165,11 +179,9 @@ function initChart() {
                 indexAxis: 'y',
                 responsive: true,
                 maintainAspectRatio: false,
-                events: ['click', 'touchstart'],
-                interaction: {
-                    mode: 'index',
-                    intersect: false
-                },
+                // KRIITILINE MATEMAATIKA: Tühistame Chart.js vigase sisemise loogika,
+                // me loeme koordinaate ise.
+                events: [],
                 plugins: {
                     legend: { display: false },
                     tooltip: {
@@ -239,6 +251,89 @@ function initChart() {
             }
         });
 
+        isChartInitialized = true;
+
+        // Meie oma raudkindel koordinaadistikupüüdja
+        const handleCanvasClick = function(evt) {
+            if (!window.co2ChartInstance) return;
+            const chart = window.co2ChartInstance;
+            const rect = canvas.getBoundingClientRect();
+            
+            let clientY = evt.clientY;
+            let clientX = evt.clientX;
+            
+            // Puuteekraanide tugi
+            if (evt.type.startsWith('touch')) {
+                if (evt.touches && evt.touches.length > 0) {
+                    clientY = evt.touches[0].clientY;
+                    clientX = evt.touches[0].clientX;
+                } else {
+                    return;
+                }
+            }
+            
+            const y = clientY - rect.top;
+            const x = clientX - rect.left;
+            
+            const yAxis = chart.scales.y;
+            
+            // Arvutame toore matemaatikaga absoluutse lähima indeksi Y-teljel
+            let index = Math.round(yAxis.getValueForPixel(y));
+            
+            // Kas klõps jääb ridade kõrguse sisse?
+            if (index >= 0 && index < chart.data.labels.length && y >= yAxis.top && y <= yAxis.bottom) {
+                const activeEls = [];
+                chart.data.datasets.forEach((ds, dsIdx) => {
+                    if (ds.data[index] !== null && ds.data[index] !== undefined) {
+                        activeEls.push({ datasetIndex: dsIdx, index: index });
+                    }
+                });
+                
+                // Vaikimisi viskame infoakna graafiku algusesse, et teksti ära ei kataks
+                let tooltipX = chart.chartArea.left + 20; 
+                if (x > chart.chartArea.left) {
+                    // Kui klõpsati reaalselt tulba peale, joonistame sinna, kus hiir asub
+                    tooltipX = x; 
+                }
+                
+                chart.setActiveElements(activeEls);
+                chart.tooltip.setActiveElements(activeEls, { x: tooltipX, y: y });
+                chart.update();
+            } else {
+                // Klõps läks tühja (nt graafiku alla või üles äärde) – paneme akna kinni
+                chart.setActiveElements([]);
+                chart.tooltip.setActiveElements([], {x: 0, y: 0});
+                chart.update();
+            }
+        };
+
+        // Puhastame platsi topeltkuulajatest
+        canvas.removeEventListener('click', handleCanvasClick);
+        canvas.removeEventListener('touchstart', handleCanvasClick);
+        
+        canvas.addEventListener('click', handleCanvasClick);
+        canvas.addEventListener('touchstart', handleCanvasClick, {passive: true});
+
+        // Globaalne taustakuulaja – kui lugeja klikib väljaspool canvast
+        const closeTooltip = function(e) {
+            // Kui klikk tuli otse canvaselt, haldas asja juba ülemine funktsioon
+            if (e.target && e.target.id === 'co2Chart') return;
+            
+            if (window.co2ChartInstance) {
+                window.co2ChartInstance.setActiveElements([]);
+                if (window.co2ChartInstance.tooltip) {
+                    window.co2ChartInstance.tooltip.setActiveElements([], {x: 0, y: 0});
+                }
+                window.co2ChartInstance.update();
+            }
+        };
+
+        document.removeEventListener('click', closeTooltip);
+        document.removeEventListener('touchstart', closeTooltip);
+
+        document.addEventListener('click', closeTooltip);
+        document.addEventListener('touchstart', closeTooltip, {passive: true});
+
     } catch (error) {
         console.error("Graafiku initsialiseerimise krahh:", error);
         const errorDiv = document.createElement('div');
@@ -256,13 +351,12 @@ function initChart() {
     }
 }
 
-// Agressiivne laadimise loogika, mis ei hooli CMS-ide uimamisest
+// Agressiivne laadimise loogika
 let attempts = 0;
 function bootstrapChart() {
-    // Kontrollime, kas asjad on tegelikult mälus olemas
     if (typeof Chart !== 'undefined' && document.getElementById('co2Chart')) {
         initChart();
-    } else if (attempts < 50) { // Proovime kuni 5 sekundit (50 * 100ms)
+    } else if (attempts < 50) { 
         attempts++;
         setTimeout(bootstrapChart, 100);
     } else {
@@ -274,7 +368,6 @@ function bootstrapChart() {
     }
 }
 
-// Käivitame pollimise koheselt (ei oota DOMContentLoaded sündmust, mis võib olla juba möödas)
 bootstrapChart();
 </script>
 

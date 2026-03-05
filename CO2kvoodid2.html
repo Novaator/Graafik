@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perioodi 2013-2020 meetmete finantsandmed</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chart.js teegi laadimine välisest allikast -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { 
+            font-family: 'Fira Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            margin: 0;
+            padding: 0;
+            background-color: transparent;
+        }
+        .widget-container { 
+            width: 100%; 
+            max-width: 670px; 
+            margin: 0 auto; 
+            background-color: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            /* Väldime teksti kogemata selekteerimist, kui lugeja närviliselt klõpsib */
+            user-select: none; 
+            -webkit-user-select: none;
+        }
+        /* Teeme kursorist käekese, et klõpsatavus oleks visuaalselt arusaadav */
+        #co2Chart {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="widget-container" id="mainContainer">
+    <div style="margin-bottom: 1rem;">
+        <h2 style="font-size: 1.25rem; font-weight: 700; color: #1f2937; margin-bottom: 0.25rem;">Perioodi 2013-2020 laekumistest otsustatud meetmete finantsandmed</h2>
+        <!-- Juhis on muudetud vastavalt uuele loogikale -->
+        <p style="font-size: 0.875rem; color: #6b7280; margin: 0;">Klõpsa tulbal või meetme nimel, et näha lisainfot ja täpset summat.</p>
+    </div>
+
+    <!-- Siia renderdatakse graafik -->
+    <div id="chartWrapper" style="position: relative; width: 100%; height: 400px;">
+        <canvas id="co2Chart"></canvas>
+    </div>
+</div>
+
+<script>
+// Kasutame window.onload asemel DOMContentLoaded, aga püüame vead kinni
+document.addEventListener('DOMContentLoaded', function() {
+    // Anname brauserile hingamisruumi juhuks, kui CMS laeb faile asünkroonselt
+    setTimeout(initChart, 100);
+});
+
+function initChart() {
+    try {
+        if (typeof Chart === 'undefined') {
+            throw new Error("Chart.js teeki ei leitud. Kontrolli, kas ERR-i süsteem lubab väliseid skripte (cdn.jsdelivr.net).");
+        }
+
+        Chart.defaults.font.family = "'Fira Sans', -apple-system, sans-serif";
+
+        const data = [
+            { category: "Avaliku sektori hoonete energiatõhusus", total: 118503000, parts: [{ name: "Hoonete rekonstrueerimine", value: 118503000, desc: "Jagunes kaheks alammeetmeks: KOVide ja keskvalitsuse hoonete rekonstrueerimine. Tänu sellele muudeti energiatõhusaks 26 KOV hooldekodu, lasteaedu ja mitmeotstarbelist hoonet." }] },
+            { category: "Pilootprojektide elluviimine", total: 39483000, parts: [{ name: "Pilootprojektid", value: 39483000, desc: "Toetatakse kliimamuutustega kohanemist. Uuringud; 15 elektribussi Tallinnale; soojuspumpjaamad Tiskres ja Roosna-Allikul; Rahvusraamatukogule energiatõhus ventilatsioonisüsteem." }] },
+            { category: "Biogaas transpordis", total: 38489000, parts: [{ name: "Biometaani tootmine ja tarbimine", value: 38489000, desc: "Eesmärk aidata kaasa biometaani tootmise ja tarbimise hoogustamisele. Kokku on meetme kaasabil toodetud Eestis alates 2018. aastast 942 tuhat MWh biometaani." }] },
+            { category: "Rail Baltic ja säästev transport", total: 30858000, parts: [{ name: "Kaasfinantseering ja transpordiprojektid", value: 30858000, desc: "Rail Balticu projekti riigieelarveline kaasfinantseering 2020.a; säästva transpordi projektid raudtee-transpordis ning veetranspordis (parvlaev hankimisel)." }] },
+            { category: "Energiasääst korterelamutes", total: 22913000, parts: [{ name: "Korterelamute rekonstrueerimine", value: 22913000, desc: "Meetme tegevused lõppesid 2024. aastal. Rekonstrueeriti 19 kortermaja, 823 korterit ja kokku 49 359 m2 elamispinda. Energiasääst kokku 4240 MWh/aastas ehk 59%." }] },
+            { category: "Rahvusvaheline koostöö", total: 8329000, parts: [{ name: "Lahenduste eksport", value: 8329000, desc: "Eestis või välisriigis välja töötatud lahenduste viimine arenguriikidesse kliimamuutuste leevendamiseks. Ellu viidud 27 projekti (Keenia, Tansaania, Ukraina jne)." }] },
+            { category: "Üleujutusriskide maandamine", total: 5367000, parts: [{ name: "Riskipiirkondade tegevused", value: 5367000, desc: "Eesmärk vähendada üleujutuste kahjulikke tagajärgi. Ellu viidud üheksa uuringut ja üheksa ehituslikku projekti (Paide, Sindi, Pärnu, Haapsalu, Keila, Kuressaare, Hiiumaa)." }] }
+        ];
+
+        data.sort((a, b) => b.total - a.total);
+
+        function wrapText(text, maxChars) {
+            if (!text) return [];
+            const words = text.split(' ');
+            let lines = [];
+            let currentLine = '';
+
+            words.forEach(word => {
+                if ((currentLine + word).length > maxChars) {
+                    lines.push(currentLine.trim());
+                    currentLine = word + ' ';
+                } else {
+                    currentLine += word + ' ';
+                }
+            });
+            lines.push(currentLine.trim());
+            return lines;
+        }
+
+        const wrapper = document.getElementById('chartWrapper');
+        wrapper.style.height = Math.max(data.length * 45 + 80, 400) + 'px';
+
+        let maxParts = 0;
+        data.forEach(item => { if(item.parts.length > maxParts) maxParts = item.parts.length; });
+
+        const chartDatasets = [];
+        const colors = ['rgba(28, 100, 242, 0.9)'];
+
+        for (let i = 0; i < maxParts; i++) {
+            chartDatasets.push({
+                label: `Osa ${i+1}`,
+                data: data.map(item => item.parts[i] ? item.parts[i].value : null),
+                backgroundColor: colors[i % colors.length],
+                borderRadius: 3,
+                borderWidth: 1,
+                borderColor: '#ffffff',
+                partsData: data.map(item => item.parts[i] || null)
+            });
+        }
+
+        const canvas = document.getElementById('co2Chart');
+        if (!canvas) throw new Error("Canvas elementi ei leitud!");
+        
+        const ctx = canvas.getContext('2d');
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.map(d => d.category),
+                datasets: chartDatasets
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                // KRIITILINE MUUDATUS: defineerime, et graafik reageerib ainult klõpsudele ja puudutustele
+                events: ['click', 'touchstart'],
+                interaction: {
+                    // mode: 'index' ja intersect: false tagavad selle, et kui lugeja klõpsab y-teljel olevale tekstile, leiab mootor lähima tulba ja avab selle kohta akna
+                    mode: 'index',
+                    intersect: false
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(17, 24, 39, 0.98)',
+                        titleFont: { size: 14, weight: 'bold' },
+                        bodyFont: { size: 13 },
+                        padding: 14,
+                        cornerRadius: 6,
+                        displayColors: false, // Peidame väikese värviruudu ära, puhtam disain
+                        filter: function(tooltipItem) {
+                            return tooltipItem.raw !== null;
+                        },
+                        callbacks: {
+                            title: function(context) {
+                                return context[0].label;
+                            },
+                            label: function(context) {
+                                const partData = context.dataset.partsData[context.dataIndex];
+                                if (!partData) return '';
+                                let val = new Intl.NumberFormat('et-EE').format(partData.value) + ' €';
+                                let lines = [`Eelarve: ${val}`];
+                                if (partData.desc) {
+                                    lines.push(''); // Tühi rida summa ja kirjelduse vahele
+                                    lines = lines.concat(wrapText(partData.desc, 45));
+                                }
+                                lines.push('');
+                                return lines;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        stacked: true,
+                        grid: { color: '#f3f4f6' },
+                        title: {
+                            display: true,
+                            text: 'eurot',
+                            font: { size: 13, style: 'italic' },
+                            color: '#6b7280'
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                if (value >= 1000000) return value / 1000000 + ' M';
+                                return value;
+                            }
+                        }
+                    },
+                    y: {
+                        stacked: true,
+                        grid: { display: false },
+                        ticks: {
+                            autoSkip: false,
+                            callback: function(value) {
+                                let label = this.getLabelForValue ? this.getLabelForValue(value) : value;
+                                if (Array.isArray(label)) label = label.join(' ');
+                                if (typeof label === 'string' && label.length > 30) {
+                                    return label.substring(0, 28) + '...';
+                                }
+                                return label || '';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+    } catch (error) {
+        console.error(error);
+        const errorDiv = document.createElement('div');
+        errorDiv.style.backgroundColor = '#fef2f2';
+        errorDiv.style.color = '#991b1b';
+        errorDiv.style.padding = '1rem';
+        errorDiv.style.border = '1px solid #f87171';
+        errorDiv.style.borderRadius = '0.5rem';
+        errorDiv.style.marginTop = '1rem';
+        errorDiv.style.fontFamily = 'monospace';
+        errorDiv.innerHTML = `<strong>Süsteemne krahh JavaScriptis:</strong><br><br>${error.message}`;
+        document.getElementById('mainContainer').prepend(errorDiv);
+    }
+}
+</script>
+
+</body>
+</html>

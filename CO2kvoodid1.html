@@ -26,6 +26,13 @@
             border-radius: 0.5rem;
             padding: 1rem;
             box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            /* Väldime teksti kogemata selekteerimist, kui lugeja närviliselt klõpsib */
+            user-select: none; 
+            -webkit-user-select: none;
+        }
+        /* Teeme kursorist käekese, et klõpsatavus oleks visuaalselt arusaadav */
+        #co2Chart {
+            cursor: pointer;
         }
     </style>
 </head>
@@ -34,7 +41,7 @@
 <div class="widget-container" id="mainContainer">
     <div style="margin-bottom: 1rem;">
         <h2 style="font-size: 1.25rem; font-weight: 700; color: #1f2937; margin-bottom: 0.25rem;">Perioodi 2021-2029 laekumistest otsustatud meetmete finantsandmed</h2>
-        <p style="font-size: 0.875rem; color: #6b7280; margin: 0;">Hõlju hiirega tulpadel (või puuduta ekraanil), et näha täpset summat ja sisu.</p>
+        <p style="font-size: 0.875rem; color: #6b7280; margin: 0;">Klõpsa tulbal või meetme nimel, et näha lisainfot ja täpset summat.</p>
     </div>
 
     <!-- Siia renderdatakse graafik -->
@@ -44,15 +51,10 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+function initChart() {
     try {
-        if (typeof Chart === 'undefined') {
-            throw new Error("Chart.js teeki ei suudetud laadida. Kas adblocker või võrgumüür blokeerib väliseid skripte?");
-        }
-
         Chart.defaults.font.family = "'Fira Sans', -apple-system, sans-serif";
 
-        // Värskendatud andmed täpselt vastavalt uuele failile
         const data = [
             { category: "Rail Balticu rajamine", total: 584833000, parts: [{ name: "Kestlik ühistransport: Rail Balticu rajamise toetamine", value: 584833000, desc: "" }] },
             { category: "Avaliku sektori hoonete energiatõhusus", total: 271191000, parts: [
@@ -128,21 +130,19 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         const wrapper = document.getElementById('chartWrapper');
-        wrapper.style.height = (data.length * 35 + 80) + 'px';
+        wrapper.style.height = Math.max(data.length * 35 + 80, 400) + 'px';
 
         let maxParts = 0;
         data.forEach(item => { if(item.parts.length > maxParts) maxParts = item.parts.length; });
 
         const chartDatasets = [];
         const colors = ['rgba(28, 100, 242, 0.9)', 'rgba(63, 131, 248, 0.9)', 'rgba(118, 169, 250, 0.9)'];
-        const hoverColors = ['rgba(26, 86, 219, 1)', 'rgba(28, 100, 242, 1)', 'rgba(63, 131, 248, 1)'];
 
         for (let i = 0; i < maxParts; i++) {
             chartDatasets.push({
                 label: `Osa ${i+1}`,
                 data: data.map(item => item.parts[i] ? item.parts[i].value : null),
                 backgroundColor: colors[i % colors.length],
-                hoverBackgroundColor: hoverColors[i % hoverColors.length],
                 borderRadius: 3,
                 borderWidth: 1,
                 borderColor: '#ffffff',
@@ -151,7 +151,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         const canvas = document.getElementById('co2Chart');
-        if (!canvas) throw new Error("Canvas elementi ei leitud!");
+        if (!canvas) throw new Error("Viga: Elementi '<canvas id=\"co2Chart\">' ei eksisteeri hetkel DOM-is.");
         
         const ctx = canvas.getContext('2d');
 
@@ -165,6 +165,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 indexAxis: 'y',
                 responsive: true,
                 maintainAspectRatio: false,
+                events: ['click', 'touchstart'],
                 interaction: {
                     mode: 'index',
                     intersect: false
@@ -172,16 +173,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 plugins: {
                     legend: { display: false },
                     tooltip: {
-                        backgroundColor: 'rgba(17, 24, 39, 0.95)',
+                        backgroundColor: 'rgba(17, 24, 39, 0.98)',
                         titleFont: { size: 14, weight: 'bold' },
                         bodyFont: { size: 13 },
-                        padding: 12,
+                        padding: 14,
                         cornerRadius: 6,
+                        displayColors: false,
                         filter: function(tooltipItem) {
                             return tooltipItem.raw !== null;
                         },
                         callbacks: {
                             title: function(context) {
+                                if (!context || !context[0]) return '';
                                 return context[0].label;
                             },
                             label: function(context) {
@@ -191,6 +194,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 let labelText = partData.name !== context.label ? ` ↳ ${partData.name}: ${val}` : ` Eelarve: ${val}`;
                                 let lines = [labelText];
                                 if (partData.desc) {
+                                    lines.push('');
                                     lines = lines.concat(wrapText(partData.desc, 45));
                                 }
                                 lines.push('');
@@ -236,7 +240,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
     } catch (error) {
-        console.error(error);
+        console.error("Graafiku initsialiseerimise krahh:", error);
         const errorDiv = document.createElement('div');
         errorDiv.style.backgroundColor = '#fef2f2';
         errorDiv.style.color = '#991b1b';
@@ -245,10 +249,33 @@ document.addEventListener('DOMContentLoaded', function() {
         errorDiv.style.borderRadius = '0.5rem';
         errorDiv.style.marginTop = '1rem';
         errorDiv.style.fontFamily = 'monospace';
-        errorDiv.innerHTML = `<strong>Süsteemne krahh JavaScriptis:</strong><br><br>${error.message}<br><br><small>Ava brauseri konsool (F12 -> Console), et näha detaile.</small>`;
-        document.getElementById('mainContainer').prepend(errorDiv);
+        errorDiv.innerHTML = `<strong>Graafiku laadimise süsteemne viga:</strong><br><br>${error.message}`;
+        
+        const container = document.getElementById('mainContainer');
+        if (container) container.prepend(errorDiv);
     }
-});
+}
+
+// Agressiivne laadimise loogika, mis ei hooli CMS-ide uimamisest
+let attempts = 0;
+function bootstrapChart() {
+    // Kontrollime, kas asjad on tegelikult mälus olemas
+    if (typeof Chart !== 'undefined' && document.getElementById('co2Chart')) {
+        initChart();
+    } else if (attempts < 50) { // Proovime kuni 5 sekundit (50 * 100ms)
+        attempts++;
+        setTimeout(bootstrapChart, 100);
+    } else {
+        console.error("Väliste ressursside laadimine aegus.");
+        const container = document.getElementById('mainContainer');
+        if (container) {
+            container.innerHTML += '<div style="color:red; margin-top:10px; padding:10px; background:#fee2e2; border-radius:5px;">Graafiku mootori (Chart.js) laadimine välisest serverist ebaõnnestus. Palun kontrollige oma võrguühendust või asutuse tulemüüri seadeid.</div>';
+        }
+    }
+}
+
+// Käivitame pollimise koheselt (ei oota DOMContentLoaded sündmust, mis võib olla juba möödas)
+bootstrapChart();
 </script>
 
 </body>

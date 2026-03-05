@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Perioodi 2013-2020 laekumistest otsustatud meetmete finantsandmed</title>
+    <title>Perioodi 2013-2020 meetmete finantsandmed</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -41,8 +41,7 @@
 <div class="widget-container" id="mainContainer">
     <div style="margin-bottom: 1rem;">
         <h2 style="font-size: 1.25rem; font-weight: 700; color: #1f2937; margin-bottom: 0.25rem;">Perioodi 2013-2020 laekumistest otsustatud meetmete finantsandmed</h2>
-        <!-- Juhis on muudetud vastavalt uuele loogikale -->
-        <p style="font-size: 0.875rem; color: #6b7280; margin: 0;">Klõpsa tulbal või meetme nimel, et näha lisainfot ja täpset summat.</p>
+        <p style="font-size: 0.875rem; color: #6b7280; margin: 0;">Klõpsa tulbal või meetme nimel, et näha lisainfot ja täpset summat. Info sulgemiseks klõpsa taustal.</p>
     </div>
 
     <!-- Siia renderdatakse graafik -->
@@ -52,16 +51,15 @@
 </div>
 
 <script>
-// Kasutame window.onload asemel DOMContentLoaded, aga püüame vead kinni
-document.addEventListener('DOMContentLoaded', function() {
-    // Anname brauserile hingamisruumi juhuks, kui CMS laeb faile asünkroonselt
-    setTimeout(initChart, 100);
-});
+// Kasutame lipukest, et vältida mitmekordset joonistamist
+let isChartInitialized = false;
 
 function initChart() {
+    if (isChartInitialized) return;
+
     try {
         if (typeof Chart === 'undefined') {
-            throw new Error("Chart.js teeki ei leitud. Kontrolli, kas ERR-i süsteem lubab väliseid skripte (cdn.jsdelivr.net).");
+            throw new Error("Chart.js teeki ei leitud. Kontrolli, kas süsteem lubab väliseid skripte (cdn.jsdelivr.net).");
         }
 
         Chart.defaults.font.family = "'Fira Sans', -apple-system, sans-serif";
@@ -71,7 +69,7 @@ function initChart() {
             { category: "Pilootprojektide elluviimine", total: 39483000, parts: [{ name: "Pilootprojektid", value: 39483000, desc: "Toetatakse kliimamuutustega kohanemist. Uuringud; 15 elektribussi Tallinnale; soojuspumpjaamad Tiskres ja Roosna-Allikul; Rahvusraamatukogule energiatõhus ventilatsioonisüsteem." }] },
             { category: "Biogaas transpordis", total: 38489000, parts: [{ name: "Biometaani tootmine ja tarbimine", value: 38489000, desc: "Eesmärk aidata kaasa biometaani tootmise ja tarbimise hoogustamisele. Kokku on meetme kaasabil toodetud Eestis alates 2018. aastast 942 tuhat MWh biometaani." }] },
             { category: "Rail Baltic ja säästev transport", total: 30858000, parts: [{ name: "Kaasfinantseering ja transpordiprojektid", value: 30858000, desc: "Rail Balticu projekti riigieelarveline kaasfinantseering 2020.a; säästva transpordi projektid raudtee-transpordis ning veetranspordis (parvlaev hankimisel)." }] },
-            { category: "Energiasääst korterelamutes", total: 22913000, parts: [{ name: "Korterelamute rekonstrueerimine", value: 22913000, desc: "Meetme tegevused lõppesid 2024. aastal. Rekonstrueeriti 19 kortermaja, 823 korterit ja kokku 49 359 m2 elamispinda. Energiasääst kokku 4240 MWh/aastas ehk 59%." }] },
+            { category: "Energiasääst korterelamutes", total: 22913000, parts: [{ name: "Korterelamute rekonstrueerimine", value: 22913000, desc: "Meetme tegevused lõppesid 2024. aastal. Rekonstrueeriti 19 kortermaja, 823 korterit ja kokku 49 359 m2 elamispinda. Energiasääst kokku 4240 MWh/aastas ehk 59% võrreldes projektieelse ajaga." }] },
             { category: "Rahvusvaheline koostöö", total: 8329000, parts: [{ name: "Lahenduste eksport", value: 8329000, desc: "Eestis või välisriigis välja töötatud lahenduste viimine arenguriikidesse kliimamuutuste leevendamiseks. Ellu viidud 27 projekti (Keenia, Tansaania, Ukraina jne)." }] },
             { category: "Üleujutusriskide maandamine", total: 5367000, parts: [{ name: "Riskipiirkondade tegevused", value: 5367000, desc: "Eesmärk vähendada üleujutuste kahjulikke tagajärgi. Ellu viidud üheksa uuringut ja üheksa ehituslikku projekti (Paide, Sindi, Pärnu, Haapsalu, Keila, Kuressaare, Hiiumaa)." }] }
         ];
@@ -97,13 +95,14 @@ function initChart() {
         }
 
         const wrapper = document.getElementById('chartWrapper');
+        // Vähemate elementide puhul hoiame miinimumkõrgust, et tulbad liiga peenikeseks ei läheks
         wrapper.style.height = Math.max(data.length * 45 + 80, 400) + 'px';
 
         let maxParts = 0;
         data.forEach(item => { if(item.parts.length > maxParts) maxParts = item.parts.length; });
 
         const chartDatasets = [];
-        const colors = ['rgba(28, 100, 242, 0.9)'];
+        const colors = ['rgba(28, 100, 242, 0.9)', 'rgba(63, 131, 248, 0.9)', 'rgba(118, 169, 250, 0.9)'];
 
         for (let i = 0; i < maxParts; i++) {
             chartDatasets.push({
@@ -118,11 +117,16 @@ function initChart() {
         }
 
         const canvas = document.getElementById('co2Chart');
-        if (!canvas) throw new Error("Canvas elementi ei leitud!");
+        if (!canvas) throw new Error("Viga: Elementi '<canvas id=\"co2Chart\">' ei eksisteeri hetkel DOM-is.");
+        
+        // Puhastame vana graafiku mälust, kui initsialiseerime uuesti
+        if (window.co2ChartInstance) {
+            window.co2ChartInstance.destroy();
+        }
         
         const ctx = canvas.getContext('2d');
 
-        new Chart(ctx, {
+        window.co2ChartInstance = new Chart(ctx, {
             type: 'bar',
             data: {
                 labels: data.map(d => d.category),
@@ -132,13 +136,9 @@ function initChart() {
                 indexAxis: 'y',
                 responsive: true,
                 maintainAspectRatio: false,
-                // KRIITILINE MUUDATUS: defineerime, et graafik reageerib ainult klõpsudele ja puudutustele
-                events: ['click', 'touchstart'],
-                interaction: {
-                    // mode: 'index' ja intersect: false tagavad selle, et kui lugeja klõpsab y-teljel olevale tekstile, leiab mootor lähima tulba ja avab selle kohta akna
-                    mode: 'index',
-                    intersect: false
-                },
+                // KRIITILINE MATEMAATIKA: Tühistame Chart.js vigase sisemise loogika,
+                // me loeme koordinaate ise.
+                events: [],
                 plugins: {
                     legend: { display: false },
                     tooltip: {
@@ -147,21 +147,24 @@ function initChart() {
                         bodyFont: { size: 13 },
                         padding: 14,
                         cornerRadius: 6,
-                        displayColors: false, // Peidame väikese värviruudu ära, puhtam disain
+                        displayColors: false,
                         filter: function(tooltipItem) {
                             return tooltipItem.raw !== null;
                         },
                         callbacks: {
                             title: function(context) {
+                                if (!context || !context[0]) return '';
                                 return context[0].label;
                             },
                             label: function(context) {
                                 const partData = context.dataset.partsData[context.dataIndex];
                                 if (!partData) return '';
                                 let val = new Intl.NumberFormat('et-EE').format(partData.value) + ' €';
-                                let lines = [`Eelarve: ${val}`];
+                                // Kui tegu on alamprojektiga, toome selle nime välja, vastasel juhul ainult Eelarve
+                                let labelText = partData.name !== context.label ? ` ↳ ${partData.name}: ${val}` : ` Eelarve: ${val}`;
+                                let lines = [labelText];
                                 if (partData.desc) {
-                                    lines.push(''); // Tühi rida summa ja kirjelduse vahele
+                                    lines.push('');
                                     lines = lines.concat(wrapText(partData.desc, 45));
                                 }
                                 lines.push('');
@@ -206,8 +209,91 @@ function initChart() {
             }
         });
 
+        isChartInitialized = true;
+
+        // Meie oma raudkindel koordinaadistikupüüdja
+        const handleCanvasClick = function(evt) {
+            if (!window.co2ChartInstance) return;
+            const chart = window.co2ChartInstance;
+            const rect = canvas.getBoundingClientRect();
+            
+            let clientY = evt.clientY;
+            let clientX = evt.clientX;
+            
+            // Puuteekraanide tugi
+            if (evt.type.startsWith('touch')) {
+                if (evt.touches && evt.touches.length > 0) {
+                    clientY = evt.touches[0].clientY;
+                    clientX = evt.touches[0].clientX;
+                } else {
+                    return;
+                }
+            }
+            
+            const y = clientY - rect.top;
+            const x = clientX - rect.left;
+            
+            const yAxis = chart.scales.y;
+            
+            // Arvutame toore matemaatikaga absoluutse lähima indeksi Y-teljel
+            let index = Math.round(yAxis.getValueForPixel(y));
+            
+            // Kas klõps jääb ridade kõrguse sisse?
+            if (index >= 0 && index < chart.data.labels.length && y >= yAxis.top && y <= yAxis.bottom) {
+                const activeEls = [];
+                chart.data.datasets.forEach((ds, dsIdx) => {
+                    if (ds.data[index] !== null && ds.data[index] !== undefined) {
+                        activeEls.push({ datasetIndex: dsIdx, index: index });
+                    }
+                });
+                
+                // Vaikimisi viskame infoakna graafiku algusesse, et teksti ära ei kataks
+                let tooltipX = chart.chartArea.left + 20; 
+                if (x > chart.chartArea.left) {
+                    // Kui klõpsati reaalselt tulba peale, joonistame sinna, kus hiir asub
+                    tooltipX = x; 
+                }
+                
+                chart.setActiveElements(activeEls);
+                chart.tooltip.setActiveElements(activeEls, { x: tooltipX, y: y });
+                chart.update();
+            } else {
+                // Klõps läks tühja (nt graafiku alla või üles äärde) – paneme akna kinni
+                chart.setActiveElements([]);
+                chart.tooltip.setActiveElements([], {x: 0, y: 0});
+                chart.update();
+            }
+        };
+
+        // Puhastame platsi topeltkuulajatest
+        canvas.removeEventListener('click', handleCanvasClick);
+        canvas.removeEventListener('touchstart', handleCanvasClick);
+        
+        canvas.addEventListener('click', handleCanvasClick);
+        canvas.addEventListener('touchstart', handleCanvasClick, {passive: true});
+
+        // Globaalne taustakuulaja – kui lugeja klikib väljaspool canvast
+        const closeTooltip = function(e) {
+            // Kui klikk tuli otse canvaselt, haldas asja juba ülemine funktsioon
+            if (e.target && e.target.id === 'co2Chart') return;
+            
+            if (window.co2ChartInstance) {
+                window.co2ChartInstance.setActiveElements([]);
+                if (window.co2ChartInstance.tooltip) {
+                    window.co2ChartInstance.tooltip.setActiveElements([], {x: 0, y: 0});
+                }
+                window.co2ChartInstance.update();
+            }
+        };
+
+        document.removeEventListener('click', closeTooltip);
+        document.removeEventListener('touchstart', closeTooltip);
+
+        document.addEventListener('click', closeTooltip);
+        document.addEventListener('touchstart', closeTooltip, {passive: true});
+
     } catch (error) {
-        console.error(error);
+        console.error("Graafiku initsialiseerimise krahh:", error);
         const errorDiv = document.createElement('div');
         errorDiv.style.backgroundColor = '#fef2f2';
         errorDiv.style.color = '#991b1b';
@@ -216,10 +302,31 @@ function initChart() {
         errorDiv.style.borderRadius = '0.5rem';
         errorDiv.style.marginTop = '1rem';
         errorDiv.style.fontFamily = 'monospace';
-        errorDiv.innerHTML = `<strong>Süsteemne krahh JavaScriptis:</strong><br><br>${error.message}`;
-        document.getElementById('mainContainer').prepend(errorDiv);
+        errorDiv.innerHTML = `<strong>Graafiku laadimise süsteemne viga:</strong><br><br>${error.message}`;
+        
+        const container = document.getElementById('mainContainer');
+        if (container) container.prepend(errorDiv);
     }
 }
+
+// Agressiivne laadimise loogika
+let attempts = 0;
+function bootstrapChart() {
+    if (typeof Chart !== 'undefined' && document.getElementById('co2Chart')) {
+        initChart();
+    } else if (attempts < 50) { 
+        attempts++;
+        setTimeout(bootstrapChart, 100);
+    } else {
+        console.error("Väliste ressursside laadimine aegus.");
+        const container = document.getElementById('mainContainer');
+        if (container) {
+            container.innerHTML += '<div style="color:red; margin-top:10px; padding:10px; background:#fee2e2; border-radius:5px;">Graafiku mootori (Chart.js) laadimine välisest serverist ebaõnnestus. Palun kontrollige oma võrguühendust või asutuse tulemüüri seadeid.</div>';
+        }
+    }
+}
+
+bootstrapChart();
 </script>
 
 </body>

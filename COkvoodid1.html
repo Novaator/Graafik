@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perioodi 2021-2029 meetmete finantsandmed</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chart.js teegi laadimine välisest allikast -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { 
+            font-family: 'Fira Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            margin: 0;
+            padding: 0;
+            background-color: transparent;
+        }
+        .widget-container { 
+            width: 100%; 
+            max-width: 670px; 
+            margin: 0 auto; 
+            background-color: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+<body>
+
+<div class="widget-container" id="mainContainer">
+    <div style="margin-bottom: 1rem;">
+        <h2 style="font-size: 1.25rem; font-weight: 700; color: #1f2937; margin-bottom: 0.25rem;">Perioodi 2021-2029 laekumistest otsustatud meetmete finantsandmed</h2>
+        <p style="font-size: 0.875rem; color: #6b7280; margin: 0;">Hõlju hiirega tulpadel (või puuduta ekraanil), et näha täpset summat ja sisu.</p>
+    </div>
+
+    <!-- Siia renderdatakse graafik -->
+    <div id="chartWrapper" style="position: relative; width: 100%; height: 500px;">
+        <canvas id="co2Chart"></canvas>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    try {
+        if (typeof Chart === 'undefined') {
+            throw new Error("Chart.js teeki ei suudetud laadida. Kas adblocker või võrgumüür blokeerib väliseid skripte?");
+        }
+
+        Chart.defaults.font.family = "'Fira Sans', -apple-system, sans-serif";
+
+        // Värskendatud andmed täpselt vastavalt uuele failile
+        const data = [
+            { category: "Rail Balticu rajamine", total: 584833000, parts: [{ name: "Kestlik ühistransport: Rail Balticu rajamise toetamine", value: 584833000, desc: "" }] },
+            { category: "Avaliku sektori hoonete energiatõhusus", total: 271191000, parts: [
+                { name: "KOV hooned (al 2022)", value: 163805000, desc: "Seni tehtud 26 projekti." },
+                { name: "Keskvalitsuse hooned (al 2023)", value: 93386000, desc: "Seni ehitatud Sisekaitseakadeemia ühiselamu ja õppehoone." },
+                { name: "Kultuuriväärtusega hooned (al 2023)", value: 14000000, desc: "" }
+            ]},
+            { category: "Kestlik raudteetransport", total: 103045000, parts: [
+                { name: "Raudteevõrgustiku elektrifitseerimine", value: 48045000, desc: "Tallinn-Tartu, Tapa-Narva ja Lagedi-Muuga lõikudel." },
+                { name: "Hooldusdepoo rajamine", value: 55000000, desc: "Rail Balticu ja Elroni rongide hooldusdepoo (Soodevahe ühisdepoo)." }
+            ]},
+            { category: "Energiahinna tõusu leevendus", total: 78551000, parts: [
+                { name: "2022-2023 alameede", value: 62471000, desc: "Vähemkindlustatud leibkondadele." },
+                { name: "2021-2022 alameede", value: 16080000, desc: "Vähemkindlustatud leibkondadele." }
+            ]},
+            { category: "Pilootprojektide toetamine", total: 59550000, parts: [
+                { name: "Pilootprojektide toetamise alameede", value: 49550000, desc: "Loodusmaja Taru ehitus, Eesti-Läti ühise meretuulepargi ELWIND eelarendamine, Eesti kvaternaarisetete geotermaalenergia kasutamise pilootprojekt, Avatud taotlusvoor kasvuhoonegaaside heidet vähendavate investeeringute toetuseks ettevõtetele." },
+                { name: "Säästva liikuvuse pilootprojektid", value: 10000000, desc: "KOV elektribussid." }
+            ]},
+            { category: "Vesiniku IPCEI projektid", total: 57160000, parts: [{ name: "Teadus- ja arendustegevus", value: 57160000, desc: "Meetmest toetatakse vesinikuprojekte kolmes silmapaistvas Eesti ettevõttes: Elcogen, Skeleton Technologies ja Stargate Hydrogen." }] },
+            { category: "Täiendavad elektrirongid", total: 56175000, parts: [{ name: "Täiendavate elektrirongide soetamine", value: 56175000, desc: "Ühistranspordi kasutatavuse suurendamiseks soetatakse 6 uut elektrirongi." }] },
+            { category: "Rail Balticu veerem", total: 50000000, parts: [{ name: "Veerem ja varustus", value: 50000000, desc: "Rail Balticu veerem ja veeremiga seotud varustus." }] },
+            { category: "Kestliku ühistranspordi arendamine", total: 45000000, parts: [
+                { name: "Taktipõhine liikumisgraafik", value: 20000000, desc: "Platvormide pikendamine, tunnelite rajamine, rekonstrueerimised." },
+                { name: "KOV vähese heitega ühistransport", value: 17000000, desc: "Piirissaare-Laaksaare liini talviseks teenindamiseks hõljuki soetamine. Tallinnale elektribusside/trollide soetamine. Maakonnaliinidele vähese heitega sõidukite soetamine." },
+                { name: "Saarte elektrilaevade kaldataristu", value: 8000000, desc: "Saarte ühenduse elektrilaevade kaldataristu arendamine." }
+            ]},
+            { category: "Kompensatsioonimeede (Kirde-Eesti)", total: 37000000, parts: [{ name: "Investeering kompensatsioonimeetmesse", value: 37000000, desc: "Meetme raames investeeriti õhuseireradaritesse ja raadioluuresüsteemidesse Kirde-Eesti alade osaliseks vabastamiseks riigikaitselistest kõrguspiirangutest." }] },
+            { category: "Vesiniku terviktehnoloogiad", total: 32686000, parts: [{ name: "Kasutuselevõtmine", value: 32686000, desc: "KIKi avatud taotlusvoor, toetust sai 3 projekti: “Rohevesiniku tehase rajamine Narva linna”, “Rohevesiniku terviklahenduse pilootprojekt”, “Rohevesiniku väärtusahela roheammoniaagi tootmiseks Paldiskis”." }] },
+            { category: "Laevade ümberehitus", total: 25000000, parts: [{ name: "Laevaehitusettevõtete toetus", value: 25000000, desc: "Laevade ümberehitus taastuvenergia kasutuseks." }] },
+            { category: "Alternatiivkütuste taristu", total: 18400000, parts: [{ name: "Elektri- ja vesiniku laadimistaristu", value: 18400000, desc: "Raskeveokite laadimistaristu toetusmeede ettevõtetele. Tallinna lennujaama arendamine ja taristu arendamine regionaalsetel lennuväljadel." }] },
+            { category: "Uuringud-analüüsid", total: 16650000, parts: [
+                { name: "TAN protsessi alameede", value: 8350000, desc: "Maa- ja mullakasutuse juhtimissüsteem, moodsad aretustööriistad, kriisihaavatavuse kujunemine." },
+                { name: "Taotlusvoorude alameede", value: 8300000, desc: "KIKi läbi viidav avatud taotlusvoor valitsusasutuste uuringute ja analüüside rahastamiseks." }
+            ]},
+            { category: "Energiatõhus parvlaev", total: 16503000, parts: [{ name: "Energiatõhusa vähese heitega parvlaeva ehitus", value: 16503000, desc: "" }] },
+            { category: "Rahvusvaheline kliimakoostöö", total: 16200000, parts: [{ name: "Kliimapoliitika-alane koostöö", value: 16200000, desc: "Lõppenud projektides: Timbeteri tehnoloogia Costa Ricas, päikeseenergial töötavad mobiilsed õppekeskused Keenias, metsa- ja veeseire rakendused Ukrainas." }] },
+            { category: "Aruandlus ja koordineerimine", total: 15765000, parts: [{ name: "Rahvusvaheline kliimapoliitika", value: 15765000, desc: "Kasvuhoonegaaside inventuur, kliimapoliitika alast aruandlust ja EL-i HKS süsteemi halduskulu." }] },
+            { category: "KOV haridushooned", total: 14540000, parts: [{ name: "Energiatõhususe tõstmine", value: 14540000, desc: "Näiteks Narva Kesklinna gümnaasiumi ümberehitus." }] },
+            { category: "Ühistranspordi ligipääsetavus", total: 11800000, parts: [{ name: "Ligipääsetavuse parendamine", value: 11800000, desc: "Jäneda, Lehtse ja Nelijärve raudtee peatuskohtadele ligipääsetavuse parandamine, toetus kohalikele omavalitsustele." }] },
+            { category: "Vähese heitega sõidukid", total: 10000000, parts: [{ name: "Sõidukite kasutuselevõtt", value: 10000000, desc: "Elektriautode ja -jalgrataste soetamise toetus ning kortermajade piirkonda elektrisõidukitele laadimistaristu soetamise toetus." }] },
+            { category: "Koostööprojektide kaasrahastamine", total: 10000000, parts: [{ name: "Avatud taotlusvoor", value: 10000000, desc: "Aitab kaasrahastada täiendavate vahendite kaasamist mujalt (nt EL fondidest) KOVidele, teadusasutustele, kõrgkoolidele." }] },
+            { category: "Ökosüsteemide kaitse ja taastamine", total: 10000000, parts: [{ name: "Looduskaitsetööd", value: 10000000, desc: "Alustati elupaikade ettevalmistustega, taastati puisniite, rajati karjatarasid, leping väikekiskjate jahiks rannaniitudel; erakorralised tööd üksikobjektidel (Tülivere tamm, Huuksi mõisapargi puud, Kelchi pärn)." }] },
+            { category: "Kultuuriasutuste valgustus", total: 9000000, parts: [{ name: "Energiasäästlikud valgustuslahendused", value: 9000000, desc: "Etendusasutustes vahetati vanad lambid uute LEDide vastu, saavutades energiasäästu 74,5%." }] },
+            { category: "Reoveepuhastuse energiatõhusus", total: 6500000, parts: [{ name: "Energiatõhususe parandamine", value: 6500000, desc: "Eesmärk on vähendada vee-ettevõtetes reoveepuhastusele kulutatava elektrienergia hulka." }] },
+            { category: "Õiglane üleminek Ida-Virumaal", total: 6000000, parts: [{ name: "Kliima-energiaeesmärkidel tegevused", value: 6000000, desc: "Võrguühenduste rajamine, toetamaks õiglase ülemineku fondi eesmärkide saavutamiseks tehtud investeeringuid." }] },
+            { category: "Metsastamise toetus", total: 4353000, parts: [{ name: "Metsastamine", value: 4353000, desc: "Metsa istutamine mittemetsamaale." }] },
+            { category: "Erametsade kliimakindlus", total: 3775000, parts: [{ name: "Kliimakindla majandamise toetus", value: 3775000, desc: "Raielankide uuendamine istutamise teel metsamaal." }] },
+            { category: "LIFE-SIP AdaptEst", total: 3600000, parts: [{ name: "Kliimaeesmärkidele suunatud koostööprojekt", value: 3600000, desc: "Suurendada erinevate ökosüsteemide vastupanuvõimet muutuvas kliimas." }] },
+            { category: "Tervishoiuasutused", total: 3529000, parts: [{ name: "Energiatõhususe tõstmine", value: 3529000, desc: "Elluviimisel kaks projekti: Narva ja Kuressaare haiglate uuendused." }] },
+            { category: "Põllumajanduse ressursitõhusus", total: 3500000, parts: [{ name: "Süsinikuauditid ja CO2 taaskasutus", value: 3500000, desc: "Välja töötada kasvuhoonegaaside audit koos parendamissoovitustega põllumajandusettevõtetes, tagada kontrollitud tingimustes sordiaretus." }] },
+            { category: "Väikesaarte energialahendused", total: 1800000, parts: [{ name: "Keskkonnasäästlikud energialahendused", value: 1800000, desc: "Saartele soetatakse ja paigaldatakse taastuvenergia lahendus." }] }
+        ];
+
+        data.sort((a, b) => b.total - a.total);
+
+        function wrapText(text, maxChars) {
+            if (!text) return [];
+            const words = text.split(' ');
+            let lines = [];
+            let currentLine = '';
+
+            words.forEach(word => {
+                if ((currentLine + word).length > maxChars) {
+                    lines.push(currentLine.trim());
+                    currentLine = word + ' ';
+                } else {
+                    currentLine += word + ' ';
+                }
+            });
+            lines.push(currentLine.trim());
+            return lines;
+        }
+
+        const wrapper = document.getElementById('chartWrapper');
+        wrapper.style.height = (data.length * 35 + 80) + 'px';
+
+        let maxParts = 0;
+        data.forEach(item => { if(item.parts.length > maxParts) maxParts = item.parts.length; });
+
+        const chartDatasets = [];
+        const colors = ['rgba(28, 100, 242, 0.9)', 'rgba(63, 131, 248, 0.9)', 'rgba(118, 169, 250, 0.9)'];
+        const hoverColors = ['rgba(26, 86, 219, 1)', 'rgba(28, 100, 242, 1)', 'rgba(63, 131, 248, 1)'];
+
+        for (let i = 0; i < maxParts; i++) {
+            chartDatasets.push({
+                label: `Osa ${i+1}`,
+                data: data.map(item => item.parts[i] ? item.parts[i].value : null),
+                backgroundColor: colors[i % colors.length],
+                hoverBackgroundColor: hoverColors[i % hoverColors.length],
+                borderRadius: 3,
+                borderWidth: 1,
+                borderColor: '#ffffff',
+                partsData: data.map(item => item.parts[i] || null)
+            });
+        }
+
+        const canvas = document.getElementById('co2Chart');
+        if (!canvas) throw new Error("Canvas elementi ei leitud!");
+        
+        const ctx = canvas.getContext('2d');
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.map(d => d.category),
+                datasets: chartDatasets
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(17, 24, 39, 0.95)',
+                        titleFont: { size: 14, weight: 'bold' },
+                        bodyFont: { size: 13 },
+                        padding: 12,
+                        cornerRadius: 6,
+                        filter: function(tooltipItem) {
+                            return tooltipItem.raw !== null;
+                        },
+                        callbacks: {
+                            title: function(context) {
+                                return context[0].label;
+                            },
+                            label: function(context) {
+                                const partData = context.dataset.partsData[context.dataIndex];
+                                if (!partData) return '';
+                                let val = new Intl.NumberFormat('et-EE').format(partData.value) + ' €';
+                                let labelText = partData.name !== context.label ? ` ↳ ${partData.name}: ${val}` : ` Eelarve: ${val}`;
+                                let lines = [labelText];
+                                if (partData.desc) {
+                                    lines = lines.concat(wrapText(partData.desc, 45));
+                                }
+                                lines.push('');
+                                return lines;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        stacked: true,
+                        grid: { color: '#f3f4f6' },
+                        title: {
+                            display: true,
+                            text: 'eurot',
+                            font: { size: 13, style: 'italic' },
+                            color: '#6b7280'
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                if (value >= 1000000) return value / 1000000 + ' M';
+                                return value;
+                            }
+                        }
+                    },
+                    y: {
+                        stacked: true,
+                        grid: { display: false },
+                        ticks: {
+                            autoSkip: false,
+                            callback: function(value) {
+                                let label = this.getLabelForValue ? this.getLabelForValue(value) : value;
+                                if (Array.isArray(label)) label = label.join(' ');
+                                if (typeof label === 'string' && label.length > 30) {
+                                    return label.substring(0, 28) + '...';
+                                }
+                                return label || '';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+    } catch (error) {
+        console.error(error);
+        const errorDiv = document.createElement('div');
+        errorDiv.style.backgroundColor = '#fef2f2';
+        errorDiv.style.color = '#991b1b';
+        errorDiv.style.padding = '1rem';
+        errorDiv.style.border = '1px solid #f87171';
+        errorDiv.style.borderRadius = '0.5rem';
+        errorDiv.style.marginTop = '1rem';
+        errorDiv.style.fontFamily = 'monospace';
+        errorDiv.innerHTML = `<strong>Süsteemne krahh JavaScriptis:</strong><br><br>${error.message}<br><br><small>Ava brauseri konsool (F12 -> Console), et näha detaile.</small>`;
+        document.getElementById('mainContainer').prepend(errorDiv);
+    }
+});
+</script>
+
+</body>
+</html>

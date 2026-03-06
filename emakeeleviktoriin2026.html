@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eesti keele kujundlikud väljendid</title>
+    
+    <!-- Google Fonts: Fira Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        novaator: '#28902d',
+                        'novaator-dark': '#1e6c22',
+                        'novaator-light': '#e9f4ea',
+                    },
+                    fontFamily: {
+                        sans: ['"Fira Sans"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #f4f4f5;
+            color: #18181b;
+        }
+        .option-btn {
+            transition: all 0.2s ease-in-out;
+        }
+        .option-btn:hover:not(:disabled) {
+            transform: translateX(4px);
+            background-color: #e9f4ea;
+            border-color: #28902d;
+        }
+        .correct-answer {
+            background-color: #28902d !important;
+            color: white !important;
+            border-color: #28902d !important;
+        }
+        .wrong-answer {
+            background-color: #ef4444 !important;
+            color: white !important;
+            border-color: #ef4444 !important;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <!-- App Container -->
+    <div id="app" class="w-full max-w-2xl bg-white rounded-xl shadow-lg overflow-hidden relative">
+        
+        <!-- Progress Bar (hidden initially) -->
+        <div id="progress-container" class="w-full bg-gray-200 h-1.5 hidden absolute top-0 left-0">
+            <div id="progress-bar" class="bg-novaator h-1.5 transition-all duration-300 ease-out" style="width: 0%"></div>
+        </div>
+
+        <!-- Start Screen -->
+        <div id="start-screen" class="p-8 md:p-12 text-center">
+            <h1 class="text-3xl md:text-4xl font-bold mb-4 text-gray-900">Kujundlike väljendite test</h1>
+            <p class="text-gray-600 mb-8 text-lg">Pane oma teadmised proovile ja vaata, kui hästi tunned sina eesti keele kujundlikke väljendeid. Test on tempokas – vali vastus ja liigume kohe edasi.</p>
+            <button id="start-btn" class="bg-novaator hover:bg-novaator-dark text-white font-semibold py-3 px-8 rounded-lg text-lg transition-colors shadow-md">
+                Alusta analüüsi
+            </button>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quiz-screen" class="p-8 md:p-12 hidden">
+            <div class="flex justify-between items-center mb-6 text-sm text-gray-500 font-medium">
+                <span id="question-counter">Küsimus 1 / 26</span>
+                <span id="score-counter" class="hidden">Skoor: 0</span>
+            </div>
+            
+            <h2 id="question-text" class="text-2xl md:text-3xl font-bold mb-8 text-gray-900 leading-tight"></h2>
+            
+            <div id="options-container" class="flex flex-col gap-3">
+                <!-- Options injected by JS -->
+            </div>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="result-screen" class="p-8 md:p-12 text-center hidden">
+            <h2 class="text-3xl font-bold mb-2 text-gray-900">Tulemuste kokkuvõte</h2>
+            <div class="text-6xl font-bold text-novaator mb-2" id="final-score">0%</div>
+            <p class="text-gray-500 font-medium mb-8" id="raw-score">Vastasid õigesti 0 küsimusele 26-st.</p>
+            
+            <div class="bg-gray-50 rounded-lg p-6 mb-8 text-left border border-gray-100">
+                <h3 class="text-lg font-bold mb-2">Sinu profiil:</h3>
+                <p id="profile-text" class="text-gray-700 leading-relaxed"></p>
+            </div>
+            
+            <button id="restart-btn" class="bg-novaator hover:bg-novaator-dark text-white font-semibold py-3 px-8 rounded-lg transition-colors shadow-md">
+                Korda testi
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Data structure
+        const rawData = [
+            { q: "pika hambaga", options: [{t: "vastumeelselt", c: true}, {t: "tükkhaaval", c: false}, {t: "ettevaatlikult", c: false}] },
+            { q: "mütsiga lööma", options: [{t: "ettevalmistamata midagi ette võtma", c: true}, {t: "alla andma, kaotust tunnistama", c: false}, {t: "karmilt ja otse ütlema", c: false}] },
+            { q: "keelt peksma", options: [{t: "sõimama", c: false}, {t: "peale kaebama", c: false}, {t: "klatšima", c: true}] },
+            { q: "keelt kandma", options: [{t: "sõimama", c: false}, {t: "peale kaebama", c: true}, {t: "luiskama", c: false}] },
+            { q: "keelt teritama", options: [{t: "kellegi kallal norima või nokkima", c: true}, {t: "kannatamatult söömaaega ootama", c: false}, {t: "võõrkeelt õppima või harjutama", c: false}] },
+            { q: "puru silma ajama", options: [{t: "luiskama", c: true}, {t: "pugema", c: false}, {t: "peale kaebama", c: false}] },
+            { q: "läbi sõrmede vaatama", options: [{t: "aralt piidlema", c: false}, {t: "umbusklikult piidlema", c: false}, {t: "midagi halba või keelatut lubama", c: true}] },
+            { q: "vanast rasvast", options: [{t: "halvast toorainest", c: false}, {t: "olemasolevatest ressurssidest", c: true}, {t: "takistusteta, ludinal", c: false}] },
+            { q: "nina alla hõõruma", options: [{t: "tüütult peale käima", c: false}, {t: "peale suruma", c: false}, {t: "korduvalt ette heitma", c: true}] },
+            { q: "mäkra mängima", options: [{t: "peale kaebama", c: false}, {t: "tembutama", c: false}, {t: "alt vedama", c: true}] },
+            { q: "karuteene", options: [{t: "heade kavatsuste, kuid halbade tagajärgedega tegu", c: true}, {t: "ärateenimata heategu", c: false}, {t: "näiliselt teistele, kuid tegelikult iseendale tehtud teene", c: false}] },
+            { q: "kirik keset küla", options: [{t: "teiste seas silmapaistvalt kena maja", c: false}, {t: "kõiki pooli rahuldav kokkulepe", c: true}, {t: "kõrts", c: false}] },
+            { q: "peenike pere", options: [{t: "väike perekond", c: false}, {t: "lapsed", c: true}, {t: "teenijaskond", c: false}] },
+            { q: "peenike pihus", options: [{t: "täbaras olukorras", c: true}, {t: "sularahas (müntides) maksmise kohta", c: false}, {t: "äsja lapse saanud", c: false}] },
+            { q: "kibe käsi", options: [{t: "kitsi", c: false}, {t: "vägivaldne", c: false}, {t: "vilunud", c: true}] },
+            { q: "lahtise käega", options: [{t: "vägivaldne", c: false}, {t: "helde", c: true}, {t: "osav", c: false}] },
+            { q: "kätt valgeks tegema/saama", options: [{t: "ausaks hakkama", c: false}, {t: "midagi esimest korda sooritama", c: true}, {t: "kakluses osalema", c: false}] },
+            { q: "mitte risti ette lööma", options: [{t: "mitte kirikus käima", c: false}, {t: "mitte tagasi kohkuma", c: true}, {t: "araks lööma", c: false}] },
+            { q: "läbi lillede ütlema", options: [{t: "andeks paluma", c: false}, {t: "valejälgedele juhtima", c: false}, {t: "vihjamisi ütlema", c: true}] },
+            { q: "nagu munas kana", options: [{t: "rahutu", c: true}, {t: "jõuetu", c: false}, {t: "ülearu hoolitsev", c: false}] },
+            { q: "hammas verel", options: [{t: "maitse suhu saanud ja tahab veel", c: true}, {t: "vihane ja ihkab kättemaksu", c: false}, {t: "näljane", c: false}] },
+            { q: "millegi peale hammast ihuma", options: [{t: "raskeks katsumuseks valmistuma", c: false}, {t: "midagi himustama", c: true}, {t: "millegi söömiseks valmistuma", c: false}] },
+            { q: "hambasse puhuma", options: [{t: "tühja kõhtu kannatama", c: false}, {t: "peale käima", c: false}, {t: "luiskama", c: true}] },
+            { q: "seanahka vedama", options: [{t: "alatult käituma", c: false}, {t: "tühja tööd tegema", c: false}, {t: "logelema", c: true}] },
+            { q: "kägu ajama", options: [{t: "tühjast tüli tegema", c: false}, {t: "luiskama", c: true}, {t: "ropendama", c: false}] },
+            { q: "nagu lepase reega", options: [{t: "hästi edenema", c: true}, {t: "halvasti edenema", c: false}, {t: "mugavalt reisima", c: false}] }
+        ];
+
+        // State variables
+        let questions = [];
+        let currentIndex = 0;
+        let score = 0;
+
+        // DOM Elements
+        const screens = {
+            start: document.getElementById('start-screen'),
+            quiz: document.getElementById('quiz-screen'),
+            result: document.getElementById('result-screen')
+        };
+        const elements = {
+            startBtn: document.getElementById('start-btn'),
+            restartBtn: document.getElementById('restart-btn'),
+            questionText: document.getElementById('question-text'),
+            optionsContainer: document.getElementById('options-container'),
+            questionCounter: document.getElementById('question-counter'),
+            progressBar: document.getElementById('progress-bar'),
+            progressContainer: document.getElementById('progress-container'),
+            finalScore: document.getElementById('final-score'),
+            rawScore: document.getElementById('raw-score'),
+            profileText: document.getElementById('profile-text')
+        };
+
+        // Utility: Fisher-Yates shuffle
+        function shuffleArray(array) {
+            const arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        // Initialize quiz
+        function initQuiz() {
+            // Shuffle questions and their options
+            questions = shuffleArray(rawData).map(q => ({
+                ...q,
+                options: shuffleArray(q.options)
+            }));
+            
+            currentIndex = 0;
+            score = 0;
+            
+            screens.start.classList.add('hidden');
+            screens.result.classList.add('hidden');
+            screens.quiz.classList.remove('hidden');
+            elements.progressContainer.classList.remove('hidden');
+            
+            renderQuestion();
+        }
+
+        // Render current question
+        function renderQuestion() {
+            const currentQ = questions[currentIndex];
+            
+            // Update UI counters
+            elements.questionCounter.textContent = `Küsimus ${currentIndex + 1} / ${questions.length}`;
+            const progressPct = (currentIndex / questions.length) * 100;
+            elements.progressBar.style.width = `${progressPct}%`;
+            
+            // Set text
+            elements.questionText.textContent = currentQ.q;
+            
+            // Clear and build options
+            elements.optionsContainer.innerHTML = '';
+            
+            currentQ.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn w-full text-left p-4 border-2 border-gray-200 rounded-lg text-gray-700 font-medium bg-white hover:bg-gray-50 focus:outline-none';
+                btn.textContent = opt.t;
+                btn.onclick = () => handleAnswer(opt.c, btn);
+                elements.optionsContainer.appendChild(btn);
+            });
+        }
+
+        // Handle answer selection
+        function handleAnswer(isCorrect, selectedBtn) {
+            // Disable all buttons to prevent multiple clicks
+            const allBtns = elements.optionsContainer.querySelectorAll('button');
+            allBtns.forEach(btn => {
+                btn.disabled = true;
+                btn.classList.remove('hover:bg-gray-50');
+            });
+
+            // Visual feedback
+            if (isCorrect) {
+                selectedBtn.classList.add('correct-answer');
+                score++;
+            } else {
+                selectedBtn.classList.add('wrong-answer');
+                // Highlight the correct one
+                const currentQ = questions[currentIndex];
+                const correctIndex = currentQ.options.findIndex(o => o.c === true);
+                allBtns[correctIndex].classList.add('correct-answer', 'opacity-70');
+            }
+
+            // Tempokas advance (delay 800ms)
+            setTimeout(() => {
+                currentIndex++;
+                if (currentIndex < questions.length) {
+                    renderQuestion();
+                } else {
+                    showResults();
+                }
+            }, 800);
+        }
+
+        // Show final results and profile
+        function showResults() {
+            screens.quiz.classList.add('hidden');
+            elements.progressContainer.classList.add('hidden');
+            screens.result.classList.remove('hidden');
+
+            const total = questions.length;
+            const pct = Math.round((score / total) * 100);
+
+            elements.finalScore.textContent = `${pct}%`;
+            elements.rawScore.textContent = `Vastasid õigesti ${score} küsimusele ${total}-st.`;
+
+            // Profiles logic
+            let profile = "";
+            if (pct <= 30) {
+                profile = "Tundub, et sinu keelekasutus on takerdunud kiviaja hämarusse. Ega koopas elamiselgi viga polnud, aga arengu huvides tasuks raamatuid ka sirvida, mitte ainult nende kaasi silmitseda. Helgema külje pealt saab siit ainult paremuse poole liikuda.";
+            } else if (pct <= 50) {
+                profile = "Statistiliselt asud sa kuskil seal, kus viibib keskmine inimene pärast teist unetut ööd. Sa küll tajud, et keerukamad väljendid on olemas, kuid sõnadevahelised seosed on sinu jaoks alles ebamäärased. Eeldusi sul on, ent Eesti Rahvusringhäälingu toimetajaks ära veel kandideerida proovi. Tee keelega veel veidi tööd, aga olukord pole sugugi lootusetu. ";
+            } else if (pct <= 70) {
+                profile = "Üsna ootuspärane ja keskpärane sooritus. Seltskonnas sa tõenäoliselt hätta ei jää, kuid sügavamaid ja teravmeelseid arutelusid eesti keele peensuste üle ma sinuga veel ei peaks. Põhi on sul olemas ja loogika töötab – nüüd on vaja vaid järjepidevat harjutamist. ";
+            } else if (pct <= 90) {
+                profile = "Empiirilised andmed kinnitavad: sinu tulemus on igati korralik. Sinu sõnavara on piisavalt rikkalik, et närida läbi ka keerukamatest tekstidest ja mitte iga metafoori peale lühisesse sattuda. Oled keeleliselt igati elujõuline isend. Preemiaks võid endale nüüd lubada ühe funktsionaalse ja makrotoitainete poolest tasakaalus küpsise.";
+            } else if (pct <= 99) {
+                profile = "Suurepärane sooritus. Sinu veamäär on siinkohal pigem statistiline anomaalia või hetkeline tähelepanuhajuvus. Valdad kujundlikku keelt tasemel, mis teeb silmad ette suuremale osale tänapäeva sisuloojatest. Müts maha, aga me sind üleliia kiitma ei hakka, muidu lähed veel uhkeks.";
+            } else {
+                profile = "100% ehk täistabamus! Oled sa hariduselt filoloog või lihtsalt meeldivalt pedantne? Igal juhul on sinu keeletaju laitmatu ja peas asuv andmebaas eeskujulikult korras. Sellise tulemusega jääksid ellu isegi ERR-i teadustoimetuses. Ära lase sel saavutusel aga endale liialt pähe lüüa – homme on jälle uus ja täpselt sama hall päev.";
+            }
+
+            elements.profileText.textContent = profile;
+        }
+
+        // Event Listeners
+        elements.startBtn.addEventListener('click', initQuiz);
+        elements.restartBtn.addEventListener('click', initQuiz);
+
+    </script>
+</body>
+</html>

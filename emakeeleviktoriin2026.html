@@ -303,14 +303,15 @@
         elements.restartBtn.addEventListener('click', initQuiz);
 
         // Google Sheets andmekorje loogika
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzH2V2kHDsrH9ftdVr6JmFoKwIzqsm8GQ4VmUe29qdU1YKl-sZRlydowbuuOxFTIblq/exec'; // <--- TÄIDA SEE ÄRA
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzH2V2kHDsrH9ftdVr6JmFoKwIzqsm8GQ4VmUe29qdU1YKl-sZRlydowbuuOxFTIblq/exec'; // <--- KLEEEBI OMA LINK AINULT SIIA
 
         if (elements.idiomForm) {
             elements.idiomForm.addEventListener('submit', e => {
                 e.preventDefault();
                 
-                if (SCRIPT_URL === 'https://script.google.com/macros/s/AKfycbzH2V2kHDsrH9ftdVr6JmFoKwIzqsm8GQ4VmUe29qdU1YKl-sZRlydowbuuOxFTIblq/exec') {
-                    elements.formFeedback.textContent = 'Süsteemiviga: Andmebaasi URL on seadistamata. Pöördu toimetaja poole.';
+                // Uus kontroll: vaatame ainult seda, kas link algab http-ga
+                if (!SCRIPT_URL.startsWith('http')) {
+                    elements.formFeedback.textContent = 'Süsteemiviga: Andmebaasi URL on seadistamata või vigane. Pöördu toimetaja poole.';
                     elements.formFeedback.classList.remove('hidden', 'text-novaator-dark');
                     elements.formFeedback.classList.add('text-red-600');
                     return;
@@ -320,7 +321,7 @@
                 elements.submitIdiomBtn.textContent = 'Salvestan...';
                 elements.formFeedback.classList.add('hidden');
                 
-                // Kasutame URLSearchParamsi, mis edastab andmed kujul, mida Google Apps Script eelistab (application/x-www-form-urlencoded)
+                // Kasutame URLSearchParamsi, mis edastab andmed kujul, mida Google Apps Script eelistab
                 const formData = new URLSearchParams();
                 formData.append('valjend', document.getElementById('new-idiom').value);
                 formData.append('tahendus', document.getElementById('idiom-meaning').value);

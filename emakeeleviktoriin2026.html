@@ -347,7 +347,20 @@
                 });
             });
         }
-
+ // Iframe'i dünaamiline skaleerimine (saadab kõrguse parent aknale)
+        const resizeObserver = new ResizeObserver(entries => {
+            for (let entry of entries) {
+                // Võtame äpi konteineri kõrguse ja lisame body paddingu (32px)
+                const newHeight = entry.target.getBoundingClientRect().height + 32;
+                window.parent.postMessage({ 
+                    type: 'quiz-resize', 
+                    height: newHeight 
+                }, '*');
+            }
+        });
+        
+        // Jälgime peamise konteineri suuruse muutusi reaalajas
+        resizeObserver.observe(document.getElementById('app'));
     </script>
 </body>
 </html>

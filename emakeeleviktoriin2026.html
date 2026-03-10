@@ -53,7 +53,7 @@
         }
     </style>
 </head>
-<body class="min-h-screen flex items-center justify-center p-4">
+<body class="min-h-screen flex items-start justify-center p-4 pt-8 md:pt-12">
 
     <!-- App Container -->
     <div id="app" class="w-full max-w-2xl bg-white rounded-xl shadow-lg overflow-hidden relative">
@@ -98,13 +98,13 @@
             </div>
             
             <button id="restart-btn" class="bg-novaator hover:bg-novaator-dark text-white font-semibold py-3 px-8 rounded-lg transition-colors shadow-md mb-8">
-                Proovin uuesti
+                Korda testi
             </button>
 
             <!-- Uus andmekorje vorm -->
             <div class="bg-novaator-light rounded-lg p-6 text-left border border-novaator">
                 <h3 class="text-xl font-bold mb-3 text-novaator-dark">Aita kaasa keeleuuringule</h3>
-                <p class="text-gray-700 mb-4 text-sm">Kas sinu sõpruskonnas või pereringis on 1) tekkinud mõni uus kujundlik väljend või 2) kasutatakse mõnd tuntud väljendit tavapärasest teises tähenduses või teistsuguses sõnastuses?</p>
+                <p class="text-gray-700 mb-4 text-sm">Kas sinu sõpruskonnas või pereringis on 1) tekkinud mõni uus kujundlik väljend või 2) kasutatakse mõnd tuntud väljendit teises tähenduses või teistsuguses sõnastuses?</p>
                 
                 <form id="idiom-form" class="space-y-4">
                     <div>
@@ -116,7 +116,7 @@
                         <textarea id="idiom-meaning" required rows="3" class="w-full p-2 border border-gray-300 rounded focus:ring-novaator focus:border-novaator" placeholder="Mida see tähendab ja kust see tuli..."></textarea>
                     </div>
                     <button type="submit" id="submit-idiom-btn" class="bg-novaator hover:bg-novaator-dark text-white font-medium py-2 px-6 rounded transition-colors w-full sm:w-auto">
-                        Salvestan vastuse
+                        Salvesta andmebaasi
                     </button>
                     <p id="form-feedback" class="text-sm hidden mt-2 font-medium"></p>
                 </form>
@@ -303,7 +303,7 @@
         elements.restartBtn.addEventListener('click', initQuiz);
 
         // Google Sheets andmekorje loogika
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzH2V2kHDsrH9ftdVr6JmFoKwIzqsm8GQ4VmUe29qdU1YKl-sZRlydowbuuOxFTIblq/exec'; // <--- KLEEEBI OMA LINK AINULT SIIA
+        const SCRIPT_URL = 'SINU_GOOGLE_APPS_SCRIPT_URL_SIIA'; // <--- KLEEEBI OMA LINK AINULT SIIA
 
         if (elements.idiomForm) {
             elements.idiomForm.addEventListener('submit', e => {
@@ -331,7 +331,7 @@
                     body: formData 
                 })
                 .then(response => {
-                    elements.formFeedback.textContent = 'Vastus edukalt saadetud. Keeleteadus tänab sind.';
+                    elements.formFeedback.textContent = 'Andmed on edukalt salvestatud. Teadus tänab sisendi eest.';
                     elements.formFeedback.classList.remove('hidden', 'text-red-600');
                     elements.formFeedback.classList.add('text-novaator-dark');
                     elements.idiomForm.reset();
@@ -347,7 +347,9 @@
                 });
             });
         }
- // Iframe'i dünaamiline skaleerimine (saadab kõrguse parent aknale)
+
+        // Iframe'i dünaamiline skaleerimine (ajutiselt välja kommenteeritud CMS piirangute tõttu)
+        /*
         const resizeObserver = new ResizeObserver(entries => {
             for (let entry of entries) {
                 // Võtame äpi konteineri kõrguse ja lisame body paddingu (32px)
@@ -361,6 +363,8 @@
         
         // Jälgime peamise konteineri suuruse muutusi reaalajas
         resizeObserver.observe(document.getElementById('app'));
+        */
+
     </script>
 </body>
 </html>

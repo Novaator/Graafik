@@ -66,7 +66,7 @@
         <!-- Start Screen -->
         <div id="start-screen" class="p-8 md:p-12 text-center">
             <h1 class="text-3xl md:text-4xl font-bold mb-4 text-gray-900">Kujundlike väljendite test</h1>
-            <p class="text-gray-600 mb-8 text-lg">Pane oma teadmised proovile ja vaata, kui hästi tunned sina eesti keele kujundlikke väljendeid.</p>
+            <p class="text-gray-600 mb-8 text-lg">Pane oma teadmised proovile ja vaata, kui hästi tunned sina eesti keele kujundlikke väljendeid. Test on tempokas – vali vastus ja liigume kohe edasi.</p>
             <button id="start-btn" class="bg-novaator hover:bg-novaator-dark text-white font-semibold py-3 px-8 rounded-lg text-lg transition-colors shadow-md">
                 Alusta analüüsi
             </button>
@@ -97,9 +97,30 @@
                 <p id="profile-text" class="text-gray-700 leading-relaxed"></p>
             </div>
             
-            <button id="restart-btn" class="bg-novaator hover:bg-novaator-dark text-white font-semibold py-3 px-8 rounded-lg transition-colors shadow-md">
+            <button id="restart-btn" class="bg-novaator hover:bg-novaator-dark text-white font-semibold py-3 px-8 rounded-lg transition-colors shadow-md mb-8">
                 Korda testi
             </button>
+
+            <!-- Uus andmekorje vorm -->
+            <div class="bg-novaator-light rounded-lg p-6 text-left border border-novaator">
+                <h3 class="text-xl font-bold mb-3 text-novaator-dark">Aita kaasa keeleuuringule</h3>
+                <p class="text-gray-700 mb-4 text-sm">Kas sinu sõpruskonnas või pereringis on 1) tekkinud mõni uus kujundlik väljend või 2) kasutatakse mõnd tuntud väljendit teises tähenduses või teistsuguses sõnastuses?</p>
+                
+                <form id="idiom-form" class="space-y-4">
+                    <div>
+                        <label for="new-idiom" class="block text-sm font-medium text-gray-700 mb-1">Väljend</label>
+                        <input type="text" id="new-idiom" required class="w-full p-2 border border-gray-300 rounded focus:ring-novaator focus:border-novaator" placeholder="nt: hapukoort tegema">
+                    </div>
+                    <div>
+                        <label for="idiom-meaning" class="block text-sm font-medium text-gray-700 mb-1">Tähendus ja taust (kuidas tekkis, mis olukorras kasutate)</label>
+                        <textarea id="idiom-meaning" required rows="3" class="w-full p-2 border border-gray-300 rounded focus:ring-novaator focus:border-novaator" placeholder="Mida see tähendab ja kust see tuli..."></textarea>
+                    </div>
+                    <button type="submit" id="submit-idiom-btn" class="bg-novaator hover:bg-novaator-dark text-white font-medium py-2 px-6 rounded transition-colors w-full sm:w-auto">
+                        Salvesta andmebaasi
+                    </button>
+                    <p id="form-feedback" class="text-sm hidden mt-2 font-medium"></p>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -155,7 +176,10 @@
             progressContainer: document.getElementById('progress-container'),
             finalScore: document.getElementById('final-score'),
             rawScore: document.getElementById('raw-score'),
-            profileText: document.getElementById('profile-text')
+            profileText: document.getElementById('profile-text'),
+            idiomForm: document.getElementById('idiom-form'),
+            submitIdiomBtn: document.getElementById('submit-idiom-btn'),
+            formFeedback: document.getElementById('form-feedback')
         };
 
         // Utility: Fisher-Yates shuffle
@@ -258,17 +282,17 @@
             // Profiles logic
             let profile = "";
             if (pct <= 30) {
-                profile = "Tundub, et sinu keelekasutus on takerdunud kiviaja hämarusse. Ega koopas elamiselgi viga polnud, aga arengu huvides tasuks raamatuid ka sirvida, mitte ainult nende kaasi silmitseda. Helgema külje pealt saab siit ainult paremuse poole liikuda.";
+                profile = "Faktipõhine analüüs näitab, et sinu keeleline pagas meenutab pigem varajast paleoliitikumi. See pole iseenesest halb – ka koopaelanikud said eluga hakkama. Soovitan edaspidi raamatuid ka lugeda, mitte ainult nende kaanepilte vaadata. Arenguruumi on, seega statistiliselt saab minna ainult paremaks.";
             } else if (pct <= 50) {
-                profile = "Statistiliselt asud sa kuskil seal, kus viibib keskmine inimene pärast teist unetut ööd. Sa küll tajud, et keerukamad väljendid on olemas, kuid sõnadevahelised seosed on sinu jaoks alles ebamäärased. Eeldusi sul on, ent Eesti Rahvusringhäälingu toimetajaks ära veel kandideerida proovi. Tee keelega veel veidi tööd, aga olukord pole sugugi lootusetu. ";
+                profile = "Statistiliselt oled sa kuskil seal, kus keskmine inimene viibib pärast teist unetut ööd. Sa tead, et sellised sõnastruktuurid on olemas, aga nende seosed on veel veidi hägusad. Potentsiaali esineb, ent ära veel ERR-i toimetajaks kandideeri. Tee natuke tööd, asi pole täiesti lootusetu.";
             } else if (pct <= 70) {
-                profile = "Üsna ootuspärane ja keskpärane sooritus. Seltskonnas sa tõenäoliselt hätta ei jää, kuid sügavamaid ja teravmeelseid arutelusid eesti keele peensuste üle ma sinuga veel ei peaks. Põhi on sul olemas ja loogika töötab – nüüd on vaja vaid järjepidevat harjutamist. ";
+                profile = "Üsna ootuspärane ja keskpärane sooritus. Sa ei jää seltskonnas tõenäoliselt päris rumalaks, aga teravaid diskussioone eesti keele sügavuste üle ma sinuga veel ei algataks. Baas on olemas, loogika töötab, harjuta lihtsalt veidi juurde.";
             } else if (pct <= 90) {
-                profile = "Empiirilised andmed kinnitavad: sinu tulemus on igati korralik. Sinu sõnavara on piisavalt rikkalik, et närida läbi ka keerukamatest tekstidest ja mitte iga metafoori peale lühisesse sattuda. Oled keeleliselt igati elujõuline isend. Preemiaks võid endale nüüd lubada ühe funktsionaalse ja makrotoitainete poolest tasakaalus küpsise.";
+                profile = "Tulemus on empiiriliselt tõestatavalt hea. Sinu sõnavara on piisavalt rikkalik, et mõista ka keerulisemaid tekste ja mitte iga metafoori peale segadusse sattuda. Oled keeleliselt elujõuline isend. Võid endale preemiaks ühe funktsionaalse ja toitaineterikka eine lubada.";
             } else if (pct <= 99) {
-                profile = "Suurepärane sooritus. Sinu veamäär on siinkohal pigem statistiline anomaalia või hetkeline tähelepanuhajuvus. Valdad kujundlikku keelt tasemel, mis teeb silmad ette suuremale osale tänapäeva sisuloojatest. Müts maha, aga me sind üleliia kiitma ei hakka, muidu lähed veel uhkeks.";
+                profile = "Suurepärane sooritus. Vea piir on siinkohal suuresti vaid statistiline anomaalia või hetkeline tähelepanuhäire. Valdad kujundlikke väljendeid tasemel, mis teeb silmad ette enamikule tänapäeva tekstiloojatele. Respekt – kuigi ma ei taha sind üleliia kiita, muidu lähed veel uhkeks.";
             } else {
-                profile = "100% ehk täistabamus! Oled sa hariduselt filoloog või lihtsalt meeldivalt pedantne? Igal juhul on sinu keeletaju laitmatu ja peas asuv andmebaas eeskujulikult korras. Sellise tulemusega jääksid ellu isegi ERR-i teadustoimetuses. Ära lase sel saavutusel aga endale liialt pähe lüüa – homme on jälle uus ja täpselt sama hall päev.";
+                profile = "100% ehk perfektne skoor. Oled sa hariduselt keeleteadlane või lihtsalt meeldivalt pedantne? Igal juhul on su keeletaju laitmatu ja andmestik peas korras. Sellise tulemusega võiksid isegi ERR-i teadustoimetuses ellu jääda. Ära lase sel saavutusel aga oma pead segi ajada, homme on jälle uus ja sama hall päev.";
             }
 
             elements.profileText.textContent = profile;
@@ -277,6 +301,51 @@
         // Event Listeners
         elements.startBtn.addEventListener('click', initQuiz);
         elements.restartBtn.addEventListener('click', initQuiz);
+
+        // Google Sheets andmekorje loogika
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzH2V2kHDsrH9ftdVr6JmFoKwIzqsm8GQ4VmUe29qdU1YKl-sZRlydowbuuOxFTIblq/exec'; // <--- TÄIDA SEE ÄRA
+
+        if (elements.idiomForm) {
+            elements.idiomForm.addEventListener('submit', e => {
+                e.preventDefault();
+                
+                if (SCRIPT_URL === 'https://script.google.com/macros/s/AKfycbzH2V2kHDsrH9ftdVr6JmFoKwIzqsm8GQ4VmUe29qdU1YKl-sZRlydowbuuOxFTIblq/exec') {
+                    elements.formFeedback.textContent = 'Süsteemiviga: Andmebaasi URL on seadistamata. Pöördu toimetaja poole.';
+                    elements.formFeedback.classList.remove('hidden', 'text-novaator-dark');
+                    elements.formFeedback.classList.add('text-red-600');
+                    return;
+                }
+
+                elements.submitIdiomBtn.disabled = true;
+                elements.submitIdiomBtn.textContent = 'Salvestan...';
+                elements.formFeedback.classList.add('hidden');
+                
+                // Kasutame URLSearchParamsi, mis edastab andmed kujul, mida Google Apps Script eelistab (application/x-www-form-urlencoded)
+                const formData = new URLSearchParams();
+                formData.append('valjend', document.getElementById('new-idiom').value);
+                formData.append('tahendus', document.getElementById('idiom-meaning').value);
+
+                fetch(SCRIPT_URL, { 
+                    method: 'POST', 
+                    body: formData 
+                })
+                .then(response => {
+                    elements.formFeedback.textContent = 'Andmed on edukalt salvestatud. Teadus tänab sisendi eest.';
+                    elements.formFeedback.classList.remove('hidden', 'text-red-600');
+                    elements.formFeedback.classList.add('text-novaator-dark');
+                    elements.idiomForm.reset();
+                })
+                .catch(error => {
+                    elements.formFeedback.textContent = 'Salvestamine ebaõnnestus võrguvea tõttu. Proovi hiljem uuesti.';
+                    elements.formFeedback.classList.remove('hidden', 'text-novaator-dark');
+                    elements.formFeedback.classList.add('text-red-600');
+                })
+                .finally(() => {
+                    elements.submitIdiomBtn.disabled = false;
+                    elements.submitIdiomBtn.textContent = 'Salvesta andmebaasi';
+                });
+            });
+        }
 
     </script>
 </body>

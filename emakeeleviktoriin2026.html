@@ -103,7 +103,7 @@
             </button>
 
             <div id="mistakes-container" class="hidden bg-red-50 rounded-lg p-6 mb-8 text-left border border-red-100">
-                <h3 class="text-lg font-bold mb-4 text-red-800">Mida edaspidi meeles pidada?:</h3>
+                <h3 class="text-lg font-bold mb-4 text-red-800">Mida edaspidi meeles pidada?</h3>
                 <ul id="mistakes-list" class="space-y-4">
                     <!-- Siia süstitakse vead -->
                 </ul>
@@ -390,7 +390,7 @@
                     body: formData 
                 })
                 .then(response => {
-                    elements.formFeedback.textContent = 'Andmed on edukalt salvestatud. Teadus tänab sisendi eest.';
+                    elements.formFeedback.textContent = 'Andmed on edukalt salvestatud. Teadus tänab sind.';
                     elements.formFeedback.classList.remove('hidden', 'text-red-600');
                     elements.formFeedback.classList.add('text-novaator-dark');
                     elements.idiomForm.reset();
@@ -402,7 +402,7 @@
                 })
                 .finally(() => {
                     elements.submitIdiomBtn.disabled = false;
-                    elements.submitIdiomBtn.textContent = 'Salvesta andmebaasi';
+                    elements.submitIdiomBtn.textContent = 'Saadan vastuse.';
                 });
             });
         }

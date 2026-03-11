@@ -68,7 +68,7 @@
             <h1 class="text-3xl md:text-4xl font-bold mb-4 text-gray-900">Kujundlike väljendite test</h1>
             <p class="text-gray-600 mb-8 text-lg">Pane oma teadmised proovile ja vaata, kui hästi tunned sina eesti keele kujundlikke väljendeid.</p>
             <button id="start-btn" class="bg-novaator hover:bg-novaator-dark text-white font-semibold py-3 px-8 rounded-lg text-lg transition-colors shadow-md">
-                Alusta
+                Alusta testi
             </button>
         </div>
 
@@ -97,14 +97,26 @@
                 <p id="profile-text" class="text-gray-700 leading-relaxed"></p>
             </div>
             
-            <button id="restart-btn" class="bg-novaator hover:bg-novaator-dark text-white font-semibold py-3 px-8 rounded-lg transition-colors shadow-md mb-8">
+            <!-- UUS: Vigade analüüsi nupp ja konteiner -->
+            <button id="toggle-mistakes-btn" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-6 rounded-lg transition-colors mb-4 hidden w-full sm:w-auto">
+                Vaata, mis valesti läks
+            </button>
+
+            <div id="mistakes-container" class="hidden bg-red-50 rounded-lg p-6 mb-8 text-left border border-red-100">
+                <h3 class="text-lg font-bold mb-4 text-red-800">Mida edaspidi meeles pidada?:</h3>
+                <ul id="mistakes-list" class="space-y-4">
+                    <!-- Siia süstitakse vead -->
+                </ul>
+            </div>
+            
+            <button id="restart-btn" class="bg-novaator hover:bg-novaator-dark text-white font-semibold py-3 px-8 rounded-lg transition-colors shadow-md mb-8 w-full sm:w-auto">
                 Proovin uuesti
             </button>
 
             <!-- Uus andmekorje vorm -->
             <div class="bg-novaator-light rounded-lg p-6 text-left border border-novaator">
                 <h3 class="text-xl font-bold mb-3 text-novaator-dark">Aita kaasa keeleuuringule</h3>
-                <p class="text-gray-700 mb-4 text-sm">Kas sinu sõpruskonnas või pereringis on 1) tekkinud mõni uus kujundlik väljend või 2) kasutatakse mõnd tuntud väljendit harjumuspärasest teises tähenduses või teistsuguses sõnastuses?</p>
+                <p class="text-gray-700 mb-4 text-sm">Kas sinu sõpruskonnas või pereringis on 1) tekkinud mõni uus kujundlik väljend või 2) kasutatakse mõnd tuntud väljendit tavapärasest teises tähenduses või teistsuguses sõnastuses?</p>
                 
                 <form id="idiom-form" class="space-y-4">
                     <div>
@@ -159,6 +171,7 @@
         let questions = [];
         let currentIndex = 0;
         let score = 0;
+        let wrongAnswers = []; // UUS: vigade massiiv
 
         // DOM Elements
         const screens = {
@@ -179,7 +192,10 @@
             profileText: document.getElementById('profile-text'),
             idiomForm: document.getElementById('idiom-form'),
             submitIdiomBtn: document.getElementById('submit-idiom-btn'),
-            formFeedback: document.getElementById('form-feedback')
+            formFeedback: document.getElementById('form-feedback'),
+            toggleMistakesBtn: document.getElementById('toggle-mistakes-btn'), // UUS
+            mistakesContainer: document.getElementById('mistakes-container'), // UUS
+            mistakesList: document.getElementById('mistakes-list') // UUS
         };
 
         // Utility: Fisher-Yates shuffle
@@ -202,11 +218,17 @@
             
             currentIndex = 0;
             score = 0;
+            wrongAnswers = []; // Algseadistame nulli
             
             screens.start.classList.add('hidden');
             screens.result.classList.add('hidden');
             screens.quiz.classList.remove('hidden');
             elements.progressContainer.classList.remove('hidden');
+            
+            // Peidame eelnevad vead
+            elements.toggleMistakesBtn.classList.add('hidden');
+            elements.mistakesContainer.classList.add('hidden');
+            elements.toggleMistakesBtn.textContent = 'Analüüsi oma vigu';
             
             renderQuestion();
         }
@@ -244,6 +266,9 @@
                 btn.classList.remove('hover:bg-gray-50');
             });
 
+            const currentQ = questions[currentIndex];
+            const correctOpt = currentQ.options.find(o => o.c === true).t;
+
             // Visual feedback
             if (isCorrect) {
                 selectedBtn.classList.add('correct-answer');
@@ -251,9 +276,15 @@
             } else {
                 selectedBtn.classList.add('wrong-answer');
                 // Highlight the correct one
-                const currentQ = questions[currentIndex];
                 const correctIndex = currentQ.options.findIndex(o => o.c === true);
                 allBtns[correctIndex].classList.add('correct-answer', 'opacity-70');
+                
+                // Salvestame vea hilisemaks lahkamiseks
+                wrongAnswers.push({
+                    q: currentQ.q,
+                    user: selectedBtn.textContent,
+                    correct: correctOpt
+                });
             }
 
             // Tempokas advance (delay 800ms)
@@ -279,6 +310,22 @@
             elements.finalScore.textContent = `${pct}%`;
             elements.rawScore.textContent = `Vastasid õigesti ${score} küsimusele ${total}-st.`;
 
+            // Vigade nimekirja genereerimine
+            if (wrongAnswers.length > 0) {
+                elements.toggleMistakesBtn.classList.remove('hidden');
+                elements.mistakesList.innerHTML = '';
+                wrongAnswers.forEach(err => {
+                    const li = document.createElement('li');
+                    li.className = 'border-b border-red-200 pb-3 last:border-0 last:pb-0';
+                    li.innerHTML = `
+                        <div class="font-bold text-gray-900 mb-1">"${err.q}"</div>
+                        <div class="text-sm text-red-600 mb-1">Sinu diagnoos: <span class="line-through">${err.user}</span></div>
+                        <div class="text-sm font-medium text-novaator-dark">Tegelik tähendus: ${err.correct}</div>
+                    `;
+                    elements.mistakesList.appendChild(li);
+                });
+            }
+
             // Profiles logic
             let profile = "";
             if (pct <= 30) {
@@ -286,7 +333,7 @@
             } else if (pct <= 50) {
                 profile = "Statistiliselt oled sa kuskil seal, kus keskmine inimene pärast teist unetut ööd. Sa tead, et sellised imelised sõnastruktuurid on olemas, aga need on su peas veidi segamini nagu pudru ja kapsad. Päris rappa sa veel omadega ei läinud, ent ära veel ERR-i toimetajaks kandideeri. Tee natuke tööd, sest asi pole lootusetu.";
             } else if (pct <= 70) {
-                profile = "Üsna ootuspärane ja keskpärane sooritus, puhas Harju keskmine. Sa ei jää seltskonnas tõenäoliselt pika ninaga ega rumalaks, aga üliteravaid diskussioone eesti keele sügavuste üle peaks sinuga veidi hiljem. Vundament on olemas, loogika töötab, kuid veidi võiksid silmaringi veel avardada, et vestluses mitte päris ree pealt maha pudeneda";
+                profile = "Üsna ootuspärane ja keskpärane sooritus, puhas Harju keskmine. Sa ei jää seltskonnas tõenäoliselt pika ninaga ega rumalaks, aga üliteravaid diskussioone eesti keele sügavuste üle peaks sinuga veidi hiljem. Vundament on olemas, loogika töötab, kuid veidi võiksid silmaringi veel avardada, et vestluses mitte päris ree pealt maha pudeneda.";
             } else if (pct <= 90) {
                 profile = "Tulemus on empiiriliselt tõestatult hea. Sinu sõnavara on piisavalt rikkalik, et mõista ka keerulisemaid tekste ja mitte iga metafoori peale segadusse sattuda. Oled keeleliselt elujõuline isend, kellel pea lõikab. Võid endale preemiaks ühe funktsionaalse ja toitaineterikka küpsise lubada.";
             } else if (pct <= 99) {
@@ -302,8 +349,20 @@
         elements.startBtn.addEventListener('click', initQuiz);
         elements.restartBtn.addEventListener('click', initQuiz);
 
+        // Vigade näitamise/peitmise lüliti
+        elements.toggleMistakesBtn.addEventListener('click', () => {
+            const isHidden = elements.mistakesContainer.classList.contains('hidden');
+            if (isHidden) {
+                elements.mistakesContainer.classList.remove('hidden');
+                elements.toggleMistakesBtn.textContent = 'Peida analüüs';
+            } else {
+                elements.mistakesContainer.classList.add('hidden');
+                elements.toggleMistakesBtn.textContent = 'Analüüsi oma vigu';
+            }
+        });
+
         // Google Sheets andmekorje loogika
-        const SCRIPT_URL = 'SINU_GOOGLE_APPS_SCRIPT_URL_SIIA'; // <--- KLEEEBI OMA LINK AINULT SIIA
+        const SCRIPT_URL = https://script.google.com/macros/s/AKfycbzhKJSwKcJT-XyV89ptENFQzS5dX87Nv2Pz4ySCZ1kcPYRmidhvU12DQGCM2ru3RJtU/exec'; // <--- KLEEEBI OMA LINK AINULT SIIA
 
         if (elements.idiomForm) {
             elements.idiomForm.addEventListener('submit', e => {

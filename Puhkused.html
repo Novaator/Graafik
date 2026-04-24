@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ERR suvepuhkused</title>
+  <title>ERR suvepuhkused II</title>
   
   <!-- Font -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -316,16 +316,25 @@
         const lines = pasteText.split('\n');
         const newEmployees = [];
         let currentEmployee = null;
-        const dateRegex = /(\d{1,2})\.(\d{1,2})(?:\.\d{2,4})?\s*-\s*(\d{1,2})\.(\d{1,2})(?:\.\d{2,4})?/g;
+        
+        // Täiustatud regulaaravaldis, mis sööb nii tavalist sidekriipsu (-), pikki kriipse (–, —)
+        // ja ignoreerib laiskust aastarvude sisestamisel.
+        const dateRegex = /(\d{1,2})\.(\d{1,2})(?:\.\d{2,4})?\s*[-–—]\s*(\d{1,2})\.(\d{1,2})(?:\.\d{2,4})?/g;
 
         lines.forEach(line => {
           const tLine = line.trim();
           if (!tLine) return;
 
           const matches = [...tLine.matchAll(dateRegex)];
-          const namePart = tLine.replace(dateRegex, '').replace(/[,:-]+$/, '').trim();
+          
+          // Eemaldame realt kuupäevad ja üleliigsed sümbolid, et näha, kas järele jääb nimi
+          const namePart = tLine.replace(dateRegex, '').replace(/[,:;-\s]+$/, '').trim();
+          
+          // Bioloogiline idioodikaitse: inimese nimes peab olema vähemalt üks täht,
+          // muidu on tegemist vigaselt sisestatud kuupäevaga, mille regex maha magas.
+          const hasLetters = /[a-zA-ZõäöüÕÄÖÜšžŠŽ]/.test(namePart);
 
-          if (namePart) {
+          if (namePart && hasLetters) {
             if (currentEmployee) newEmployees.push(currentEmployee);
             currentEmployee = {
               id: crypto.randomUUID(),
@@ -344,6 +353,7 @@
 
             let validWeeks = [];
             let sortedReq = Array.from(requestedWeeks).sort((a,b) => a-b);
+            
             // Proovime lisada nädalaid ükshaaval. Kui algoritm "plahvatab", katkestame ja salvestame senise edukaima seisu.
             for(let w of sortedReq) {
               if (w >= 20 && w <= 38 && packWeeks([...validWeeks, w])) {
@@ -488,7 +498,7 @@
                   <textarea
                     value={pasteText}
                     onChange={(e) => setPasteText(e.target.value)}
-                    placeholder={`Jaan-Juhan\n01.06-14.06\n02.08-21.08\n\nMari Maasikas\n15.06-21.06`}
+                    placeholder={`Marko\n08.06.2026 - 14.06.2026\n20.07.2026 - 02.08.2026`}
                     className="w-full h-32 text-xs px-3 py-2 border border-emerald-300 rounded-xl bg-white shadow-inner focus:outline-none focus:ring-2 focus:ring-emerald-500 custom-scrollbar resize-none placeholder:text-emerald-300/80"
                   />
                   <button 

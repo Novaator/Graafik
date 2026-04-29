@@ -24,6 +24,15 @@
       /* Iframe'i jaoks läbipaistev taust */
       background-color: transparent; 
     }
+    
+    /* Peidame pisipiltide kerimisriba, et see ei rikuks disaini */
+    .hide-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .hide-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
   </style>
 </head>
 <body>
@@ -31,17 +40,14 @@
 
   <!-- Siin algab tegelik rakenduse kood, type="text/babel" on kriitiline! -->
   <script type="text/babel">
-    const { useState, useEffect } = React;
+    const { useState, useEffect, useRef } = React;
 
-    // --- Ikoonide komponendid (asendavad lucide-reacti, et hoida kõik ühes failis) ---
+    // --- Ikoonide komponendid ---
     const ChevronLeft = ({ size = 24, className = "" }) => (
       <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m15 18-6-6 6-6"/></svg>
     );
     const ChevronRight = ({ size = 24, className = "" }) => (
       <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m9 18 6-6-6-6"/></svg>
-    );
-    const Send = ({ size = 18, className = "" }) => (
-      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
     );
     const Loader2 = ({ size = 18, className = "" }) => (
       <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`animate-spin ${className}`}><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
@@ -180,11 +186,24 @@
       
       const [touchStart, setTouchStart] = useState(null);
       const [touchEnd, setTouchEnd] = useState(null);
+      const thumbnailContainerRef = useRef(null);
 
       // Pane siia oma Google Apps Scripti URL
       const GOOGLE_WEBAPP_URL = ''; 
 
       const currentMushroom = mushrooms[currentIndex];
+
+      // Kerib automaatselt valitud pisipildi nähtavale
+      useEffect(() => {
+        if (thumbnailContainerRef.current) {
+          const container = thumbnailContainerRef.current;
+          const selectedThumb = container.children[currentIndex];
+          if (selectedThumb) {
+            const scrollLeft = selectedThumb.offsetLeft - (container.offsetWidth / 2) + (selectedThumb.offsetWidth / 2);
+            container.scrollTo({ left: scrollLeft, behavior: 'smooth' });
+          }
+        }
+      }, [currentIndex]);
 
       const changeSlide = (direction) => {
         if (isTransitioning) return;
@@ -195,6 +214,17 @@
             if (direction === 'next') return prev === mushrooms.length - 1 ? 0 : prev + 1;
             return prev === 0 ? mushrooms.length - 1 : prev - 1;
           });
+          resetForm();
+          setIsTransitioning(false);
+        }, 300);
+      };
+
+      const goToSlide = (index) => {
+        if (isTransitioning || index === currentIndex) return;
+        setIsTransitioning(true);
+        
+        setTimeout(() => {
+          setCurrentIndex(index);
           resetForm();
           setIsTransitioning(false);
         }, 300);
@@ -276,12 +306,14 @@
         >
           <div 
             className="max-w-2xl w-full bg-[#eaf5eb] sm:rounded-2xl shadow-none sm:shadow-xl overflow-hidden border-y sm:border border-[#28902d]/20 relative"
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
           >
-            
-            <div className="relative h-64 sm:h-80 md:h-96 w-full group bg-black select-none">
+            {/* Peapilt ja pühkimisala */}
+            <div 
+              className="relative h-64 sm:h-80 md:h-96 w-full group bg-black select-none"
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+            >
               <img 
                 src={currentMushroom.image} 
                 alt={currentMushroom.latin} 
@@ -311,6 +343,27 @@
               </div>
             </div>
 
+            {/* Pisipiltide galerii navigeerimiseks */}
+            <div 
+              ref={thumbnailContainerRef}
+              className="w-full bg-[#1a5e1d]/5 flex gap-2 overflow-x-auto hide-scrollbar p-3 border-b border-[#28902d]/10 items-center"
+            >
+              {mushrooms.map((mushroom, idx) => (
+                <button
+                  key={mushroom.id}
+                  onClick={() => goToSlide(idx)}
+                  className={`flex-shrink-0 w-14 h-14 sm:w-16 sm:h-16 rounded-md overflow-hidden transition-all duration-200 border-2 ${
+                    currentIndex === idx 
+                      ? 'border-[#28902d] opacity-100 shadow-sm scale-105' 
+                      : 'border-transparent opacity-50 hover:opacity-100 grayscale-[40%]'
+                  }`}
+                  aria-label={`Mine slaidile ${idx + 1}`}
+                >
+                  <img src={mushroom.image} alt="" className="w-full h-full object-cover pointer-events-none" />
+                </button>
+              ))}
+            </div>
+
             <div className={`p-6 md:p-8 transition-all duration-300 ease-in-out ${
               isTransitioning ? 'opacity-0 translate-y-3' : 'opacity-100 translate-y-0'
             }`}>
@@ -332,7 +385,7 @@
                 <form onSubmit={handleSubmit} className="relative">
                   <style dangerouslySetInnerHTML={{__html: `
                     /* Inline style to handle focus within Babel/React */
-                    #suggestion-input::placeholder { color: #28902d; opacity: 0.5; }
+                    #suggestion-input::placeholder { color: #28902d; font-weight: 300; font-size: 0.9rem; opacity: 0.6; }
                     #suggestion-input:focus { box-shadow: 0 0 0 2px #28902d; outline: none; }
                   `}} />
                   <input
@@ -341,22 +394,22 @@
                     value={suggestion}
                     onChange={(e) => setSuggestion(e.target.value)}
                     disabled={status === 'loading'}
-                    placeholder="nt. Laibalehkaja, Verihammas..."
-                    className="w-full bg-white border border-[#28902d]/30 rounded-lg py-3 px-4 transition-all disabled:opacity-50 font-medium"
+                    placeholder="Kirjuta pakkumine siia"
+                    className="w-full bg-white border border-[#28902d]/30 rounded-lg py-3 pl-4 pr-[6.5rem] transition-all disabled:opacity-50 font-medium"
                     style={{ color: '#28902d', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)' }}
                   />
                   
                   <button
                     type="submit"
                     disabled={!suggestion.trim() || status === 'loading'}
-                    className="absolute right-2 top-2 bottom-2 text-white px-4 rounded-md transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[3rem] shadow-sm hover:shadow"
+                    className="absolute right-2 top-2 bottom-2 text-white px-5 rounded-md transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[5.5rem] shadow-sm hover:shadow"
                     style={{ backgroundColor: '#28902d' }}
                     aria-label="Saada ettepanek"
                   >
                     {status === 'loading' ? (
                       <Loader2 size={18} />
                     ) : (
-                      <Send size={18} />
+                      <span className="font-bold tracking-widest text-sm">SAADA</span>
                     )}
                   </button>
                 </form>

@@ -1,0 +1,344 @@
+import React, { useState, useEffect } from 'react';
+import { ChevronLeft, ChevronRight, Send, Loader2 } from 'lucide-react';
+
+// Seente andmebaas. 20 teaduslikult huvitavat ja/või häirivat liiki.
+const mushrooms = [
+  {
+    id: 'phallus_impudicus',
+    latin: 'Phallus impudicus',
+    description: 'Ladinakeelne nimi ütleb kõik. Kasvab üleöö, algab "nõiamunana" ja sirgub siis... noh, tead isegi milleks. Levitab intensiivset laibahaisu, et meelitada ligi raipekärbseid, kes levitavad selle eoseid. Teaduslikult efektiivne, visuaalselt ropp.',
+    image: 'https://picsum.photos/seed/phallus/800/600'
+  },
+  {
+    id: 'hydnellum_peckii',
+    latin: 'Hydnellum peckii',
+    description: 'Eritab noorena punast vedelikku, mis näeb välja nagu veri. See mahl sisaldab atromentiini, mis on tuntud antikoagulant ja omab antibakteriaalseid omadusi. Ei ole mürgine, aga maitseb nii kibedalt, et isegi meeleheitel metssiga sülitaks selle välja.',
+    image: 'https://picsum.photos/seed/hydnellum/800/600'
+  },
+  {
+    id: 'clathrus_archeri',
+    latin: 'Clathrus archeri',
+    description: 'Algselt Austraaliast pärit invasiivne liik. Koorub munast ja harutab lahti 4-7 roosakat kombitsat, mis on kaetud tumeda, haisva eosmassiga (gleeba). Lõhn meenutab roiskuvat liha. Sisuliselt zombi-kaheksajalg metsa all.',
+    image: 'https://picsum.photos/seed/clathrus/800/600'
+  },
+  {
+    id: 'mycena_chlorophos',
+    latin: 'Mycena chlorophos',
+    description: 'Bioluminestsentne seen, mis kiirgab öösiti rohekat valgust. Helendab tänu lutsiferiini oksüdeerumisele. Peamine funktsioon arvatavasti öiste putukate ligimeelitamine eoste levitamiseks. Subtroopiline, seega Eestis vabas looduses (veel) ei kasva.',
+    image: 'https://picsum.photos/seed/mycena/800/600'
+  },
+  {
+    id: 'ophiocordyceps_unilateralis',
+    latin: 'Ophiocordyceps unilateralis',
+    description: 'Nakatab sipelgaid, võtab üle nende närvisüsteemi, sunnib neid ronima taime otsa ja surema. Seejärel kasvab sipelga peast välja eosla. Zombistav parasiit, mis teeb fantaasiaõudusfilmidest bioloogilise reaalsuse.',
+    image: 'https://picsum.photos/seed/ophiocordyceps/800/600'
+  },
+  {
+    id: 'amanita_phalloides',
+    latin: 'Amanita phalloides',
+    description: 'Roheline kärbseseen. Sisaldab amatoksiine, mis peatavad rakkudes valgusünteesi. Maks ja neerud ütlevad üles paari päevaga. Maitseb väidetavalt hästi, mis on evolutsiooni poolt eriti küüniline lüke.',
+    image: 'https://picsum.photos/seed/amanitaphalloides/800/600'
+  },
+  {
+    id: 'gyromitra_esculenta',
+    latin: 'Gyromitra esculenta',
+    description: 'Kevadkogrits. Toorelt tappev (güromitriin on keemiliselt seotud raketikütusega), korralikult kupatatult delikatess. Söömine meenutab Vene ruletti, kus padrun on keedetud.',
+    image: 'https://picsum.photos/seed/gyromitra/800/600'
+  },
+  {
+    id: 'coprinopsis_atramentaria',
+    latin: 'Coprinopsis atramentaria',
+    description: 'Varemerohi. Täiesti söödav ja maitsev seen, kuni tarbid kõrvale alkoholi. Sisaldab kopriini, mis blokeerib alkoholi lagundamise maksas, tekitades kohese ja brutaalse pohmelli. Loomulik disulfiraam.',
+    image: 'https://picsum.photos/seed/coprinopsis/800/600'
+  },
+  {
+    id: 'mutinus_caninus',
+    latin: 'Mutinus caninus',
+    description: 'Koerastinkhorn. Kuju on täpselt see, millele ladinakeelne nimi delikaatselt vihjab. Lõhnab veidi vähem rõvedalt kui tema sugulane Phallus impudicus, aga visuaal on endiselt bioloogiline absurd.',
+    image: 'https://picsum.photos/seed/mutinus/800/600'
+  },
+  {
+    id: 'hericium_erinaceus',
+    latin: 'Hericium erinaceus',
+    description: 'Lõvilakk. Näeb välja nagu puu külge kleepunud lumemees või makaronikuhi. Uuringud viitavad närvikasvufaktori stimuleerimisele. Ilmselt ainus seen siin nimekirjas, mis aju ei hävita, vaid potentsiaalselt turgutab.',
+    image: 'https://picsum.photos/seed/hericium/800/600'
+  },
+  {
+    id: 'pleurotus_ostreatus',
+    latin: 'Pleurotus ostreatus',
+    description: 'Austerservik. Tundub süütu poeseen, aga tegelikult on karnivoor. Eritab kemikaale, mis paralüseerivad mullas elavaid ümarusse, et need siis elusalt seedida ja vajalikku lämmastikku saada.',
+    image: 'https://picsum.photos/seed/pleurotus/800/600'
+  },
+  {
+    id: 'claviceps_purpurea',
+    latin: 'Claviceps purpurea',
+    description: 'Tungaltera. Teraviljadel parasiteeriv seen, millest hiljem sünteesiti LSD. Keskajal põhjustas saastunud jahu söömine massilisi hallutsinatsioone ja veresoonte ahenemisest tingitud jäsemete gangreeni.',
+    image: 'https://picsum.photos/seed/claviceps/800/600'
+  },
+  {
+    id: 'geastrum_triplex',
+    latin: 'Geastrum triplex',
+    description: 'Maatäht. Koorub maa seest välja ja avaneb nagu geomeetriline lill. Keskel on pall, mis vihmapiiskade tabamusel eoseid õhku purskab. Täiesti passiivne, kuid tõhus paljunemisstrateegia.',
+    image: 'https://picsum.photos/seed/geastrum/800/600'
+  },
+  {
+    id: 'tremella_mesenterica',
+    latin: 'Tremella mesenterica',
+    description: 'Kuldne rebu. Välja näeb nagu puuoksal vedelev kollane aju või kellegi metsa unustatud kummikomm. Tegelikult on mükoparasiit, mis toitub teistest puulagundajatest seentest.',
+    image: 'https://picsum.photos/seed/tremella/800/600'
+  },
+  {
+    id: 'fistulina_hepatica',
+    latin: 'Fistulina hepatica',
+    description: 'Maksak. Lõigates meenutab toorest maksa ja eritab isegi punakat mahla, mis meenutab verd. Söödav. Sobib hästi neile, kes tunnevad looduses puudust visuaalsest verevalamisest.',
+    image: 'https://picsum.photos/seed/fistulina/800/600'
+  },
+  {
+    id: 'schizophyllum_commune',
+    latin: 'Schizophyllum commune',
+    description: 'Eoslehik. Teaduslikult tuntud selle poolest, et tal on üle 23 000 erineva "soo" ehk paaritumistüübi. Elav bioloogiline tõestus, et binaarne süsteem on seente jaoks liiga primitiivne kontseptsioon.',
+    image: 'https://picsum.photos/seed/schizophyllum/800/600'
+  },
+  {
+    id: 'auricularia_auricula_judae',
+    latin: 'Auricularia auricula-judae',
+    description: 'Juudakõrv. Kasvab sageli leedripuul ja meenutab katsudes kõhrelist inimkõrva. Kulinaarselt suhteliselt maitsetu, aga annab Aasia suppidele spetsiifilise krõmpsuva tekstuuri.',
+    image: 'https://picsum.photos/seed/auricularia/800/600'
+  },
+  {
+    id: 'tolypocladium_ophioglossoides',
+    latin: 'Tolypocladium ophioglossoides',
+    description: 'Maakeel. Parasiit, mis kasvab maa-aluste hirvepähklite (trühvlilaadsed seened) peal. Leiab ohvri, puurib end sisse ja imeb bioloogilised ressursid tühjaks. Seenemaailma puuk.',
+    image: 'https://picsum.photos/seed/tolypocladium/800/600'
+  },
+  {
+    id: 'laccaria_amethystina',
+    latin: 'Laccaria amethystina',
+    description: 'Ametüst-lakksobik. Noorena erk lilla seen, mis kaotab vananedes värvi ja muutub igavaks pruuniks. Kogub mullast aktiivselt raskemetalle, sealhulgas arseeni. Süüa ei maksa, kui sa just Mendelejevi tabelit ei seedi.',
+    image: 'https://picsum.photos/seed/laccaria/800/600'
+  },
+  {
+    id: 'xylaria_polymorpha',
+    latin: 'Xylaria polymorpha',
+    description: 'Surnumehe sõrmed. Kasvab kändudel ja näeb välja täpselt nagu mullast välja sirutuvad nekrootilised sõrmed. Täiesti tavaline puidulagundaja, mis esteetiliselt sobib ainult õudusfilmi rekvisiidiks.',
+    image: 'https://picsum.photos/seed/xylaria/800/600'
+  }
+];
+
+export default function App() {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [suggestion, setSuggestion] = useState('');
+  const [status, setStatus] = useState('idle');
+  const [statusMessage, setStatusMessage] = useState('');
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  
+  // Puuteekraani "swipe" loogika jaoks vajalikud muutujad
+  const [touchStart, setTouchStart] = useState(null);
+  const [touchEnd, setTouchEnd] = useState(null);
+
+  // Laeme Fira Sans fondi Google Fontsist
+  useEffect(() => {
+    const link = document.createElement('link');
+    link.href = 'https://fonts.googleapis.com/css2?family=Fira+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap';
+    link.rel = 'stylesheet';
+    document.head.appendChild(link);
+    return () => document.head.removeChild(link);
+  }, []);
+
+  const GOOGLE_WEBAPP_URL = ''; 
+
+  const currentMushroom = mushrooms[currentIndex];
+
+  const changeSlide = (direction) => {
+    if (isTransitioning) return;
+    setIsTransitioning(true);
+    
+    setTimeout(() => {
+      setCurrentIndex((prev) => {
+        if (direction === 'next') return prev === mushrooms.length - 1 ? 0 : prev + 1;
+        return prev === 0 ? mushrooms.length - 1 : prev - 1;
+      });
+      resetForm();
+      setIsTransitioning(false);
+    }, 300);
+  };
+
+  const handleNext = () => changeSlide('next');
+  const handlePrev = () => changeSlide('prev');
+
+  const resetForm = () => {
+    setSuggestion('');
+    setStatus('idle');
+    setStatusMessage('');
+  };
+
+  // Puuteekraani sündmused
+  const handleTouchStart = (e) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+    
+    if (isLeftSwipe) handleNext();
+    if (isRightSwipe) handlePrev();
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!suggestion.trim()) return;
+
+    setStatus('loading');
+
+    const payload = {
+      latinName: currentMushroom.latin,
+      suggestedName: suggestion.trim(),
+      timestamp: new Date().toISOString()
+    };
+
+    if (!GOOGLE_WEBAPP_URL) {
+      setTimeout(() => {
+        setStatus('success');
+        setStatusMessage('Mängult saadetud. Lisa skripti URL, et päriselt Sheetsi saata.');
+        setSuggestion('');
+      }, 1500);
+      return;
+    }
+
+    try {
+      await fetch(GOOGLE_WEBAPP_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload)
+      });
+      
+      setStatus('success');
+      setStatusMessage('Ettepanek salvestatud andmebaasi.');
+      setSuggestion('');
+    } catch (error) {
+      console.error(error);
+      setStatus('error');
+      setStatusMessage('Viga ühendusel. Vaata konsooli ja kontrolli URL-i.');
+    }
+  };
+
+  return (
+    // Novaatorile iseloomulik roheline teema, optimeeritud iframe'i jaoks
+    <div 
+      className="w-full min-h-screen flex items-center justify-center bg-transparent sm:p-4 transition-colors duration-500"
+      style={{ color: '#28902d', fontFamily: "'Fira Sans', sans-serif" }}
+    >
+      <div 
+        className="max-w-2xl w-full bg-[#eaf5eb] sm:rounded-2xl shadow-none sm:shadow-xl overflow-hidden border-y sm:border border-[#28902d]/20 relative"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+        
+        {/* Pildi ja karuselli ala */}
+        <div className="relative h-64 sm:h-80 md:h-96 w-full group bg-black select-none">
+          <img 
+            src={currentMushroom.image} 
+            alt={currentMushroom.latin} 
+            className={`w-full h-full object-cover transition-all duration-300 ease-in-out pointer-events-none ${
+              isTransitioning ? 'opacity-0 scale-105 blur-sm' : 'opacity-100 scale-100 blur-0'
+            }`}
+          />
+          
+          <button 
+            onClick={handlePrev}
+            className="absolute left-2 top-1/2 -translate-y-1/2 p-2 bg-[#28902d]/80 text-white rounded-full hover:bg-[#28902d] transition-colors backdrop-blur-sm shadow-md"
+            aria-label="Eelmine seen"
+          >
+            <ChevronLeft size={24} />
+          </button>
+          
+          <button 
+            onClick={handleNext}
+            className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-[#28902d]/80 text-white rounded-full hover:bg-[#28902d] transition-colors backdrop-blur-sm shadow-md"
+            aria-label="Järgmine seen"
+          >
+            <ChevronRight size={24} />
+          </button>
+
+          <div className="absolute top-4 right-4 bg-[#28902d]/90 text-white px-3 py-1 rounded-full text-xs font-bold tracking-wider backdrop-blur-sm z-10 shadow-sm">
+            {currentIndex + 1} / {mushrooms.length}
+          </div>
+        </div>
+
+        {/* Sisu ja vormi ala */}
+        <div className={`p-6 md:p-8 transition-all duration-300 ease-in-out ${
+          isTransitioning ? 'opacity-0 translate-y-3' : 'opacity-100 translate-y-0'
+        }`}>
+          <h2 className="text-3xl font-bold italic mb-4" style={{ color: '#28902d' }}>
+            {currentMushroom.latin}
+          </h2>
+          
+          {/* Kirjelduse plokil on nüüd min-height, et iframe'i kõrgus ei hüppaks iga slaidi vahetusega */}
+          <div className="min-h-[7rem] sm:min-h-[6rem] mb-8 flex items-start">
+            <p className="leading-relaxed text-[1.05rem] font-medium" style={{ color: '#1a5e1d' }}>
+              {currentMushroom.description}
+            </p>
+          </div>
+
+          <div className="bg-white/60 p-5 rounded-xl border border-[#28902d]/10">
+            <h3 className="text-sm uppercase tracking-wider font-bold mb-4 opacity-80">
+              Kuidas seda eesti keeles kutsuma peaks?
+            </h3>
+            
+            <form onSubmit={handleSubmit} className="relative">
+              <input
+                type="text"
+                value={suggestion}
+                onChange={(e) => setSuggestion(e.target.value)}
+                disabled={status === 'loading'}
+                placeholder="nt. Laibalehkaja, Verihammas..."
+                className="w-full bg-white border border-[#28902d]/30 rounded-lg py-3 px-4 focus:outline-none focus:ring-2 focus:border-transparent transition-all disabled:opacity-50 font-medium"
+                style={{ color: '#28902d', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)' }}
+              />
+              <style dangerouslySetInnerHTML={{__html: `
+                input::placeholder { color: #28902d; opacity: 0.5; }
+                input:focus { box-shadow: 0 0 0 2px #28902d; }
+              `}} />
+              
+              <button
+                type="submit"
+                disabled={!suggestion.trim() || status === 'loading'}
+                className="absolute right-2 top-2 bottom-2 text-white px-4 rounded-md transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[3rem] shadow-sm hover:shadow"
+                style={{ backgroundColor: '#28902d' }}
+                aria-label="Saada ettepanek"
+              >
+                {status === 'loading' ? (
+                  <Loader2 size={18} className="animate-spin" />
+                ) : (
+                  <Send size={18} />
+                )}
+              </button>
+            </form>
+
+            {statusMessage && (
+              <div className={`mt-4 text-sm p-3 rounded-lg font-medium border ${
+                status === 'error' ? 'bg-red-50 text-red-700 border-red-200' : 
+                status === 'success' ? 'bg-[#eaf5eb] text-[#28902d] border-[#28902d]/30' : ''
+              }`}>
+                {statusMessage}
+              </div>
+            )}
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}

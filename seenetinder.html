@@ -182,16 +182,30 @@
       const [suggestion, setSuggestion] = useState('');
       const [status, setStatus] = useState('idle');
       const [statusMessage, setStatusMessage] = useState('');
-      const [isTransitioning, setIsTransitioning] = useState(false);
       
-      const [touchStart, setTouchStart] = useState(null);
-      const [touchEnd, setTouchEnd] = useState(null);
+      // Sikutamise ja animeerimise osariik
+      const [dragStartPos, setDragStartPos] = useState(null);
+      const [dragOffset, setDragOffset] = useState(0);
+      const [slideOffset, setSlideOffset] = useState(-1); // -1 on keskmine slaid
+      const [isTransitioning, setIsTransitioning] = useState(false);
+      const [isJumping, setIsJumping] = useState(false);
+      
+      // Pisipiltide sikutamise osariik
+      const [isThumbDragging, setIsThumbDragging] = useState(false);
+      const [thumbStartX, setThumbStartX] = useState(0);
+      const [thumbScrollLeft, setThumbScrollLeft] = useState(0);
+      const [thumbDragDistance, setThumbDragDistance] = useState(0);
+      
       const thumbnailContainerRef = useRef(null);
 
       // Pane siia oma Google Apps Scripti URL
       const GOOGLE_WEBAPP_URL = ''; 
 
       const currentMushroom = mushrooms[currentIndex];
+      
+      // Leiame eelmise ja järgmise indeksi, et tekitada lõputu ringi efekt
+      const prevIndex = currentIndex === 0 ? mushrooms.length - 1 : currentIndex - 1;
+      const nextIndex = currentIndex === mushrooms.length - 1 ? 0 : currentIndex + 1;
 
       // Kerib automaatselt valitud pisipildi nähtavale
       useEffect(() => {
@@ -205,33 +219,45 @@
         }
       }, [currentIndex]);
 
-      const changeSlide = (direction) => {
-        if (isTransitioning) return;
+      const handleNext = () => {
+        if (isTransitioning || isJumping) return;
         setIsTransitioning(true);
+        setDragOffset(0);
+        setSlideOffset(-2); // Libistame vasakule järgmise pildi peale
         
         setTimeout(() => {
-          setCurrentIndex((prev) => {
-            if (direction === 'next') return prev === mushrooms.length - 1 ? 0 : prev + 1;
-            return prev === 0 ? mushrooms.length - 1 : prev - 1;
-          });
-          resetForm();
           setIsTransitioning(false);
+          setSlideOffset(-1);
+          setCurrentIndex(nextIndex);
+          resetForm();
+        }, 300);
+      };
+
+      const handlePrev = () => {
+        if (isTransitioning || isJumping) return;
+        setIsTransitioning(true);
+        setDragOffset(0);
+        setSlideOffset(0); // Libistame paremale eelmise pildi peale
+        
+        setTimeout(() => {
+          setIsTransitioning(false);
+          setSlideOffset(-1);
+          setCurrentIndex(prevIndex);
+          resetForm();
         }, 300);
       };
 
       const goToSlide = (index) => {
-        if (isTransitioning || index === currentIndex) return;
-        setIsTransitioning(true);
+        if (isTransitioning || isJumping || index === currentIndex) return;
+        // Kaugemale hüpates teeme lihtsalt fade animatsiooni, et mitte kogu linti läbi kerida
+        setIsJumping(true);
         
         setTimeout(() => {
           setCurrentIndex(index);
           resetForm();
-          setIsTransitioning(false);
+          setIsJumping(false);
         }, 300);
       };
-
-      const handleNext = () => changeSlide('next');
-      const handlePrev = () => changeSlide('prev');
 
       const resetForm = () => {
         setSuggestion('');
@@ -239,23 +265,64 @@
         setStatusMessage('');
       };
 
-      const handleTouchStart = (e) => {
-        setTouchEnd(null);
-        setTouchStart(e.targetTouches[0].clientX);
+      // --- Pisipiltide sikutamise (Drag) loogika ---
+      const handleThumbMouseDown = (e) => {
+        setIsThumbDragging(true);
+        setThumbDragDistance(0);
+        setThumbStartX(e.pageX - thumbnailContainerRef.current.offsetLeft);
+        setThumbScrollLeft(thumbnailContainerRef.current.scrollLeft);
       };
 
-      const handleTouchMove = (e) => {
-        setTouchEnd(e.targetTouches[0].clientX);
+      const handleThumbMouseMove = (e) => {
+        if (!isThumbDragging) return;
+        e.preventDefault(); // Peatab brauseri vaikimisi teksti/pildi selekteerimise
+        const x = e.pageX - thumbnailContainerRef.current.offsetLeft;
+        const walk = x - thumbStartX;
+        setThumbDragDistance(Math.abs(walk));
+        thumbnailContainerRef.current.scrollLeft = thumbScrollLeft - walk;
       };
 
-      const handleTouchEnd = () => {
-        if (!touchStart || !touchEnd) return;
-        const distance = touchStart - touchEnd;
-        const isLeftSwipe = distance > 50;
-        const isRightSwipe = distance < -50;
+      const handleThumbMouseUpOrLeave = () => {
+        setIsThumbDragging(false);
+      };
+
+      // --- Peapildi sikutamise (Drag / Swipe) loogika ---
+      const handleDragStart = (clientX, clientY) => {
+        if (isTransitioning || isJumping) return;
+        setDragStartPos({ x: clientX, y: clientY });
+        setDragOffset(0);
+      };
+
+      const handleDragMove = (clientX, clientY) => {
+        if (!dragStartPos) return;
         
-        if (isLeftSwipe) handleNext();
-        if (isRightSwipe) handlePrev();
+        const diffX = clientX - dragStartPos.x;
+        const diffY = clientY - dragStartPos.y;
+
+        // Kui kasutaja skrollib peamiselt vertikaalselt (lehte alla), katkestame sikutamise
+        if (Math.abs(diffY) > Math.abs(diffX) && Math.abs(dragOffset) < 10) {
+          setDragStartPos(null);
+          return;
+        }
+        
+        setDragOffset(diffX);
+      };
+
+      const handleDragEnd = () => {
+        if (!dragStartPos) return;
+        setDragStartPos(null);
+        
+        // Kas liigutati piisavalt kaugele, et slaidi vahetada?
+        if (dragOffset > 75) {
+          handlePrev();
+        } else if (dragOffset < -75) {
+          handleNext();
+        } else {
+          // Kui mitte, laseme slaidil tagasi keskele vetruda
+          setIsTransitioning(true);
+          setDragOffset(0);
+          setTimeout(() => setIsTransitioning(false), 300);
+        }
       };
 
       const handleSubmit = async (e) => {
@@ -309,21 +376,29 @@
           >
             {/* Peapilt ja pühkimisala */}
             <div 
-              className="relative h-64 sm:h-80 md:h-96 w-full group bg-black select-none"
-              onTouchStart={handleTouchStart}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={handleTouchEnd}
+              className="relative h-64 sm:h-80 md:h-96 w-full group bg-black select-none overflow-hidden touch-pan-y"
+              onMouseDown={(e) => handleDragStart(e.clientX, e.clientY)}
+              onMouseMove={(e) => handleDragMove(e.clientX, e.clientY)}
+              onMouseUp={handleDragEnd}
+              onMouseLeave={handleDragEnd}
+              onTouchStart={(e) => handleDragStart(e.touches[0].clientX, e.touches[0].clientY)}
+              onTouchMove={(e) => handleDragMove(e.touches[0].clientX, e.touches[0].clientY)}
+              onTouchEnd={handleDragEnd}
             >
-              <img 
-                src={currentMushroom.image} 
-                alt={currentMushroom.latin} 
-                className={`w-full h-full object-cover transition-all duration-300 ease-in-out pointer-events-none ${
-                  isTransitioning ? 'opacity-0 scale-105 blur-sm' : 'opacity-100 scale-100 blur-0'
-                }`}
-              />
+              {/* Slaidide lint (3 pilti korraga) */}
+              <div 
+                className={`flex w-full h-full cursor-grab active:cursor-grabbing ${
+                  isTransitioning ? 'transition-transform duration-300 ease-in-out' : 'duration-0'
+                } ${isJumping ? 'opacity-0 scale-105 blur-sm transition-all duration-300' : 'opacity-100 scale-100 blur-0'}`}
+                style={{ transform: `translateX(calc(${slideOffset * 100}% + ${dragOffset}px))` }}
+              >
+                <img src={mushrooms[prevIndex].image} alt="" className="flex-shrink-0 w-full h-full object-cover pointer-events-none" />
+                <img src={currentMushroom.image} alt={currentMushroom.latin} className="flex-shrink-0 w-full h-full object-cover pointer-events-none" />
+                <img src={mushrooms[nextIndex].image} alt="" className="flex-shrink-0 w-full h-full object-cover pointer-events-none" />
+              </div>
               
               <button 
-                onClick={handlePrev}
+                onClick={(e) => { e.stopPropagation(); handlePrev(); }}
                 className="absolute left-2 top-1/2 -translate-y-1/2 p-2 bg-[#28902d]/80 text-white rounded-full hover:bg-[#28902d] transition-colors backdrop-blur-sm shadow-md"
                 aria-label="Eelmine seen"
               >
@@ -331,14 +406,14 @@
               </button>
               
               <button 
-                onClick={handleNext}
+                onClick={(e) => { e.stopPropagation(); handleNext(); }}
                 className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-[#28902d]/80 text-white rounded-full hover:bg-[#28902d] transition-colors backdrop-blur-sm shadow-md"
                 aria-label="Järgmine seen"
               >
                 <ChevronRight size={24} />
               </button>
 
-              <div className="absolute top-4 right-4 bg-[#28902d]/90 text-white px-3 py-1 rounded-full text-xs font-bold tracking-wider backdrop-blur-sm z-10 shadow-sm">
+              <div className="absolute top-4 right-4 bg-[#28902d]/90 text-white px-3 py-1 rounded-full text-xs font-bold tracking-wider backdrop-blur-sm z-10 shadow-sm pointer-events-none">
                 {currentIndex + 1} / {mushrooms.length}
               </div>
             </div>
@@ -346,12 +421,23 @@
             {/* Pisipiltide galerii navigeerimiseks */}
             <div 
               ref={thumbnailContainerRef}
-              className="w-full bg-[#1a5e1d]/5 flex gap-2 overflow-x-auto hide-scrollbar p-3 border-b border-[#28902d]/10 items-center"
+              className={`w-full bg-[#1a5e1d]/5 flex gap-2 overflow-x-auto hide-scrollbar p-3 border-b border-[#28902d]/10 items-center select-none ${isThumbDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+              onMouseDown={handleThumbMouseDown}
+              onMouseMove={handleThumbMouseMove}
+              onMouseUp={handleThumbMouseUpOrLeave}
+              onMouseLeave={handleThumbMouseUpOrLeave}
             >
               {mushrooms.map((mushroom, idx) => (
                 <button
                   key={mushroom.id}
-                  onClick={() => goToSlide(idx)}
+                  onClick={(e) => {
+                    // Kui lohistati rohkem kui 5 pikslit, siis oli see kerimine, mitte klikk
+                    if (thumbDragDistance > 5) {
+                      e.preventDefault();
+                      return;
+                    }
+                    goToSlide(idx);
+                  }}
                   className={`flex-shrink-0 w-14 h-14 sm:w-16 sm:h-16 rounded-md overflow-hidden transition-all duration-200 border-2 ${
                     currentIndex === idx 
                       ? 'border-[#28902d] opacity-100 shadow-sm scale-105' 
@@ -365,7 +451,7 @@
             </div>
 
             <div className={`p-6 md:p-8 transition-all duration-300 ease-in-out ${
-              isTransitioning ? 'opacity-0 translate-y-3' : 'opacity-100 translate-y-0'
+              (isTransitioning || isJumping) ? 'opacity-0 translate-y-3' : 'opacity-100 translate-y-0'
             }`}>
               <h2 className="text-3xl font-bold italic mb-4" style={{ color: '#28902d' }}>
                 {currentMushroom.latin}

@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doktorantide statistika</title>
+    <!-- Google Fonts: Fira Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS stiilideks -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js graafikute jaoks -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chart.js andmesiltide plugin (täpsustatud versioon, et vältida laadimise tõrkeid) -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <style>
+        /* Teeme nii, et sisu võtab alati kogu iframe/akna kõrguse */
+        html, body {
+            height: 100%;
+            margin: 0;
+            background-color: #f9fafb; /* Õrn hall taust, ei karju näkku */
+            font-family: 'Fira Sans', sans-serif;
+        }
+    </style>
+</head>
+<body class="flex flex-col h-full p-2">
+
+    <!-- Slaidi konteiner -->
+    <div class="flex-grow flex flex-col bg-white rounded-lg shadow-sm border border-gray-200 p-3 relative overflow-hidden">
+        
+        <!-- Slaidi pealkiri -->
+        <div class="mb-1">
+            <h2 id="slide-title" class="text-[20pt] font-bold text-gray-900 leading-tight">
+                <!-- Pealkiri süstitakse siia JS-iga -->
+            </h2>
+        </div>
+
+        <!-- Slaidi tekst (kirjeldus) -->
+        <div class="mb-2 min-h-[3rem] flex items-start">
+            <p id="slide-text" class="text-[20pt] text-gray-700 leading-tight">
+                <!-- Tekst süstitakse siia JS-iga -->
+            </p>
+        </div>
+
+        <!-- Graafiku ala -->
+        <div id="chart-wrapper" class="relative flex-grow w-full h-0 min-h-[150px]">
+            <canvas id="myChart"></canvas>
+        </div>
+
+        <!-- Allikas -->
+        <div class="mt-1 text-right">
+            <span id="slide-source" class="text-[12pt] text-gray-400 italic tracking-wide">
+                <!-- Allikas süstitakse siia JS-iga -->
+            </span>
+        </div>
+
+        <!-- Navigeerimine -->
+        <div class="mt-2 flex justify-between items-center border-t border-gray-100 pt-2">
+            <button id="prev-btn" class="flex items-center gap-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-[14pt] text-gray-700 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                Eelmine
+            </button>
+            
+            <span id="slide-counter" class="text-[14pt] font-semibold text-gray-500 tracking-wider uppercase">
+                1 / 5
+            </span>
+
+            <button id="next-btn" class="flex items-center gap-2 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-[14pt] rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                Järgmine
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Slaidide andmestik koos pealkirjade ja allikatega
+        const slides = [
+            {
+                title: "Doktoriõppesse vastuvõetute ja doktorikraadi kaitsnute arv õppeaastatel 2016/17–2024/25",
+                text: "Vastuvõetud doktorantide koguarv on suurenenud võrreldes reformieelse ajaga 54% ehk 2025/26 õppeaastal võeti vastu 558 doktoranti. Ka pikalt langustrendis olnud Eesti päritolu doktorantide arv on tõusnud.",
+                source: "Allikas: haridussilm",
+                chartData: {
+                    labels: ['2019/20', '2020/21', '2021/22', '2022/23', '2023/24', '2024/25', '2025/26'],
+                    datasets: [
+                        {
+                            type: 'bar',
+                            label: 'Vastuvõetud',
+                            data: [343, 387, 400, 362, 393, 467, 558],
+                            yAxisID: 'y',
+                            borderColor: 'rgb(245, 158, 11)',
+                            backgroundColor: 'rgba(245, 158, 11, 0.7)',
+                            borderWidth: 2,
+                            borderRadius: 4
+                        },
+                        {
+                            type: 'bar',
+                            label: 'Lõpetajad',
+                            data: [221, 222, 250, 237, 262, 292, null],
+                            yAxisID: 'y',
+                            borderColor: 'rgb(16, 185, 129)',
+                            backgroundColor: 'rgba(16, 185, 129, 0.7)',
+                            borderWidth: 2,
+                            borderRadius: 4
+                        }
+                    ]
+                }
+            },
+            {
+                title: "Nominaalajaga doktorantuuri lõpetanute osakaal (%) õppeaastatel 2019/20–2024/25 ja katkestanute arv",
+                text: "Õpingute katkestamiste arv on langenud viimase kümne aasta madalaimale tasemele, seda eriti eesti emakeelega doktorantide seas. Samal ajal on tõusuteel nominaalajaga lõpetajate osakaal, ulatudes ligi 40%-ni kraadi saanutest.",
+                source: "Allikas: haridusilm",
+                chartData: {
+                    labels: ['2019/20', '2020/21', '2021/22', '2022/23', '2023/24', '2024/25'],
+                    datasets: [
+                        {
+                            type: 'bar',
+                            label: 'Katkestanud',
+                            data: [233, 199, 222, 214, 203, 166],
+                            yAxisID: 'y',
+                            order: 2, // Lükkame tulbad tahapoole
+                            borderColor: 'rgb(220, 38, 38)',
+                            backgroundColor: 'rgba(220, 38, 38, 0.7)',
+                            borderWidth: 2,
+                            borderRadius: 4
+                        },
+                        {
+                            type: 'line',
+                            label: 'Nominaalajaga lõpetajate osakaal',
+                            data: [33, 28, 34, 37, 41, 35],
+                            yAxisID: 'y1',
+                            order: 1, // Tõmbame joone tulpadest ettepoole
+                            isPercentage: true,
+                            borderColor: 'rgb(37, 99, 235)',
+                            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                            borderWidth: 3,
+                            pointRadius: 4,
+                            pointHoverRadius: 6,
+                            tension: 0.2
+                        }
+                    ]
+                }
+            },
+            {
+                title: "Välismaal ja Eestis sündinud doktorikraadiga inimeste vanuseline jaotus (2024)",
+                text: "Noorema põlvkonna (25–34-aastased) doktorite seas on tõusnud välismaal sündinute osakaal 48%-ni. See esitab väljakutse eestikeelse akadeemilise järelkasvu tagamisele, kuna Eesti päritolu doktorite seas on suur just üle 45-aastaste osakaal (60%).",
+                source: "Allikas: statistikaamet",
+                isPyramid: true, 
+                chartData: {
+                    labels: ['55–64', '45–54', '35–44', '25–34'],
+                    datasets: [
+                        {
+                            type: 'bar',
+                            label: 'Välismaal sündinud',
+                            data: [-17, -25, -40, -19],
+                            backgroundColor: 'rgba(245, 158, 11, 0.8)',
+                            borderColor: 'rgb(245, 158, 11)',
+                            borderWidth: 2,
+                            borderRadius: 4
+                        },
+                        {
+                            type: 'bar',
+                            label: 'Eestis sündinud',
+                            data: [24, 36, 34, 7],
+                            backgroundColor: 'rgba(37, 99, 235, 0.8)',
+                            borderColor: 'rgb(37, 99, 235)',
+                            borderWidth: 2,
+                            borderRadius: 4
+                        }
+                    ]
+                }
+            },
+            {
+                title: "Doktorikraadiga töötajad avalikus ja erasektoris 2017-2024",
+                text: "Ehkki ligi pooled doktorikraadiga inimestest töötavad jätkuvalt hariduse ja teaduse valdkonnas, on erasektoris töötavate doktorite arv kasvanud reformijärgselt 7%.",
+                source: "Allikas: statistikaamet",
+                isStacked: true, // Märge mootorile tulpadest torn ehitada
+                chartData: {
+                    labels: ['2017', '2018', '2019', '2020', '2021', '2022', '2023', '2024'],
+                    datasets: [
+                        {
+                            type: 'bar', // Tulpdiagrammiks
+                            label: 'Avalik sektor',
+                            data: [2516, 2600, 2667, 2844, 2879, 2951, 2992, 2997],
+                            yAxisID: 'y',
+                            borderColor: 'rgb(37, 99, 235)',
+                            backgroundColor: 'rgba(37, 99, 235, 0.8)',
+                            borderWidth: 2,
+                            borderRadius: 4
+                        },
+                        {
+                            type: 'bar', // Tulpdiagrammiks
+                            label: 'Erasektor',
+                            data: [2473, 2543, 2606, 2634, 2770, 2833, 2949, 3031],
+                            yAxisID: 'y',
+                            borderColor: 'rgb(16, 185, 129)',
+                            backgroundColor: 'rgba(16, 185, 129, 0.8)',
+                            borderWidth: 2,
+                            borderRadius: 4
+                        }
+                    ]
+                }
+            },
+            {
+                title: "Doktorikraadiga töötajad info- ja kommunikatsiooni tegevusalal (IKT) ja töötlevas tööstuses",
+                text: "Töötlevas tööstuses ja IKT-s töötavate doktorite arv jätkuvalt madal, olles viimase kaheksa aasta jooksul suurenenud vastavalt 1,4 ja 1,8 protsendipunkti võrra.",
+                source: "Allikas: OECD",
+                chartData: {
+                    labels: ['Taani (2023)', 'Soome (2022)', 'Rootsi (2023)', 'Norra (2023)', 'Eesti (2024)', 'Leedu (2023)', 'Läti (2023)'],
+                    datasets: [
+                        {
+                            type: 'bar',
+                            label: 'IKT',
+                            data: [4.1, 5.0, 4.1, 4.9, 4.5, 4.3, 4.0],
+                            yAxisID: 'y',
+                            isPercentage: true,
+                            borderColor: 'rgb(37, 99, 235)',
+                            backgroundColor: 'rgba(37, 99, 235, 0.7)',
+                            borderWidth: 2,
+                            borderRadius: 4
+                        },
+                        {
+                            type: 'bar',
+                            label: 'Töötlev tööstus',
+                            data: [15.7, 8.2, 6.8, 5.3, 4.0, 3.3, 3.4],
+                            yAxisID: 'y',
+                            isPercentage: true,
+                            borderColor: 'rgb(16, 185, 129)',
+                            backgroundColor: 'rgba(16, 185, 129, 0.7)',
+                            borderWidth: 2,
+                            borderRadius: 4
+                        }
+                    ]
+                }
+            }
+        ];
+
+        let currentSlideIndex = 0;
+        let chartInstance = null;
+
+        const titleElement = document.getElementById('slide-title');
+        const textElement = document.getElementById('slide-text');
+        const sourceElement = document.getElementById('slide-source');
+        const counterElement = document.getElementById('slide-counter');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        
+        // Üldised Chart.js seaded
+        Chart.defaults.font.family = "'Fira Sans', sans-serif";
+        Chart.defaults.font.size = 16; 
+        Chart.defaults.color = '#4b5563'; 
+        
+        // Registreerime plugina
+        Chart.register(ChartDataLabels);
+        
+        const renderSlide = () => {
+            const slide = slides[currentSlideIndex];
+            
+            // Uuenda sisu
+            titleElement.textContent = slide.title;
+            textElement.textContent = slide.text;
+            sourceElement.textContent = slide.source;
+            
+            // Uuenda lugeja
+            counterElement.textContent = `${currentSlideIndex + 1} / ${slides.length}`;
+            
+            // Tappa vana graafik halastuslasuga
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            // Uus canvas DOM-i
+            const wrapper = document.getElementById('chart-wrapper');
+            wrapper.innerHTML = '<canvas id="myChart"></canvas>';
+            const ctx = document.getElementById('myChart').getContext('2d');
+
+            const isPyramid = slide.isPyramid === true;
+            const isStacked = slide.isStacked === true;
+
+            // Joonista uus graafik täiesti nullist
+            chartInstance = new Chart(ctx, {
+                type: 'bar', 
+                data: slide.chartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: isPyramid ? 'y' : 'x', 
+                    layout: {
+                        padding: {
+                            top: 20, 
+                            right: 16,
+                            left: isPyramid ? 24 : 10,
+                            bottom: 0
+                        }
+                    },
+                    plugins: {
+                        datalabels: {
+                            align: isPyramid ? 
+                                (context) => context.dataset.data[context.dataIndex] < 0 ? 'start' : 'end' 
+                                : (isStacked ? 'center' : 'top'),
+                            anchor: isPyramid ? 'end' : (isStacked ? 'center' : 'end'),
+                            color: isStacked ? '#ffffff' : '#374151',
+                            font: {
+                                weight: 'bold',
+                                size: 16
+                            },
+                            offset: 4,
+                            formatter: (value, context) => {
+                                if (value === null) return '';
+                                let val = isPyramid ? Math.abs(value) : value;
+                                let valStr = String(val).replace('.', ',');
+                                return (context.dataset.isPercentage || isPyramid) ? valStr + '%' : valStr;
+                            }
+                        },
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 10,
+                                font: { size: 16 }
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(17, 24, 39, 0.9)',
+                            titleFont: { size: 16 },
+                            bodyFont: { size: 16 },
+                            padding: 12,
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.raw !== null && context.raw !== undefined) {
+                                        let val = isPyramid ? Math.abs(context.raw) : context.parsed.y;
+                                        let valStr = String(val).replace('.', ',');
+                                        label += valStr;
+                                        if (context.dataset.isPercentage || isPyramid) {
+                                            label += '%';
+                                        }
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: isPyramid ? {
+                        x: {
+                            stacked: true,
+                            min: -50, 
+                            max: 50,
+                            grid: { color: '#f3f4f6' },
+                            ticks: {
+                                callback: function(value) { return Math.abs(value) + '%'; }
+                            }
+                        },
+                        y: {
+                            stacked: true,
+                            grid: { display: false }
+                        }
+                    } : {
+                        y: {
+                            stacked: isStacked,
+                            beginAtZero: true,
+                            type: 'linear',
+                            position: 'left',
+                            grid: { color: '#f3f4f6' },
+                            ticks: {
+                                callback: function(value) {
+                                    let isAllPercentage = slide.chartData.datasets.every(ds => ds.isPercentage);
+                                    let valStr = String(value).replace('.', ',');
+                                    return isAllPercentage ? valStr + '%' : valStr;
+                                }
+                            }
+                        },
+                        y1: {
+                            beginAtZero: true,
+                            min: 0,
+                            max: 100,
+                            type: 'linear',
+                            position: 'right',
+                            display: 'auto', 
+                            grid: { drawOnChartArea: false },
+                            ticks: {
+                                stepSize: 20, // 20% samm Y2 teljel
+                                callback: function(value) { return String(value).replace('.', ',') + '%'; }
+                            }
+                        },
+                        x: {
+                            stacked: isStacked,
+                            grid: { display: false }
+                        }
+                    },
+                    interaction: {
+                        mode: 'index',
+                        axis: isPyramid ? 'y' : 'x', 
+                        intersect: false
+                    }
+                }
+            });
+
+            // Nuppude olekud
+            prevBtn.disabled = currentSlideIndex === 0;
+            nextBtn.disabled = currentSlideIndex === slides.length - 1;
+        };
+
+        // Sündmuste kuulajad nooltele
+        prevBtn.addEventListener('click', () => {
+            if (currentSlideIndex > 0) {
+                currentSlideIndex--;
+                renderSlide();
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentSlideIndex < slides.length - 1) {
+                currentSlideIndex++;
+                renderSlide();
+            }
+        });
+
+        // Käivita süsteem (renderdab esimese slaidi)
+        renderSlide();
+    </script>
+</body>
+</html>

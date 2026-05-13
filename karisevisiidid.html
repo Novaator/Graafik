@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eesti Presidendi Visiidid 2025-2026</title>
+    <!-- Fira Sans font -->
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/three@0.147.0/build/three.min.js"></script>
+    <script src="https://unpkg.com/globe.gl@2.30.0/dist/globe.gl.min.js"></script>
+    <style>
+        body { 
+            font-family: 'Fira Sans', sans-serif;
+            margin: 0; 
+            padding: 0; 
+            overflow: hidden; 
+            background-color: #adcceb; /* Hele ookean */
+        }
+        #globeViz { width: 100vw; height: 100vh; cursor: grab; }
+        #globeViz:active { cursor: grabbing; }
+        
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        /* Globe.gl hõljukakna (tooltip) uued stiilid heleda teema jaoks */
+        .scene-tooltip {
+            color: #333333 !important;
+            background-color: rgba(255, 255, 255, 0.95) !important;
+            padding: 6px 12px !important;
+            border-radius: 8px !important;
+            font-family: 'Fira Sans', sans-serif !important;
+            font-weight: 600 !important;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+            border: 1px solid #e5e7eb !important;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="absolute inset-0 pointer-events-none flex flex-col p-6 z-10">
+        <div class="w-full flex flex-col items-center">
+            <h1 class="text-3xl md:text-4xl font-bold tracking-tight text-gray-900 shadow-sm text-center drop-shadow-md bg-white/40 px-6 py-2 rounded-2xl backdrop-blur-sm">Eesti Presidendi Visiidid</h1>
+            <p class="text-sm md:text-base text-gray-700 mt-2 text-center font-medium drop-shadow-sm bg-white/40 px-4 py-1 rounded-full backdrop-blur-sm">Klõpsa punktidel või joontel, et näha visiidi detaile</p>
+            
+            <div class="mt-4 px-5 py-2.5 bg-white/95 backdrop-blur-md rounded-full flex gap-6 items-center shadow-lg select-none border border-gray-200">
+                <div class="flex items-center gap-2">
+                    <div class="w-4 h-4 rounded-full" style="background-color: #d84315; box-shadow: 0 0 5px rgba(216, 67, 21, 0.4);"></div>
+                    <span class="text-sm font-semibold text-gray-800">2025 visiidid</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="w-4 h-4 rounded-full" style="background-color: #00838f; box-shadow: 0 0 5px rgba(0, 131, 143, 0.4);"></div>
+                    <span class="text-sm font-semibold text-gray-800">2026 visiidid</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="infoModal" class="hidden fixed right-4 top-1/2 -translate-y-1/2 w-80 sm:w-96 bg-white/95 backdrop-blur-lg rounded-2xl shadow-2xl z-50 flex-col overflow-hidden transition-all duration-300 pointer-events-auto border border-gray-100">
+        <div class="relative h-48 w-full bg-gray-100">
+            <img id="modalImage" src="" alt="Visiidi pilt" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/600x400/e2e8f0/475569?text=Pilt+puudub'">
+            <div class="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold shadow-sm" id="modalDate">Aasta</div>
+        </div>
+        
+        <div class="p-6 flex-1 flex flex-col min-h-[150px] max-h-[35vh] overflow-y-auto custom-scrollbar">
+            <div class="text-xs font-mono text-gray-400 mb-2 uppercase tracking-wider" id="modalRoute">Lennumarsruut</div>
+            <h2 class="text-xl font-bold text-gray-900 leading-tight mb-3" id="modalTitle">Visiidi Pealkiri</h2>
+            <p class="text-gray-700 text-sm leading-relaxed font-medium" id="modalDesc">Kirjeldus siia...</p>
+        </div>
+        
+        <div class="p-4 bg-gray-50 border-t border-gray-100 flex justify-between items-center">
+            <button id="btnPrev" onclick="navigateModal(-1)" class="flex items-center gap-1 px-3 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors shadow-sm">
+                <span>&larr;</span> Eelmine
+            </button>
+            <button onclick="closeModal()" class="px-4 py-2 text-sm font-semibold text-gray-500 hover:text-gray-800 transition-colors">
+                Sulge
+            </button>
+            <button id="btnNext" onclick="navigateModal(1)" class="flex items-center gap-1 px-3 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-100 transition-colors shadow-sm">
+                Järgmine <span>&rarr;</span>
+            </button>
+        </div>
+    </div>
+
+    <div id="globeViz"></div>
+
+    <script>
+        const TLL_LAT = 59.4370;
+        const TLL_LNG = 24.7536;
+
+        const COLOR_2025 = '#d84315'; 
+        const COLOR_2026 = '#00838f'; 
+
+        const flightsData = [
+            // 2026
+            { year: 2026, country: "Portugal", city: "Lissabon", lat: 38.7223, lng: -9.1393, title: "Portugal", desc: "riigivisiit", image: "pilt.png" },
+            { year: 2026, country: "Araabia Ühendemiraadid", city: "Dubai", lat: 25.2048, lng: 55.2708, title: "Araabia Ühendemiraadid", desc: "World Governments Summit Dubais", image: "https://placehold.co/600x400/00838f/ffffff?text=Dubai" },
+            { year: 2026, country: "Itaalia", city: "Milano", lat: 45.4642, lng: 9.1900, title: "Itaalia", desc: "taliolümpia Milanos", image: "https://placehold.co/600x400/00838f/ffffff?text=Milano" },
+            { year: 2026, country: "India", city: "New Delhi", lat: 28.6139, lng: 77.2090, title: "India", desc: "AI konverents New Dehlis", image: "https://placehold.co/600x400/00838f/ffffff?text=India" },
+            { year: 2026, country: "Suurbritannia", city: "London", lat: 51.5074, lng: -0.1278, title: "Suurbritannia", desc: "innovatsioonikonverentsil Global Government Forum, kohtumised, Konrad Mägi näituse avamine Londonis", image: "https://placehold.co/600x400/00838f/ffffff?text=London" },
+            { year: 2026, country: "Madalmaad", city: "Rotterdam", lat: 51.9225, lng: 4.4792, title: "Madalmaad", desc: "World Leader Cycle Award 2025 Rotterdami ülikoolis ja loeng", image: "https://placehold.co/600x400/00838f/ffffff?text=Rotterdam" },
+            { year: 2026, country: "Leedu", city: "Vilnius", lat: 54.6872, lng: 25.2797, title: "Leedu", desc: "riigivisiit", image: "https://placehold.co/600x400/00838f/ffffff?text=Vilnius" },
+            { year: 2026, country: "Kreeka", city: "Ateena", lat: 37.9838, lng: 23.7275, title: "Kreeka", desc: "Delfi Majandusoorumi avamine", image: "https://placehold.co/600x400/00838f/ffffff?text=Ateena" },
+            { year: 2026, country: "Soome", city: "Helsingi", lat: 60.1695, lng: 24.9354, title: "Soome", desc: "riigivisiit", image: "https://placehold.co/600x400/00838f/ffffff?text=Helsingi" },
+            { year: 2026, country: "Rumeenia", city: "Bukarest", lat: 44.4268, lng: 26.1025, title: "Rumeenia", desc: "B9 liidrite kohtumine Bukarestis", image: "https://placehold.co/600x400/00838f/ffffff?text=Bukarest" },
+            
+            // 2025
+            { year: 2025, country: "Poola", city: "Auschwitz", lat: 50.0275, lng: 19.2020, title: "Poola", desc: "Auschwitzi vabastamise 80. aastapäeva mälestusüritused", image: "https://placehold.co/600x400/d84315/ffffff?text=Auschwitz" },
+            { year: 2025, country: "Leedu", city: "Vilnius", lat: 54.6872, lng: 25.2797, title: "Leedu", desc: "Balti riikide elektrisüsteem sünkroniseerimine Mandri-Euroopaga", image: "https://placehold.co/600x400/d84315/ffffff?text=Vilnius" },
+            { year: 2025, country: "Prantsusmaa", city: "Pariis", lat: 48.8566, lng: 2.3522, title: "Prantsusmaa", desc: "AI konverents Pariisis", image: "https://placehold.co/600x400/d84315/ffffff?text=Pariis" },
+            { year: 2025, country: "Iisrael", city: "Jeruusalemm", lat: 31.7683, lng: 35.2137, title: "Iisrael", desc: "töövisiit", image: "https://placehold.co/600x400/d84315/ffffff?text=Iisrael" },
+            { year: 2025, country: "Palestiina", city: "Ramallah", lat: 31.9038, lng: 35.2034, title: "Palestiina", desc: "töövisiit", image: "https://placehold.co/600x400/d84315/ffffff?text=Palestiina" },
+            { year: 2025, country: "Saksamaa", city: "München", lat: 48.1351, lng: 11.5820, title: "Saksamaa", desc: "Müncheni julgeoleku konverents", image: "https://placehold.co/600x400/d84315/ffffff?text=München" },
+            { year: 2025, country: "Soome", city: "Helsingi", lat: 60.1695, lng: 24.9354, title: "Soome", desc: "töövisiit", image: "https://placehold.co/600x400/d84315/ffffff?text=Helsingi" },
+            { year: 2025, country: "Läti", city: "Riia", lat: 56.9496, lng: 24.1052, title: "Läti", desc: "saatkonnahoone avamine", image: "https://placehold.co/600x400/d84315/ffffff?text=Riia" },
+            { year: 2025, country: "Itaalia", city: "Bologna", lat: 44.4949, lng: 11.3426, title: "Itaalia", desc: "Bologna raamatumess", image: "https://placehold.co/600x400/d84315/ffffff?text=Bologna" },
+            { year: 2025, country: "Itaalia", city: "Rooma", lat: 41.9028, lng: 12.4964, title: "Itaalia", desc: "ametlik visiit", image: "https://placehold.co/600x400/d84315/ffffff?text=Rooma" },
+            { year: 2025, country: "Vatikan", city: "Vatikan", lat: 41.9029, lng: 12.4534, title: "Vatikan", desc: "töövisiit", image: "https://placehold.co/600x400/d84315/ffffff?text=Vatikan" },
+            { year: 2025, country: "Vatikan", city: "Vatikan", lat: 41.9029, lng: 12.4534, title: "Vatikan", desc: "paavsti matus", image: "https://placehold.co/600x400/d84315/ffffff?text=Vatikan+Matus" },
+            { year: 2025, country: "Poola", city: "Varssavi", lat: 52.2297, lng: 21.0122, title: "Poola", desc: "3SI Varssavis", image: "https://placehold.co/600x400/d84315/ffffff?text=Varssavi" },
+            { year: 2025, country: "Saksamaa", city: "Berliin", lat: 52.5200, lng: 13.4050, title: "Saksamaa", desc: "Berliin, Dresden, Mittweida ja Chemnitz + äridelegatsioon", image: "https://placehold.co/600x400/d84315/ffffff?text=Berliin" },
+            { year: 2025, country: "Leedu", city: "Vilnius", lat: 54.6872, lng: 25.2797, title: "Leedu", desc: "B9 kohtumine Vilniuses", image: "https://placehold.co/600x400/d84315/ffffff?text=Vilnius+B9" },
+            { year: 2025, country: "Montenegro", city: "Podgorica", lat: 42.4304, lng: 19.2594, title: "Montenegro", desc: "ametlik visiit", image: "https://placehold.co/600x400/d84315/ffffff?text=Montenegro" },
+            { year: 2025, country: "Soome", city: "Kultaranta", lat: 60.4682, lng: 22.0000, title: "Soome", desc: "Kultaranta", image: "https://placehold.co/600x400/d84315/ffffff?text=Kultaranta" },
+            { year: 2025, country: "Hispaania", city: "Sevilla", lat: 37.3891, lng: -5.9845, title: "Hispaania", desc: "Arengu Rahastuse 4. rahvusvaheline konverents Sevillas", image: "https://placehold.co/600x400/d84315/ffffff?text=Sevilla" },
+            { year: 2025, country: "Šveits", city: "Genf", lat: 46.2044, lng: 6.1432, title: "Šveits", desc: "ITU 160 Genfis", image: "https://placehold.co/600x400/d84315/ffffff?text=Genf" },
+            { year: 2025, country: "Läti", city: "Riia", lat: 56.9496, lng: 24.1052, title: "Läti", desc: "Raamatuküla", image: "https://placehold.co/600x400/d84315/ffffff?text=Raamatuküla" },
+            { year: 2025, country: "Poola", city: "Varssavi", lat: 52.2297, lng: 21.0122, title: "Poola", desc: "3B, PL VPd ja Taani PM Varssavis", image: "https://placehold.co/600x400/d84315/ffffff?text=Varssavi+3B" },
+            { year: 2025, country: "Sloveenia", city: "Ljubljana", lat: 46.0569, lng: 14.5058, title: "Sloveenia", desc: "Bled Strategic Forum", image: "https://placehold.co/600x400/d84315/ffffff?text=Sloveenia" },
+            { year: 2025, country: "Belgia", city: "Brüssel", lat: 50.8503, lng: 4.3517, title: "Belgia", desc: "kohtumised Brüsselis", image: "https://placehold.co/600x400/d84315/ffffff?text=Brüssel" },
+            { year: 2025, country: "USA", city: "New York", lat: 40.7128, lng: -74.0060, title: "USA", desc: "ÜRO peaassamblee kõrgetasemeline nädal", image: "https://placehold.co/600x400/d84315/ffffff?text=New+York+ÜRO" },
+            { year: 2025, country: "Suurbritannia", city: "London", lat: 51.5074, lng: -0.1278, title: "Suurbritannia", desc: "kultuuridelegatsioon", image: "https://placehold.co/600x400/d84315/ffffff?text=London+Kultuur" },
+            { year: 2025, country: "USA", city: "Chicago", lat: 41.8781, lng: -87.6298, title: "USA", desc: "New York ja Chicago", image: "https://placehold.co/600x400/d84315/ffffff?text=Chicago" },
+            { year: 2025, country: "Kasahstan", city: "Astana", lat: 51.1694, lng: 71.4491, title: "Kasahstan", desc: "riigivisiit", image: "https://placehold.co/600x400/d84315/ffffff?text=Kasahstan" },
+            { year: 2025, country: "Läti", city: "Riia", lat: 56.9496, lng: 24.1052, title: "Läti", desc: "3B kohtumine Riias", image: "https://placehold.co/600x400/d84315/ffffff?text=Riia+3B" }
+        ];
+
+        const locationCounts = {};
+        const formattedArcs = flightsData.map((data, index) => {
+            const locKey = `${data.lat.toFixed(2)},${data.lng.toFixed(2)}`;
+            if (!locationCounts[locKey]) locationCounts[locKey] = 0;
+            const count = locationCounts[locKey]++;
+
+            // Jitter algoritmi raadius, et vältida nuppude ja joonte kattumist samas linnas
+            const angle = count * (Math.PI * 2 / 6);
+            const offset = count > 0 ? 0.3 : 0; 
+
+            const finalLat = data.lat + Math.cos(angle) * offset;
+            const finalLng = data.lng + Math.sin(angle) * offset;
+
+            return {
+                ...data,
+                originalIndex: index,
+                startLat: TLL_LAT,
+                startLng: TLL_LNG,
+                endLat: finalLat,
+                endLng: finalLng,
+                color: data.year === 2026 ? COLOR_2026 : COLOR_2025,
+                routeCode: `TLL -> ${data.city}`
+            };
+        });
+
+        // Loome ookeani jaoks spetsiaalse helesinise materjali, 
+        // et mandrite vahelt ei kumaks vaikimisi must värv.
+        const customGlobeMaterial = new THREE.MeshPhongMaterial({
+            color: '#adcceb',
+            emissive: '#adcceb',
+            emissiveIntensity: 0.1
+        });
+
+        const world = Globe()(document.getElementById('globeViz'))
+            .backgroundColor('#adcceb')
+            .showAtmosphere(true)
+            .atmosphereColor('#bae6fd')
+            .atmosphereAltitude(0.15)
+            .globeMaterial(customGlobeMaterial) // Rakendame uue materjali
+            // Lennujoonte seadistus
+            .arcLabel(d => `${d.title} (${d.year})`)
+            .arcStartLat(d => d.startLat)
+            .arcStartLng(d => d.startLng)
+            .arcEndLat(d => d.endLat)
+            .arcEndLng(d => d.endLng)
+            .arcColor('color')
+            .arcAltitudeAutoScale(0.6) // Tõstame kaari, et vältida 3D lõikumisi
+            .arcStroke(1.2) // Teeme jooned paksemaks nähtavuse jaoks
+            // Sihtkohtade nuppude seadistus
+            .pointLabel(d => `${d.title} (${d.year})`)
+            .pointLat(d => d.endLat)
+            .pointLng(d => d.endLng)
+            .pointColor('color')
+            .pointAltitude(0.002) // Väga madal, kohe maa pinnal
+            .pointRadius(0.6) // Ümmargune nupp
+            .pointResolution(32)
+            // Interaktsioonid
+            .onArcHover(hover => document.body.style.cursor = hover ? 'pointer' : 'grab')
+            .onPointHover(hover => document.body.style.cursor = hover ? 'pointer' : 'grab')
+            .onArcClick(arc => openModal(arc))
+            .onPointClick(point => openModal(point))
+            .onGlobeClick(() => closeModal())
+            .onPolygonClick(() => closeModal());
+
+        const controls = world.controls();
+        controls.autoRotate = false;
+        
+        // PIIRANGUD IFRAME'I JAOKS:
+        // 1. Piirame kaamera vertikaalse nurga nii, et fookus on ainult põhjapoolkeral (ekvaatorist alla minna ei saa)
+        controls.maxPolarAngle = Math.PI / 2 + 0.05; // Math.PI / 2 on täpselt ekvaator (+0.05 annab veidi hingamisruumi)
+        
+        // 2. Piirame sisse/välja suumimise ulatust, et kasutaja ei kaotaks maakera silmist
+        controls.maxDistance = 350; // Väldib lõputut kosmosesse suumimist (Globe.gl maaraadius on 100)
+        controls.minDistance = 120; // Väldib liiga sügavale maa sisse suumimist
+
+        // Seadistame vaikevaate Euroopa / Eesti kohale
+        world.pointOfView({ lat: 54, lng: 22, altitude: 1.2 }, 0);
+
+        fetch('https://raw.githubusercontent.com/vasturiano/globe.gl/master/example/datasets/ne_110m_admin_0_countries.geojson')
+            .then(res => res.json())
+            .then(countries => {
+                world.polygonsData(countries.features)
+                    .polygonCapColor(() => '#f9f3ea') 
+                    .polygonSideColor(() => '#e8dccc')
+                    .polygonStrokeColor(() => '#adcceb') // Piirjooned ookeaniga sama värvi, et vältida tumedaid pragusid
+                    .polygonAltitude(0.001); 
+            });
+
+        let currentVisitIndex = -1;
+
+        world.arcsData(formattedArcs).pointsData(formattedArcs);
+
+        function openModal(data) {
+            currentVisitIndex = data.originalIndex;
+            populateModal(data);
+            const modal = document.getElementById('infoModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            
+            // Suumime valitud linnale lähemale
+            world.pointOfView({ lat: data.endLat, lng: data.endLng, altitude: 0.9 }, 800);
+        }
+
+        function populateModal(data) {
+            document.getElementById('modalTitle').textContent = data.title;
+            const dateElem = document.getElementById('modalDate');
+            dateElem.textContent = data.year;
+            dateElem.style.color = data.year === 2026 ? COLOR_2026 : COLOR_2025;
+            document.getElementById('modalDesc').textContent = data.description || data.desc;
+            document.getElementById('modalImage').src = data.image;
+            document.getElementById('modalRoute').textContent = data.routeCode;
+
+            const hasPrev = currentVisitIndex > 0;
+            const hasNext = currentVisitIndex < formattedArcs.length - 1;
+
+            const btnPrev = document.getElementById('btnPrev');
+            const btnNext = document.getElementById('btnNext');
+            
+            btnPrev.disabled = !hasPrev;
+            btnPrev.style.opacity = hasPrev ? "1" : "0.4";
+            btnPrev.style.cursor = hasPrev ? "pointer" : "not-allowed";
+            
+            btnNext.disabled = !hasNext;
+            btnNext.style.opacity = hasNext ? "1" : "0.4";
+            btnNext.style.cursor = hasNext ? "pointer" : "not-allowed";
+        }
+
+        function navigateModal(direction) {
+            const newIndex = currentVisitIndex + direction;
+            if (newIndex >= 0 && newIndex < formattedArcs.length) {
+                openModal(formattedArcs[newIndex]);
+            }
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('infoModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            currentVisitIndex = -1;
+            // Kui soovid, saad panna kaamera peale sulgemist uuesti välja suumima:
+            // world.pointOfView({ lat: 54, lng: 22, altitude: 1.5 }, 1000);
+        }
+
+        window.addEventListener('resize', () => {
+            world.width(window.innerWidth).height(window.innerHeight);
+        });
+    </script>
+</body>
+</html>

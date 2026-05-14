@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trust in Politicians 2024–2026</title>
+    <!-- Google Fonts: Fira Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS for base styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js UMD and date-fns adapter -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+    <style>
+        body { font-family: 'Fira Sans', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-100 p-4 md:p-8 text-gray-800">
+
+    <div class="max-w-6xl mx-auto bg-white p-4 md:p-8 rounded-lg shadow-md">
+        <h1 class="font-bold mb-6 text-left text-gray-900" style="font-size: 24px;">Trust in politicians: Historical trend, 2024–2026</h1>
+        
+        <div class="relative h-[600px] w-full">
+            <canvas id="trustChart"></canvas>
+        </div>
+        
+        <p class="text-sm text-gray-500 mt-6 text-left">
+            * A dashed line indicates periods where the gap between data points is longer than one month. The x-axis runs in real time, so longer gaps between surveys are also visually wider.
+        </p>
+    </div>
+
+    <script>
+        // Force Fira Sans for Chart.js globally
+        Chart.defaults.font.family = "'Fira Sans', sans-serif";
+
+        // Register datalabels plugin
+        Chart.register(ChartDataLabels);
+
+        // Raw data
+        const rawData = [
+            { date: '2024-01-01', karis: 61, kaljulaid: 46, ilves: 36 },
+            { date: '2024-02-01', karis: 61, kaljulaid: 48, ilves: 37 },
+            { date: '2024-03-01', karis: 59, kaljulaid: 43, ilves: 33 },
+            { date: '2024-04-01', karis: 59, kaljulaid: 44, ilves: 34 },
+            { date: '2024-05-01', karis: 59, kaljulaid: 46, ilves: 32 },
+            { date: '2024-06-01', karis: 63, kaljulaid: 46, ilves: 35 },
+            { date: '2024-07-01', karis: 60, kaljulaid: 45, ilves: 35 },
+            { date: '2024-08-01', karis: 57, kaljulaid: 45, ilves: 37 },
+            { date: '2024-09-01', karis: 61, kaljulaid: 46, ilves: 38 },
+            { date: '2024-12-01', karis: 59, kaljulaid: 44, ilves: 34 },
+            { date: '2025-01-01', karis: 58, kaljulaid: 43, ilves: 36 },
+            { date: '2025-02-01', karis: 57, kaljulaid: 44, ilves: 35 },
+            { date: '2025-03-01', karis: 56, kaljulaid: 42, ilves: 36 },
+            { date: '2025-04-01', karis: 55, kaljulaid: 41, ilves: 36 },
+            { date: '2025-05-01', karis: 55, kaljulaid: 42, ilves: 35 },
+            { date: '2025-06-01', karis: 58, kaljulaid: 43, ilves: 37 },
+            { date: '2025-07-01', karis: 61, kaljulaid: 44, ilves: 38 },
+            { date: '2025-08-01', karis: 52, kaljulaid: 37, ilves: 32 },
+            { date: '2025-09-01', karis: 55, kaljulaid: 40, ilves: 36 },
+            { date: '2025-11-01', karis: 59, kaljulaid: 39, ilves: 34 },
+            { date: '2026-02-01', karis: 60, kaljulaid: 42, ilves: 37 }
+        ];
+
+        // Dynamic dash segment function:
+        // Checks if the gap between two data points (p0 and p1) is over 1 month.
+        const segmentDashPattern = (ctx) => {
+            if (!ctx.p0.parsed || !ctx.p1.parsed) return undefined;
+            const d1 = new Date(ctx.p0.parsed.x);
+            const d2 = new Date(ctx.p1.parsed.x);
+            const diffMonths = (d2.getFullYear() - d1.getFullYear()) * 12 + (d2.getMonth() - d1.getMonth());
+            
+            return diffMonths > 1 ? [6, 6] : undefined; // [dash length, gap length]
+        };
+
+        const ctx = document.getElementById('trustChart').getContext('2d');
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                datasets: [
+                    {
+                        label: 'Alar Karis',
+                        data: rawData.map(d => ({ x: d.date, y: d.karis })),
+                        borderColor: '#0072CE', 
+                        backgroundColor: '#0072CE',
+                        borderWidth: 3,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        segment: { borderDash: segmentDashPattern },
+                        datalabels: { align: 'top' } 
+                    },
+                    {
+                        label: 'Kersti Kaljulaid',
+                        data: rawData.map(d => ({ x: d.date, y: d.kaljulaid })),
+                        borderColor: '#40E0D0', 
+                        backgroundColor: '#40E0D0',
+                        borderWidth: 3,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        segment: { borderDash: segmentDashPattern },
+                        datalabels: { align: 'bottom' }
+                    },
+                    {
+                        label: 'Toomas Hendrik Ilves',
+                        data: rawData.map(d => ({ x: d.date, y: d.ilves })),
+                        borderColor: '#E3000F', 
+                        backgroundColor: '#E3000F',
+                        borderWidth: 3,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        segment: { borderDash: segmentDashPattern },
+                        datalabels: { align: 'bottom' } 
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                layout: {
+                    padding: {
+                        top: 20,
+                        right: 20,
+                        bottom: 10,
+                        left: 10
+                    }
+                },
+                scales: {
+                    x: {
+                        type: 'time',
+                        time: {
+                            unit: 'month',
+                            displayFormats: {
+                                month: 'MM/yyyy'
+                            },
+                            tooltipFormat: 'MM/yyyy'
+                        },
+                        bounds: 'ticks',
+                        grid: {
+                            color: '#e5e7eb'
+                        },
+                        title: {
+                            display: true,
+                            text: 'Survey period',
+                            font: { weight: 'bold', size: 21 }
+                        }
+                    },
+                    y: {
+                        min: 20,
+                        max: 70,
+                        grid: {
+                            color: '#e5e7eb'
+                        },
+                        title: {
+                            display: true,
+                            text: 'Trust rating (%)',
+                            font: { weight: 'bold', size: 21 }
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 20,
+                            font: { size: 14, weight: 'bold' }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0,0,0,0.8)',
+                        callbacks: {
+                            label: function(context) {
+                                return ` ${context.dataset.label}: ${context.parsed.y}%`;
+                            }
+                        }
+                    },
+                    datalabels: {
+                        backgroundColor: 'rgba(255, 255, 255, 0.75)',
+                        borderRadius: 4,
+                        color: '#333',
+                        font: {
+                            weight: 'bold',
+                            size: 11
+                        },
+                        formatter: function(value) {
+                            return value.y + '%';
+                        },
+                        padding: {
+                            top: 2,
+                            bottom: 2,
+                            left: 4,
+                            right: 4
+                        }
+                    }
+                },
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                }
+            }
+        });
+    </script>
+</body>
+</html>

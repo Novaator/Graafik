@@ -1,17 +1,17 @@
 <!DOCTYPE html>
-<html lang="et">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Toetus Lennart Merile</title>
+    <title>Support for Lennart Meri</title>
     <!-- Google Fonts: Fira Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-    <!-- Tailwind CSS baaskujunduseks -->
+    <!-- Tailwind CSS for base styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Lollikindlad ja minifitseeritud jsDelivr lingid, ILMA aja-adapteriteta -->
+    <!-- Foolproof and minified jsDelivr links, WITHOUT time adapters -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
     
@@ -21,7 +21,7 @@
             color: #333333;
         }
         
-        /* Täisekraani CSS */
+        /* Fullscreen CSS */
         #chartContainer:fullscreen {
             max-width: 100%;
             width: 100vw;
@@ -39,18 +39,18 @@
 
     <div id="chartContainer" class="max-w-7xl mx-auto bg-white p-4 md:p-8 rounded-lg shadow-md relative flex flex-col bg-white overflow-y-auto">
         
-        <!-- Täisekraani nupp -->
-        <button id="fsBtn" class="absolute top-4 right-4 md:top-8 md:right-8 p-2 bg-gray-100 hover:bg-gray-200 rounded text-[#333333] transition-colors z-10" title="Täisekraan / Välju">
+        <!-- Fullscreen button -->
+        <button id="fsBtn" class="absolute top-4 right-4 md:top-8 md:right-8 p-2 bg-gray-100 hover:bg-gray-200 rounded text-[#333333] transition-colors z-10" title="Fullscreen / Exit">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
               <path fill-rule="evenodd" d="M5.828 10.172a.5.5 0 0 0-.707 0l-4.096 4.096V11.5a.5.5 0 0 0-1 0v3.975a.5.5 0 0 0 .5.5H4.5a.5.5 0 0 0 0-1H1.732l4.096-4.096a.5.5 0 0 0 0-.707zm4.344 0a.5.5 0 0 1 .707 0l4.096 4.096V11.5a.5.5 0 1 1 1 0v3.975a.5.5 0 0 1-.5.5H11.5a.5.5 0 0 1 0-1h2.768l-4.096-4.096a.5.5 0 0 1 0-.707zm0-4.344a.5.5 0 0 0 .707 0l4.096-4.096V4.5a.5.5 0 1 0 1 0V.525a.5.5 0 0 0-.5-.5H11.5a.5.5 0 0 0 0 1h2.768l-4.096 4.096a.5.5 0 0 0 0 .707zm-4.344 0a.5.5 0 0 1-.707 0L1.732 1.732V4.5a.5.5 0 0 1-1 0V.525a.5.5 0 0 1 .5-.5H4.5a.5.5 0 0 1 0 1H1.732l4.096 4.096a.5.5 0 0 1 0 .707z"/>
             </svg>
         </button>
 
-        <h1 class="text-[18pt] font-bold mb-8 text-left text-[#333333] pr-12 font-['Fira_Sans']">Toetus Lennart Merile</h1>
+        <h1 class="font-bold mb-8 text-left text-[#333333] pr-12 font-['Fira_Sans']" style="font-size: 24px;">Support for Lennart Meri</h1>
         
-        <!-- Esimene sektsioon: Tulpdiagramm -->
+        <!-- First section: Bar Chart -->
         <div class="flex flex-col mb-12 w-full">
-            <h2 class="text-[18pt] font-bold mb-6 text-[#333333] font-['Fira_Sans']">How well has Lennart Meri carried out the duties of the president of the republic? (% of respondents)</h2>
+            <h2 class="font-bold mb-6 text-[#333333] font-['Fira_Sans']" style="font-size: 21px;">How well has Lennart Meri carried out the duties of the president of the republic? (% of respondents)</h2>
             <div class="relative w-full h-[400px]">
                 <canvas id="meriBarChart"></canvas>
             </div>
@@ -58,24 +58,26 @@
 
         <hr class="border-gray-200 mb-10">
 
-        <!-- Teine sektsioon: Joongraafik -->
+        <!-- Second section: Line Chart -->
         <div class="flex flex-col mb-4 w-full">
-            <h2 class="text-[18pt] font-bold mb-6 text-[#333333] font-['Fira_Sans']">Support for Lennart Meri’s performance during the final three years of his presidency (1999–2001)</h2>
+            <h2 class="font-bold mb-6 text-[#333333] font-['Fira_Sans']" style="font-size: 21px;">Support for Lennart Meri’s performance during the final three years of his presidency (1999–2001)</h2>
             <div class="relative w-full h-[400px]">
                 <canvas id="meriLineChart"></canvas>
             </div>
         </div>
         
-      
+        <p class="text-sm text-[#333333] mt-6 text-left opacity-80 font-['Fira_Sans']">
+            * On the line graph, a dashed line indicates periods where the gap between data points is longer than one month.
+        </p>
 
-        <!-- Veateate konteiner -->
+        <!-- Error message container -->
         <div id="errorLog" class="text-red-600 font-mono mt-4 text-sm whitespace-pre-wrap"></div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             try {
-                // Sunnime väärtused otse globaalidesse
+                // Forcing values directly into globals
                 Chart.defaults.font.family = "'Fira Sans', sans-serif";
                 Chart.defaults.color = '#333333';
 
@@ -86,7 +88,7 @@
                 const legendFont = { family: "'Fira Sans', sans-serif", size: 14, weight: 'bold' };
                 const textColor = '#333333';
 
-                /* --- TULPDIAGRAMM --- */
+                /* --- BAR CHART --- */
                 const barCtx = document.getElementById('meriBarChart').getContext('2d');
                 new Chart(barCtx, {
                     type: 'bar',
@@ -94,13 +96,13 @@
                         labels: ['11/1992', '12/1993', '10/1994', '05/1995', '03/1996'],
                         datasets: [
                             {
-                                label: 'Good',
+                                label: 'Well',
                                 data: [32, 58, 52, 72, 69],
                                 backgroundColor: '#22c55e', 
                                 datalabels: { align: 'end', anchor: 'end' }
                             },
                             {
-                                label: 'Bad',
+                                label: 'Badly',
                                 data: [31, 34, 35, 18, 18],
                                 backgroundColor: '#ef4444', 
                                 datalabels: { align: 'end', anchor: 'end' }
@@ -138,8 +140,8 @@
                     }
                 });
 
-                /* --- JOONGRAAFIK --- */
-                // Kuna väline aja-adapter on eemaldatud, defineerime punktid reaalsete Javascripti aegadena
+                /* --- LINE CHART --- */
+                // Since external time adapter is removed, we define points as real Javascript times
                 const lineDataRaw = [
                     { x: new Date('1999-03-01').getTime(), toetab: 54, eitoeta: 10 },
                     { x: new Date('2000-01-01').getTime(), toetab: 51, eitoeta: 11 },
@@ -177,7 +179,7 @@
                     data: {
                         datasets: [
                             {
-                                label: 'Supports',
+                                label: 'Support',
                                 data: lineDataRaw.map(d => ({ x: d.x, y: d.toetab })),
                                 borderColor: '#22c55e', 
                                 backgroundColor: '#22c55e',
@@ -188,7 +190,7 @@
                                 datalabels: { align: 'top' } 
                             },
                             {
-                                label: 'Doesn't support',
+                                label: 'Do not support',
                                 data: lineDataRaw.map(d => ({ x: d.x, y: d.eitoeta })),
                                 borderColor: '#ef4444', 
                                 backgroundColor: '#ef4444',
@@ -205,7 +207,7 @@
                         maintainAspectRatio: false,
                         scales: {
                             x: {
-                                type: 'linear', // Muudame tagasi lineaarseks, sest time telg nõuab väliseid adaptereid
+                                type: 'linear', // Keep linear since time axis requires external adapters
                                 grid: { color: '#e5e7eb' },
                                 title: { display: true, text: 'Survey period', font: axisTitleFont, color: textColor },
                                 ticks: { 
@@ -222,7 +224,7 @@
                                 min: 0,
                                 max: 70,
                                 grid: { color: '#e5e7eb' },
-                                title: { display: true, text: 'Percenage (%)', font: axisTitleFont, color: textColor },
+                                title: { display: true, text: 'Percentage (%)', font: axisTitleFont, color: textColor },
                                 ticks: { font: commonFont, color: textColor }
                             }
                         },
@@ -260,7 +262,7 @@
                     }
                 });
 
-                // Täisekraani nupu loogika
+                // Fullscreen button logic
                 const fsBtn = document.getElementById('fsBtn');
                 const container = document.getElementById('chartContainer');
 
@@ -268,7 +270,7 @@
                     if (!document.fullscreenElement) {
                         if (container.requestFullscreen) {
                             container.requestFullscreen().catch(err => {
-                                console.warn(`Viga täisekraani avamisel: ${err.message}`);
+                                console.warn(`Error opening fullscreen: ${err.message}`);
                             });
                         }
                     } else {
@@ -279,7 +281,7 @@
                 });
         
             } catch (error) {
-                document.getElementById('errorLog').textContent = "Graafiku laadimine ebaõnnestus. Tehniline diagnostika:\n" + error.stack;
+                document.getElementById('errorLog').textContent = "Failed to load the chart. Technical diagnostics:\n" + error.stack;
                 console.error(error);
             }
         });

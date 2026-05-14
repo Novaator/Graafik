@@ -9,6 +9,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/three@0.147.0/build/three.min.js"></script>
     <script src="https://unpkg.com/globe.gl@2.30.0/dist/globe.gl.min.js"></script>
+    
     <style>
         body { 
             font-family: 'Fira Sans', sans-serif;
@@ -58,7 +59,19 @@
         </div>
     </div>
 
-    <div id="infoModal" class="hidden fixed right-4 top-1/2 -translate-y-1/2 w-80 sm:w-96 bg-white/95 backdrop-blur-lg rounded-2xl shadow-2xl z-50 flex-col overflow-hidden transition-all duration-300 pointer-events-auto border border-gray-100">
+    <!-- Täisekraani nupp -->
+    <button id="fullscreenBtn" onclick="toggleFullScreen()" class="fixed top-6 right-6 z-50 bg-white/80 backdrop-blur-md p-3 rounded-full shadow-lg border border-gray-200 text-gray-700 hover:bg-white hover:text-gray-900 transition-all hover:scale-105 outline-none focus:ring-2 focus:ring-blue-400" title="Lülita täisekraanile">
+        <!-- Maximize Icon (nähtav tavaolekus) -->
+        <svg id="icon-maximize" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+        </svg>
+        <!-- Minimize Icon (nähtav täisekraanil) -->
+        <svg id="icon-minimize" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6 hidden">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 9V4.5M9 9H4.5M9 9L3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5m0-4.5l5.25 5.25" />
+        </svg>
+    </button>
+
+    <div id="infoModal" class="hidden fixed right-4 top-1/2 -translate-y-1/2 w-80 sm:w-96 bg-white/95 backdrop-blur-lg rounded-2xl shadow-2xl z-40 flex-col overflow-hidden transition-all duration-300 pointer-events-auto border border-gray-100">
         <div class="relative h-48 w-full bg-gray-100">
             <img id="modalImage" src="" alt="Visiidi pilt" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/600x400/e2e8f0/475569?text=Pilt+puudub'">
             <div class="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold shadow-sm" id="modalDate">Aasta</div>
@@ -275,10 +288,38 @@
             modal.classList.add('hidden');
             modal.classList.remove('flex');
             currentVisitIndex = -1;
-            // Kui soovid, saad panna kaamera peale sulgemist uuesti välja suumima:
-            // world.pointOfView({ lat: 54, lng: 22, altitude: 1.5 }, 1000);
         }
 
+        // Täisekraani loogika
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log(`Viga täisekraani avamisel: ${err.message}`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        // Jälgime täisekraani staatuse muutusi (nt kasutaja vajutab 'Esc')
+        document.addEventListener('fullscreenchange', () => {
+            const maxIcon = document.getElementById('icon-maximize');
+            const minIcon = document.getElementById('icon-minimize');
+            
+            if (document.fullscreenElement) {
+                // Oleme täisekraanil, näita vähendamise ikooni
+                maxIcon.classList.add('hidden');
+                minIcon.classList.remove('hidden');
+            } else {
+                // Väljusime täisekraanilt, näita suurendamise ikooni
+                maxIcon.classList.remove('hidden');
+                minIcon.classList.add('hidden');
+            }
+        });
+
+        // Akna suuruse muutumise kuulaja graafiku kohandamiseks
         window.addEventListener('resize', () => {
             world.width(window.innerWidth).height(window.innerHeight);
         });

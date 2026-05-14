@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toetus Lennart Merile</title>
+    <!-- Google Fonts: Fira Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS baaskujunduseks -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lollikindlad ja minifitseeritud jsDelivr lingid, ILMA aja-adapteriteta -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+    
+    <style>
+        body { 
+            font-family: 'Fira Sans', sans-serif; 
+            color: #333333;
+        }
+        
+        /* Täisekraani CSS */
+        #chartContainer:fullscreen {
+            max-width: 100%;
+            width: 100vw;
+            height: 100vh;
+            border-radius: 0;
+            margin: 0;
+            overflow-y: auto;
+        }
+        #chartContainer::backdrop {
+            background-color: #fff;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-4 md:p-8 text-[#333333]">
+
+    <div id="chartContainer" class="max-w-7xl mx-auto bg-white p-4 md:p-8 rounded-lg shadow-md relative flex flex-col bg-white overflow-y-auto">
+        
+        <!-- Täisekraani nupp -->
+        <button id="fsBtn" class="absolute top-4 right-4 md:top-8 md:right-8 p-2 bg-gray-100 hover:bg-gray-200 rounded text-[#333333] transition-colors z-10" title="Täisekraan / Välju">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+              <path fill-rule="evenodd" d="M5.828 10.172a.5.5 0 0 0-.707 0l-4.096 4.096V11.5a.5.5 0 0 0-1 0v3.975a.5.5 0 0 0 .5.5H4.5a.5.5 0 0 0 0-1H1.732l4.096-4.096a.5.5 0 0 0 0-.707zm4.344 0a.5.5 0 0 1 .707 0l4.096 4.096V11.5a.5.5 0 1 1 1 0v3.975a.5.5 0 0 1-.5.5H11.5a.5.5 0 0 1 0-1h2.768l-4.096-4.096a.5.5 0 0 1 0-.707zm0-4.344a.5.5 0 0 0 .707 0l4.096-4.096V4.5a.5.5 0 1 0 1 0V.525a.5.5 0 0 0-.5-.5H11.5a.5.5 0 0 0 0 1h2.768l-4.096 4.096a.5.5 0 0 0 0 .707zm-4.344 0a.5.5 0 0 1-.707 0L1.732 1.732V4.5a.5.5 0 0 1-1 0V.525a.5.5 0 0 1 .5-.5H4.5a.5.5 0 0 1 0 1H1.732l4.096 4.096a.5.5 0 0 1 0 .707z"/>
+            </svg>
+        </button>
+
+        <h1 class="text-[18pt] font-bold mb-8 text-left text-[#333333] pr-12 font-['Fira_Sans']">Toetus Lennart Merile</h1>
+        
+        <!-- Esimene sektsioon: Tulpdiagramm -->
+        <div class="flex flex-col mb-12 w-full">
+            <h2 class="text-[18pt] font-bold mb-6 text-[#333333] font-['Fira_Sans']">How well has Lennart Meri carried out the duties of the president of the republic? (% of respondents)</h2>
+            <div class="relative w-full h-[400px]">
+                <canvas id="meriBarChart"></canvas>
+            </div>
+        </div>
+
+        <hr class="border-gray-200 mb-10">
+
+        <!-- Teine sektsioon: Joongraafik -->
+        <div class="flex flex-col mb-4 w-full">
+            <h2 class="text-[18pt] font-bold mb-6 text-[#333333] font-['Fira_Sans']">Support for Lennart Meri’s performance during the final three years of his presidency (1999–2001)</h2>
+            <div class="relative w-full h-[400px]">
+                <canvas id="meriLineChart"></canvas>
+            </div>
+        </div>
+        
+      
+
+        <!-- Veateate konteiner -->
+        <div id="errorLog" class="text-red-600 font-mono mt-4 text-sm whitespace-pre-wrap"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                // Sunnime väärtused otse globaalidesse
+                Chart.defaults.font.family = "'Fira Sans', sans-serif";
+                Chart.defaults.color = '#333333';
+
+                Chart.register(ChartDataLabels);
+
+                const commonFont = { family: "'Fira Sans', sans-serif" };
+                const axisTitleFont = { family: "'Fira Sans', sans-serif", weight: 'bold', size: 21 }; // 21px ~ 16pt
+                const legendFont = { family: "'Fira Sans', sans-serif", size: 14, weight: 'bold' };
+                const textColor = '#333333';
+
+                /* --- TULPDIAGRAMM --- */
+                const barCtx = document.getElementById('meriBarChart').getContext('2d');
+                new Chart(barCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['11/1992', '12/1993', '10/1994', '05/1995', '03/1996'],
+                        datasets: [
+                            {
+                                label: 'Good',
+                                data: [32, 58, 52, 72, 69],
+                                backgroundColor: '#22c55e', 
+                                datalabels: { align: 'end', anchor: 'end' }
+                            },
+                            {
+                                label: 'Bad',
+                                data: [31, 34, 35, 18, 18],
+                                backgroundColor: '#ef4444', 
+                                datalabels: { align: 'end', anchor: 'end' }
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100,
+                                grid: { color: '#e5e7eb' },
+                                title: { display: true, text: 'Percentage (%)', font: axisTitleFont, color: textColor },
+                                ticks: { font: commonFont, color: textColor }
+                            },
+                            x: {
+                                grid: { display: false },
+                                title: { display: true, text: 'Survey period', font: axisTitleFont, color: textColor },
+                                ticks: { font: commonFont, color: textColor }
+                            }
+                        },
+                        plugins: {
+                            legend: { 
+                                position: 'top', 
+                                labels: { font: legendFont, color: textColor } 
+                            },
+                            datalabels: {
+                                color: textColor,
+                                font: { family: "'Fira Sans', sans-serif", weight: 'bold' },
+                                formatter: Math.round
+                            }
+                        }
+                    }
+                });
+
+                /* --- JOONGRAAFIK --- */
+                // Kuna väline aja-adapter on eemaldatud, defineerime punktid reaalsete Javascripti aegadena
+                const lineDataRaw = [
+                    { x: new Date('1999-03-01').getTime(), toetab: 54, eitoeta: 10 },
+                    { x: new Date('2000-01-01').getTime(), toetab: 51, eitoeta: 11 },
+                    { x: new Date('2000-02-01').getTime(), toetab: 55, eitoeta: 9 },
+                    { x: new Date('2000-03-01').getTime(), toetab: 52, eitoeta: 10 },
+                    { x: new Date('2000-04-01').getTime(), toetab: 53, eitoeta: 12 },
+                    { x: new Date('2000-05-01').getTime(), toetab: 53, eitoeta: 8 },
+                    { x: new Date('2000-06-01').getTime(), toetab: 49, eitoeta: 10 },
+                    { x: new Date('2000-08-01').getTime(), toetab: 39, eitoeta: 12 },
+                    { x: new Date('2000-09-01').getTime(), toetab: 34, eitoeta: 17 },
+                    { x: new Date('2000-10-01').getTime(), toetab: 30, eitoeta: 17 },
+                    { x: new Date('2000-11-01').getTime(), toetab: 34, eitoeta: 18 },
+                    { x: new Date('2000-12-01').getTime(), toetab: 35, eitoeta: 15 },
+                    { x: new Date('2001-01-01').getTime(), toetab: 38, eitoeta: 17 },
+                    { x: new Date('2001-02-01').getTime(), toetab: 40, eitoeta: 15 },
+                    { x: new Date('2001-03-01').getTime(), toetab: 42, eitoeta: 17 },
+                    { x: new Date('2001-04-01').getTime(), toetab: 39, eitoeta: 16 },
+                    { x: new Date('2001-05-01').getTime(), toetab: 42, eitoeta: 16 },
+                    { x: new Date('2001-06-01').getTime(), toetab: 48, eitoeta: 13 },
+                    { x: new Date('2001-08-01').getTime(), toetab: 45, eitoeta: 14 },
+                    { x: new Date('2001-09-01').getTime(), toetab: 51, eitoeta: 12 }
+                ];
+
+                const segmentDashPattern = (ctx) => {
+                    if (!ctx.p0.parsed || !ctx.p1.parsed) return undefined;
+                    const d1 = new Date(ctx.p0.parsed.x);
+                    const d2 = new Date(ctx.p1.parsed.x);
+                    const diffMonths = (d2.getFullYear() - d1.getFullYear()) * 12 + (d2.getMonth() - d1.getMonth());
+                    return diffMonths > 1 ? [6, 6] : undefined; 
+                };
+
+                const lineCtx = document.getElementById('meriLineChart').getContext('2d');
+                new Chart(lineCtx, {
+                    type: 'line',
+                    data: {
+                        datasets: [
+                            {
+                                label: 'Supports',
+                                data: lineDataRaw.map(d => ({ x: d.x, y: d.toetab })),
+                                borderColor: '#22c55e', 
+                                backgroundColor: '#22c55e',
+                                borderWidth: 3,
+                                pointRadius: 4,
+                                pointHoverRadius: 6,
+                                segment: { borderDash: segmentDashPattern },
+                                datalabels: { align: 'top' } 
+                            },
+                            {
+                                label: 'Doesn't support',
+                                data: lineDataRaw.map(d => ({ x: d.x, y: d.eitoeta })),
+                                borderColor: '#ef4444', 
+                                backgroundColor: '#ef4444',
+                                borderWidth: 3,
+                                pointRadius: 4,
+                                pointHoverRadius: 6,
+                                segment: { borderDash: segmentDashPattern },
+                                datalabels: { align: 'bottom' }
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                type: 'linear', // Muudame tagasi lineaarseks, sest time telg nõuab väliseid adaptereid
+                                grid: { color: '#e5e7eb' },
+                                title: { display: true, text: 'Survey period', font: axisTitleFont, color: textColor },
+                                ticks: { 
+                                    font: commonFont, 
+                                    color: textColor,
+                                    callback: function(value) {
+                                        const d = new Date(value);
+                                        const m = (d.getMonth() + 1).toString().padStart(2, '0');
+                                        return `${m}/${d.getFullYear()}`;
+                                    }
+                                }
+                            },
+                            y: {
+                                min: 0,
+                                max: 70,
+                                grid: { color: '#e5e7eb' },
+                                title: { display: true, text: 'Percenage (%)', font: axisTitleFont, color: textColor },
+                                ticks: { font: commonFont, color: textColor }
+                            }
+                        },
+                        plugins: {
+                            legend: { 
+                                position: 'top', 
+                                labels: { usePointStyle: true, padding: 20, font: legendFont, color: textColor } 
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(51, 51, 51, 0.9)',
+                                titleFont: commonFont,
+                                bodyFont: commonFont,
+                                callbacks: { 
+                                    title: function(context) {
+                                        if (!context[0]) return '';
+                                        const d = new Date(context[0].parsed.x);
+                                        const m = (d.getMonth() + 1).toString().padStart(2, '0');
+                                        return `${m}/${d.getFullYear()}`;
+                                    },
+                                    label: function(context) { 
+                                        return ` ${context.dataset.label}: ${context.parsed.y}%`; 
+                                    } 
+                                }
+                            },
+                            datalabels: {
+                                backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                                borderRadius: 4,
+                                color: textColor,
+                                font: { family: "'Fira Sans', sans-serif", weight: 'bold', size: 11 },
+                                formatter: function(value) { return value.y; },
+                                padding: { top: 2, bottom: 2, left: 4, right: 4 }
+                            }
+                        },
+                        interaction: { mode: 'index', intersect: false }
+                    }
+                });
+
+                // Täisekraani nupu loogika
+                const fsBtn = document.getElementById('fsBtn');
+                const container = document.getElementById('chartContainer');
+
+                fsBtn.addEventListener('click', () => {
+                    if (!document.fullscreenElement) {
+                        if (container.requestFullscreen) {
+                            container.requestFullscreen().catch(err => {
+                                console.warn(`Viga täisekraani avamisel: ${err.message}`);
+                            });
+                        }
+                    } else {
+                        if (document.exitFullscreen) {
+                            document.exitFullscreen();
+                        }
+                    }
+                });
+        
+            } catch (error) {
+                document.getElementById('errorLog').textContent = "Graafiku laadimine ebaõnnestus. Tehniline diagnostika:\n" + error.stack;
+                console.error(error);
+            }
+        });
+    </script>
+</body>
+</html>

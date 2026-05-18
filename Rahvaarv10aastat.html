@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eesti Valdade ja Linnade Rahvaarv</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+        crossorigin="" />
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* Tailwind slate-50 */
+        }
+        #map-container {
+            flex-grow: 1; /* Võtab ülejäänud ruumi vahekaartide all */
+            position: relative;
+            width: 100%;
+        }
+        #map {
+            width: 100%;
+            height: 100%;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        /* Täisekraani nupu stiil */
+        .leaflet-control-fullscreen {
+            background: white;
+            border: 2px solid rgba(0,0,0,0.2);
+            background-clip: padding-box;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 34px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .leaflet-control-fullscreen:hover {
+            background-color: #f4f4f4;
+        }
+        .leaflet-control-fullscreen svg {
+            width: 16px;
+            height: 16px;
+            fill: #333;
+        }
+        
+        /* Info paneeli stiil (legend) */
+        .info {
+            padding: 10px 12px;
+            font: 14px/16px Arial, Helvetica, sans-serif;
+            background: white;
+            background: rgba(255,255,255,0.95);
+            box-shadow: 0 0 15px rgba(0,0,0,0.15);
+            border-radius: 8px;
+            color: #333;
+            border: 1px solid rgba(22, 101, 52, 0.1);
+        }
+        .info h4 {
+            margin: 0 0 5px;
+            color: #166534; /* Tailwind green-800 */
+        }
+        .legend {
+            line-height: 20px;
+            color: #444;
+            max-width: 250px;
+        }
+        .legend i {
+            width: 18px;
+            height: 18px;
+            float: left;
+            margin-right: 8px;
+            opacity: 0.85;
+            border-radius: 3px;
+        }
+
+        /* Kohanimede stiil kaardil */
+        .municipality-label {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            font-size: 11px !important;
+            font-weight: 800 !important;
+            color: #0f172a !important; /* Tume slate-900 teksti värv */
+            text-shadow: -1.5px -1.5px 0 #fff, 1.5px -1.5px 0 #fff, -1.5px 1.5px 0 #fff, 1.5px 1.5px 0 #fff; /* Tugev valge outline loetavuseks */
+            pointer-events: none !important; /* Ei sega kaardile klikkimist */
+            text-align: center;
+        }
+        .municipality-label::before {
+            display: none !important; /* Peidab Leafleti vaikimisi tooltipi nooleke */
+        }
+
+        /* Tabs varjud ja scrollbar peitmine */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .tab-active {
+            border-bottom-width: 3px;
+            border-color: #16a34a; /* green-600 */
+            color: #16a34a;
+            font-weight: 600;
+        }
+        .tab-inactive {
+            border-bottom-width: 3px;
+            border-color: transparent;
+            color: #4b5563; /* gray-600 */
+        }
+        .tab-inactive:hover {
+            color: #111827; /* gray-900 */
+            border-color: #e5e7eb; /* gray-200 */
+        }
+    </style>
+</head>
+<body class="flex flex-col h-screen overflow-hidden bg-white">
+
+    <!-- Laadimise indikaator -->
+    <div id="loading-overlay" class="absolute inset-0 bg-white/80 z-[2000] flex flex-col items-center justify-center transition-opacity duration-500">
+        <div class="animate-spin rounded-full h-16 w-16 border-b-4 border-green-600 mb-4"></div>
+        <p class="text-green-800 font-semibold text-lg">Laen valdade ja linnade reaalajas piire...</p>
+    </div>
+
+    <!-- Navigeerimismenüü (Tabid) -->
+    <div class="bg-white border-b border-gray-200 z-[1500] relative px-4 pt-1 shadow-sm overflow-x-auto no-scrollbar">
+        <ul class="flex flex-nowrap md:flex-wrap -mb-px text-xs md:text-sm font-medium text-center gap-1 md:gap-4 whitespace-nowrap" id="tabs-container">
+            <li>
+                <button onclick="changeTab('y2026')" id="tab-y2026" class="inline-flex items-center p-3 tab-active transition-all duration-200">
+                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2"></path></svg>
+                    Rahvaarv 2026
+                </button>
+            </li>
+            <li>
+                <button onclick="changeTab('y2022')" id="tab-y2022" class="inline-flex items-center p-3 tab-inactive transition-all duration-200">
+                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Rahvaarv 2022
+                </button>
+            </li>
+            <li>
+                <button onclick="changeTab('y2006')" id="tab-y2006" class="inline-flex items-center p-3 tab-inactive transition-all duration-200">
+                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Rahvaarv 2006
+                </button>
+            </li>
+            <li>
+                <button onclick="changeTab('change06_26')" id="tab-change06_26" class="inline-flex items-center p-3 tab-inactive transition-all duration-200">
+                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                    Muutus 2006➔2026 (%)
+                </button>
+            </li>
+            <li>
+                <button onclick="changeTab('change22_26')" id="tab-change22_26" class="inline-flex items-center p-3 tab-inactive transition-all duration-200">
+                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 17h8m0 0v-8m0 8l-8-8-4 4-6-6"></path></svg>
+                    Lähiaja muutus (%)
+                </button>
+            </li>
+        </ul>
+    </div>
+
+    <div id="map-container" class="relative">
+        <!-- Kaardi konteiner -->
+        <div id="map"></div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+        crossorigin=""></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+
+    <script>
+        // Aktiivne kategooria: 'y2026', 'y2022', 'y2006', 'change06_26', 'change22_26'
+        let currentCategory = 'y2026';
+
+        // Üleslaetud pildil olnud täpsed ja kinnitatud andmed
+        const verifiedData = {
+            "Alutaguse vald": { y2006: 5441, y2022: 4659, y2026: 4546 },
+            "Antsla vald": { y2006: 4219, y2022: 4380, y2026: 4144 },
+            "Haljala vald": { y2006: 4376, y2022: 4343, y2026: 4230 },
+            "Kadrina vald": { y2006: 4810, y2022: 4810, y2026: 4693 },
+            "Kanepi vald": { y2006: 4735, y2022: 4805, y2026: 4674 },
+            "Kihnu vald": { y2006: 629, y2022: 703, y2026: 676 },
+            "Muhu vald": { y2006: 1991, y2022: 1998, y2026: 2142 },
+            "Nõo vald": { y2006: 3841, y2022: 4381, y2026: 4681 },
+            "Ruhnu vald": { y2006: 103, y2022: 179, y2026: 169 },
+            "Rõuge vald": { y2006: 6883, y2022: 5239, y2026: 4944 },
+            "Saarde vald": { y2006: 5137, y2022: 4419, y2026: 4187 },
+            "Setomaa vald": { y2006: 4114, y2022: 3209, y2026: 3040 },
+            "Vormsi vald": { y2006: 338, y2022: 444, y2026: 452 }
+        };
+
+        // Demograafiliste andmete ettevalmistus - KASUTAME AINULT VERIFITSEERITUD ANDMEID
+        const populationData = {};
+        for (const [name, d] of Object.entries(verifiedData)) {
+            const change06_26 = ((d.y2026 - d.y2006) / d.y2006) * 100;
+            const change22_26 = ((d.y2026 - d.y2022) / d.y2022) * 100;
+            populationData[name] = {
+                y2006: d.y2006,
+                y2022: d.y2022,
+                y2026: d.y2026,
+                change06_26: Math.round(change06_26 * 10) / 10,
+                change22_26: Math.round(change22_26 * 10) / 10,
+                verified: true
+            };
+        }
+
+        function getActiveData(name) {
+            if (populationData[name]) {
+                return populationData[name][currentCategory];
+            }
+            return null;
+        }
+
+        const categoryTitles = {
+            y2026: "Rahvaarv (2026)",
+            y2022: "Rahvaarv (Ajalooline 2022)",
+            y2006: "Rahvaarv (Ajalooline 2006)",
+            change06_26: "Pikaajaline muutus (2006 ➔ 2026)",
+            change22_26: "Lähiaja muutus (2022 ➔ 2026)"
+        };
+
+        // Initsialiseeri kaart Eesti koordinaatidega
+        const map = L.map('map', {
+            center: [58.5953, 25.0136],
+            zoom: 7,
+            zoomControl: false
+        });
+
+        // Lisa puhas heledat värvi aluskaart
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 20
+        }).addTo(map);
+
+        L.control.zoom({
+            position: 'bottomright'
+        }).addTo(map);
+
+        // Dünaamiline värvide andmine
+        function getColor(d, category = currentCategory) {
+            if (d === null || d === undefined) return '#e5e7eb'; // Helehall, kui andmed puuduvad
+
+            if (category.startsWith('y')) {
+                // Rahvaarvude roheline astmestik (kuni 5000)
+                return d > 5000  ? '#005a32' : 
+                       d > 4500  ? '#238b45' :
+                       d > 4000  ? '#41ab5d' :
+                       d > 3000  ? '#74c476' :
+                       d > 2000  ? '#a1d99b' :
+                       d > 1000  ? '#c7e9c0' :
+                                   '#e5f5e0';
+            } else if (category === 'change06_26') {
+                // Kahesuunaline skaala pikaajalisele muutusele (suured kõikumised)
+                return d > 30   ? '#047857' : // Emerald-700
+                       d > 10   ? '#16a34a' : // Green-600
+                       d > 0    ? '#86efac' : // Green-300
+                       d > -10  ? '#fef08a' : // Yellow-200
+                       d > -20  ? '#f97316' : // Orange-500
+                       d > -30  ? '#dc2626' : // Red-600
+                                  '#7f1d1d';  // Red-900
+            } else { 
+                // Kahesuunaline skaala lähiaja muutusele (vahemikus -6% kuni +8%)
+                return d > 5    ? '#047857' : 
+                       d > 2    ? '#16a34a' : 
+                       d > 0    ? '#86efac' : 
+                       d > -2   ? '#fef08a' : 
+                       d > -4   ? '#f97316' : 
+                       d > -6   ? '#dc2626' : 
+                                  '#7f1d1d';
+            }
+        }
+
+        // Funktsioon iga omavalitsuse stiilimiseks
+        function style(feature) {
+            const name = feature.properties.ONIMI;
+            const hasData = populationData[name] !== undefined;
+            
+            if (!hasData) {
+                return {
+                    fillColor: '#e5e7eb', // gray-200
+                    weight: 1,
+                    opacity: 0.4,
+                    color: '#cbd5e1', // slate-300 valla piirid
+                    dashArray: '',
+                    fillOpacity: 0.6
+                };
+            }
+
+            const val = getActiveData(name);
+            return {
+                fillColor: getColor(val),
+                weight: 1.5,
+                opacity: 1,
+                color: '#1e3a1e', // Tumedam rohekasroheline piirjoon aktiivsetel valdadel
+                dashArray: '',
+                fillOpacity: 0.85
+            };
+        }
+
+        let geojson;
+
+        function highlightFeature(e) {
+            const layer = e.target;
+            const name = layer.feature.properties.ONIMI;
+            const hasData = populationData[name] !== undefined;
+
+            if (!hasData) {
+                layer.setStyle({
+                    weight: 1.5,
+                    color: '#94a3b8', // slate-400
+                    fillOpacity: 0.7
+                });
+                info.update(layer.feature.properties, false);
+                return;
+            }
+
+            layer.setStyle({
+                weight: 3,
+                color: '#1e293b', // slate-800
+                dashArray: '',
+                fillOpacity: 0.95
+            });
+
+            if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+                layer.bringToFront();
+            }
+            info.update(layer.feature.properties, true);
+        }
+
+        function resetHighlight(e) {
+            geojson.resetStyle(e.target);
+            info.update();
+        }
+
+        // Hüpikakna loomine
+        function zoomToFeature(e) {
+            map.fitBounds(e.target.getBounds());
+            
+            const props = e.target.feature.properties;
+            const dataObj = populationData[props.ONIMI];
+            
+            if (!dataObj) {
+                const popupContent = `
+                    <div class="p-2 text-center">
+                        <h3 class="text-sm font-bold text-gray-700 mb-1">${props.ONIMI}</h3>
+                        <p class="text-xs text-gray-400">Selle omavalitsuse andmed tabelis puuduvad.</p>
+                    </div>
+                `;
+                L.popup()
+                    .setLatLng(e.latlng)
+                    .setContent(popupContent)
+                    .openOn(map);
+                return;
+            }
+
+            const val2006 = dataObj.y2006;
+            const val2022 = dataObj.y2022;
+            const val2026 = dataObj.y2026;
+            const ch06_26 = dataObj.change06_26;
+            const ch22_26 = dataObj.change22_26;
+
+            const ch06_26_color = ch06_26 > 0 ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold';
+            const ch22_26_color = ch22_26 > 0 ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold';
+
+            const popupContent = `
+                <div class="p-2 min-w-[240px]">
+                    <h3 class="text-base font-bold text-green-800 mb-0.5">${props.ONIMI}</h3>
+                    <p class="text-xs text-gray-500 mb-3">Maakond: ${props.MNIMI}</p>
+                    
+                    <div class="bg-blue-50 border border-blue-200 text-blue-800 text-xs rounded-md px-3 py-1 mb-3 flex items-center gap-1.5 font-medium">
+                        <svg class="w-4 h-4 text-blue-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Kinnitatud reaalsed tabeli andmed
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-y-2 gap-x-4 border-t border-gray-100 pt-3 text-sm">
+                        <span class="text-gray-500">Rahvaarv 2006:</span>
+                        <span class="text-gray-950 font-medium text-right">${val2006.toLocaleString('et-EE')}</span>
+                        
+                        <span class="text-gray-500">Rahvaarv 2022:</span>
+                        <span class="text-gray-950 font-medium text-right">${val2022.toLocaleString('et-EE')}</span>
+                        
+                        <span class="text-gray-500">Rahvaarv 2026:</span>
+                        <span class="text-gray-950 font-bold text-right text-green-700">${val2026.toLocaleString('et-EE')}</span>
+                        
+                        <span class="text-gray-500 border-t border-dashed border-gray-100 pt-2">Muutus 06➔26:</span>
+                        <span class="text-right border-t border-dashed border-gray-100 pt-2 ${ch06_26_color}">${ch06_26 > 0 ? '+' : ''}${ch06_26.toFixed(1)}%</span>
+                        
+                        <span class="text-gray-500">Muutus 22➔26:</span>
+                        <span class="text-right ${ch22_26_color}">${ch22_26 > 0 ? '+' : ''}${ch22_26.toFixed(1)}%</span>
+                    </div>
+                    <p class="text-[10px] text-gray-400 mt-4 text-center">Klõpsake kaardil muul alal, et sulgeda.</p>
+                </div>
+            `;
+            
+            L.popup()
+                .setLatLng(e.latlng)
+                .setContent(popupContent)
+                .openOn(map);
+        }
+
+        function onEachFeature(feature, layer) {
+            layer.on({
+                mouseover: highlightFeature,
+                mouseout: resetHighlight,
+                click: zoomToFeature
+            });
+            layer._leaflet_id = feature.properties.ONIMI ? feature.properties.ONIMI.toLowerCase() : '';
+
+            // KIRJUTA KOHANIMED KAARDILE (ainult andmetega piirkonnad)
+            const name = feature.properties.ONIMI;
+            if (populationData[name]) {
+                const shortName = name.replace(' vald', '').replace(' linn', '');
+                layer.bindTooltip(shortName, {
+                    permanent: true,
+                    direction: 'center',
+                    className: 'municipality-label'
+                });
+            }
+        }
+
+        const geojsonUrl = 'https://raw.githubusercontent.com/buildig/EHAK/master/geojson/omavalitsus.json';
+        
+        fetch(geojsonUrl)
+            .then(response => {
+                if (!response.ok) throw new Error('Viga andmete laadimisel');
+                return response.json();
+            })
+            .then(data => {
+                geojson = L.geoJson(data, {
+                    style: style,
+                    onEachFeature: onEachFeature
+                }).addTo(map);
+                
+                const loader = document.getElementById('loading-overlay');
+                loader.style.opacity = '0';
+                setTimeout(() => loader.remove(), 500);
+            })
+            .catch(error => {
+                console.error('GeoJSON laadimine ebaõnnestus:', error);
+                const loader = document.getElementById('loading-overlay');
+                loader.innerHTML = '<div class="bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded shadow-md"><p class="font-bold">Viga piiride laadimisel.</p><p class="text-sm mt-1">Palun kontrollige internetiühendust ja proovige hiljem uuesti.</p></div>';
+            });
+
+        // Hõljutamise infopaneel
+        const info = L.control();
+
+        info.onAdd = function (map) {
+            this._div = L.DomUtil.create('div', 'info'); 
+            this.update();
+            return this._div;
+        };
+
+        info.update = function (props, hasData = false) {
+            const title = categoryTitles[currentCategory];
+            if(props) {
+                if (!hasData && !populationData[props.ONIMI]) {
+                    this._div.innerHTML = `
+                        <div class="max-w-xs">
+                            <h4 class="font-bold text-gray-400 mb-0.5">${title}</h4>
+                            <b class="text-gray-900">${props.ONIMI}</b><br />
+                            <span class="text-sm text-gray-400 italic">Andmed tabelis puuduvad</span>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const dataObj = populationData[props.ONIMI];
+                let valText = "";
+                
+                if (currentCategory.startsWith('y')) {
+                    const val = dataObj ? dataObj[currentCategory] : 0;
+                    valText = `${val.toLocaleString('et-EE')} inimest`;
+                } else {
+                    const val = dataObj ? dataObj[currentCategory] : 0;
+                    const sign = val > 0 ? "+" : "";
+                    valText = `${sign}${val.toFixed(1)}%`;
+                }
+
+                this._div.innerHTML = `
+                    <div class="max-w-xs">
+                        <h4 class="font-bold text-green-800 mb-0.5">${title}</h4>
+                        <b class="text-gray-900">${props.ONIMI}</b><br />
+                        <span class="text-base font-semibold text-green-700">${valText}</span><br />
+                        <span class="inline-block bg-blue-100 text-blue-800 text-[10px] font-semibold px-2 py-0.5 rounded mt-1.5 border border-blue-200">✓ Kinnitatud andmed</span>
+                    </div>
+                `;
+            } else {
+                this._div.innerHTML = `<h4 class="font-bold mb-1 text-green-800">${title}</h4>` + 
+                    `<span class="text-gray-500">Hõljuta kursorit ala kohal</span>`;
+            }
+        };
+        info.addTo(map);
+
+        // Legend
+        const legend = L.control({position: 'bottomleft'});
+
+        legend.onAdd = function (map) {
+            this._div = L.DomUtil.create('div', 'info legend');
+            this.update();
+            return this._div;
+        };
+
+        legend.update = function() {
+            const title = categoryTitles[currentCategory];
+            let html = `<h5 class="font-bold text-sm mb-1 text-gray-700">${title}</h5>`;
+
+            if (currentCategory.startsWith('y')) {
+                // Rahvaarvu legend (kuni 5000)
+                const grades = [0, 500, 1000, 2000, 3000, 4000, 4500, 5000];
+                for (let i = 0; i < grades.length; i++) {
+                    html +=
+                        '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' +
+                        grades[i].toLocaleString('et-EE') + (grades[i + 1] ? '&ndash;' + grades[i + 1].toLocaleString('et-EE') + '<br>' : '+');
+                }
+            } else if (currentCategory === 'change06_26') {
+                // Pikema muutuse legend
+                const grades = [-35, -30, -20, -10, 0, 10, 30];
+                for (let i = 0; i < grades.length; i++) {
+                    const colorVal = grades[i] + 0.1;
+                    let rangeText = "";
+                    if (i === 0) {
+                        rangeText = `alla ${grades[1]}%`;
+                    } else if (i === grades.length - 1) {
+                        rangeText = `üle ${grades[i]}%`;
+                    } else {
+                        rangeText = `${grades[i]}% kuni ${grades[i+1]}%`;
+                    }
+                    html += `<i style="background:${getColor(colorVal)}"></i> ${rangeText}<br>`;
+                }
+            } else { 
+                // Lähiaja muutuse legend
+                const grades = [-8, -6, -4, -2, 0, 2, 5];
+                for (let i = 0; i < grades.length; i++) {
+                    const colorVal = grades[i] + 0.1;
+                    let rangeText = "";
+                    if (i === 0) {
+                        rangeText = `alla ${grades[1]}%`;
+                    } else if (i === grades.length - 1) {
+                        rangeText = `üle ${grades[i]}%`;
+                    } else {
+                        rangeText = `${grades[i]}% kuni ${grades[i+1]}%`;
+                    }
+                    html += `<i style="background:${getColor(colorVal)}"></i> ${rangeText}<br>`;
+                }
+            }
+
+            // Hall kast tähistamaks puuduvaid andmeid
+            html += `<div class="mt-2 pt-1.5 border-t border-gray-200 flex items-center">`;
+            html += `<i style="background:#e5e7eb; border: 1px solid #cbd5e1; margin-top:1px;"></i> <span class="text-xs text-gray-500 font-medium">Andmed puuduvad valimist</span>`;
+            html += `</div>`;
+
+            this._div.innerHTML = html;
+        };
+        legend.addTo(map);
+
+        // Tabide vahetamise juhtimine
+        function changeTab(category) {
+            if (currentCategory === category) return;
+            
+            currentCategory = category;
+
+            // Uuenda aktiivse tabi klassid
+            const tabIds = ['y2026', 'y2022', 'y2006', 'change06_26', 'change22_26'];
+            tabIds.forEach(id => {
+                const btn = document.getElementById(`tab-${id}`);
+                if (id === category) {
+                    btn.classList.remove('tab-inactive');
+                    btn.classList.add('tab-active');
+                } else {
+                    btn.classList.remove('tab-active');
+                    btn.classList.add('tab-inactive');
+                }
+            });
+
+            // Uuenda kaardi andmed ja stiilid
+            if (geojson) {
+                geojson.setStyle(style);
+            }
+
+            // Uuenda paneelid ja legend
+            legend.update();
+            info.update();
+            map.closePopup();
+        }
+
+        // Täisekraani nupu loomine
+        const fullScreenControl = L.Control.extend({
+            options: { position: 'topright' },
+            onAdd: function (map) {
+                const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-fullscreen');
+                container.title = "Täisekraan / Välju täisekraanist";
+                container.innerHTML = `
+                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M5 5h5v2H7v3H5V5zm9 0h5v5h-2V7h-3V5zm5 14h-5v-2h3v-3h2v5zm-14 0v-5h2v3h3v2H5z"/>
+                    </svg>
+                `;
+                container.onclick = function() { toggleFullScreen(); }
+                return container;
+            }
+        });
+        map.addControl(new fullScreenControl());
+
+        function toggleFullScreen() {
+            const doc = window.document;
+            const docEl = doc.documentElement;
+            const requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
+            const cancelFullScreen = doc.exitFullscreen || doc.mozCancelFullScreen || doc.webkitExitFullscreen || doc.msExitFullscreen;
+
+            if (!doc.fullscreenElement && !doc.mozFullScreenElement && !doc.webkitFullscreenElement && !doc.msFullscreenElement) {
+                if (requestFullScreen) requestFullScreen.call(docEl);
+            } else {
+                if (cancelFullScreen) cancelFullScreen.call(doc);
+            }
+        }
+
+        window.addEventListener('resize', function() {
+            map.invalidateSize();
+        });
+
+    </script>
+</body>
+</html>

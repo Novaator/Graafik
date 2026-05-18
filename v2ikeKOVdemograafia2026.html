@@ -79,7 +79,7 @@
             box-shadow: none !important;
             font-family: 'Fira Sans', sans-serif !important;
             font-size: 11px !important;
-            font-weight: 400 !important; /* Paksus eemaldatud (800 -> 400) */
+            font-weight: 400 !important; /* Paksus eemaldatud */
             color: #0f172a !important; /* Tume slate-900 teksti värv */
             text-shadow: -1.5px -1.5px 0 #fff, 1.5px -1.5px 0 #fff, -1.5px 1.5px 0 #fff, 1.5px 1.5px 0 #fff; /* Tugev valge outline loetavuseks */
             pointer-events: none !important; /* Ei sega kaardile klikkimist */
@@ -156,7 +156,6 @@
                 </button>
             </li>
             <li>
-                <!-- Kollakas-oranž teema aktiivsele vahekaardile -->
                 <button onclick="changeTab('elderlyPct')" id="tab-elderlyPct" class="inline-flex items-center p-3 transition-all duration-200 border-b-3 border-transparent text-slate-500 hover:text-slate-800">
                     <svg class="w-4 h-4 mr-1.5" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M13.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM9.8 8.9L7 21.5h2.1l1.9-8.2 2.1 2V21.5h2v-6.7l-2.1-2 1-4.8 2.4 2.4V14h2V9.8l-3.3-3.3c-.4-.4-1-.5-1.5-.3l-3.9 1.6c-.6.2-1 .8-1 1.4v2.5h2V8.9z"/>
@@ -167,9 +166,27 @@
         </ul>
     </div>
 
-    <div id="map-container" class="relative">
+    <div id="map-container" class="relative flex-grow">
         <!-- Kaardi konteiner -->
         <div id="map"></div>
+
+        <!-- Katte-overlay kaardi aktiveerimiseks (žestikaitse) -->
+        <div id="map-lock-overlay" class="absolute inset-0 bg-slate-950/5 backdrop-blur-[0.5px] z-[1000] flex items-center justify-center transition-all duration-300 cursor-pointer">
+            <div class="bg-white/95 text-slate-800 text-xs px-4 py-2.5 rounded-full shadow-lg border border-slate-200/80 flex items-center gap-2 select-none font-normal">
+                <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                </svg>
+                Klõpsa kaardi aktiveerimiseks
+            </div>
+        </div>
+
+        <!-- Hõljuv nupp kaardi taas-lukustamiseks (ilmub pärast aktiveerimist) -->
+        <button id="map-lock-btn" onclick="lockMap()" class="hidden absolute bottom-4 left-4 z-[1000] bg-white text-slate-800 text-xs px-3 py-2 rounded-md shadow-md border border-slate-200/80 hover:bg-slate-50 flex items-center gap-1.5 transition-all font-normal">
+            <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+            </svg>
+            Lukusta kaart uuesti
+        </button>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
@@ -233,7 +250,7 @@
             elderlyPct: "Eakate (65+) osakaal (%)"
         };
 
-        // Teemakujundused (eakate puhul asendatud amber-toonidega)
+        // Teemakujundused
         const categoryThemes = {
             total: {
                 color: 'emerald',
@@ -258,11 +275,16 @@
         };
 
         // Initsialiseeri kaart Eesti koordinaatidega ja toeta poolikuid suume
+        // Vaikimisi blokeerime žestid (dragging, zoom, touch) et hoida ära touch-trap lehe kerimisel
         const map = L.map('map', {
             center: [58.75, 25.4],
             zoom: 7.5,
             zoomSnap: 0.5,
-            zoomControl: false
+            zoomControl: false,
+            dragging: false,
+            scrollWheelZoom: false,
+            doubleClickZoom: false,
+            touchZoom: false
         });
 
         // Puhas ja minimalistlik aluskaart
@@ -432,7 +454,6 @@
 
                         <div class="flex justify-between items-center">
                             <span class="text-slate-500 text-xs flex items-center gap-1.5">
-                                <!-- Eakate inimese ikoon (värvitoon muudetud amber-500-ks) -->
                                 <svg class="w-3.5 h-3.5 text-amber-500 shrink-0 inline-block" fill="currentColor" viewBox="0 0 24 24">
                                     <path d="M13.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM9.8 8.9L7 21.5h2.1l1.9-8.2 2.1 2V21.5h2v-6.7l-2.1-2 1-4.8 2.4 2.4V14h2V9.8l-3.3-3.3c-.4-.4-1-.5-1.5-.3l-3.9 1.6c-.6.2-1 .8-1 1.4v2.5h2V8.9z"/>
                                 </svg> Eakad (65+):
@@ -521,7 +542,7 @@
                 const dataObj = populationData[props.ONIMI];
                 let valText = "";
                 
-                // Staatilised HEX-värvused tähistuseks (eakate puhul asendatud amber/kuldsega)
+                // Staatilised HEX-värvused tähistuseks
                 const textColors = {
                     total: '#059669',     // emerald-600
                     workingPct: '#2563eb', // blue-600
@@ -632,13 +653,46 @@
         };
         legend.addTo(map);
 
-        // Tabide dünaamilise vahetamise juhtimine koos teemavärvide muutusega
+        // Žestikaitse: Kaardi lukustuse haldus
+        const lockOverlay = document.getElementById('map-lock-overlay');
+        const lockBtn = document.getElementById('map-lock-btn');
+
+        lockOverlay.addEventListener('click', function(e) {
+            e.stopPropagation();
+            // Eemaldame katte blokeerimise
+            lockOverlay.classList.add('opacity-0', 'pointer-events-none');
+            
+            // Aktiveerime kaardi interaktiivsed funktsioonid
+            map.dragging.enable();
+            map.scrollWheelZoom.enable();
+            map.doubleClickZoom.enable();
+            map.touchZoom.enable();
+            if (map.tap) map.tap.enable();
+
+            // Kuvame taaslukustamise nupu
+            lockBtn.classList.remove('hidden');
+        });
+
+        function lockMap() {
+            // Blokeerime interaktiivsuse
+            map.dragging.disable();
+            map.scrollWheelZoom.disable();
+            map.doubleClickZoom.disable();
+            map.touchZoom.disable();
+            if (map.tap) map.tap.disable();
+
+            // Taastame katte ja peidame lukunupu
+            lockOverlay.classList.remove('opacity-0', 'pointer-events-none');
+            lockBtn.classList.add('hidden');
+            map.closePopup();
+        }
+
+        // Tabide vahetamine ja teemavärvid
         function changeTab(category) {
             if (currentCategory === category) return;
             
             currentCategory = category;
 
-            // Uuenda aktiivsete tabide klassid ja disain
             const ids = ['total', 'workingPct', 'childrenPct', 'elderlyPct'];
             ids.forEach(id => {
                 const btn = document.getElementById(`tab-${id}`);
@@ -650,18 +704,16 @@
                 }
             });
 
-            // Uuenda kaardi andmed ja stiilid
             if (geojson) {
                 geojson.setStyle(style);
             }
 
-            // Uuenda paneelid ja legendid
             legend.update();
             info.update();
             map.closePopup();
         }
 
-        // Täisekraani nupu loomine kaardile
+        // Täisekraani nupu loomine
         const fullScreenControl = L.Control.extend({
             options: { position: 'topright' },
             onAdd: function (map) {

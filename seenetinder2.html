@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Seenekarusell</title>
+  
+  <!-- Fira Sans font Novaatori jaoks -->
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS kujunduse jaoks -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Reacti baasraamatukogud -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  
+  <!-- Babel, mis tõlgib Reacti (JSX) brauserile arusaadavaks JavaScriptiks lennult -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      /* Iframe'i jaoks läbipaistev taust */
+      background-color: transparent; 
+    }
+    
+    /* Peidame pisipiltide kerimisriba, et see ei rikuks disaini */
+    .hide-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .hide-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- Siin algab tegelik rakenduse kood, type="text/babel" on kriitiline! -->
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    // --- Ikoonide komponendid ---
+    const ChevronLeft = ({ size = 24, className = "" }) => (
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m15 18-6-6 6-6"/></svg>
+    );
+    const ChevronRight = ({ size = 24, className = "" }) => (
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m9 18 6-6-6-6"/></svg>
+    );
+    const Loader2 = ({ size = 18, className = "" }) => (
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`animate-spin ${className}`}><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+    );
+
+    // --- Seente andmebaas ---
+    const mushrooms = [
+      {
+        id: 'lepidoderma_tigrinum',
+        latin: 'Lepidoderma tigrinum',
+        description: 'Seda haruldast limakute maailma “tiigrit” on Eestis kohatud vaid üksikutel kordadel. Ta peitub sammalde sees vanadel mahalangenud puudel ning fotol on näha, kuidas teda ründab limakutele spetsialiseerunud parasiitseen. Isegi vanametsa pisimates elupaikades käib oma varjatud võitlus.',
+        image: 'https://s.err.ee/photo/orig/2026/05/21/3590500h3cbb.jpg'
+      },
+      {
+        id: 'didymium_melanospermum',
+        latin: 'Didymium melanospermum',
+        description: 'See väike limak näib justkui kandvat mineraalset soomusrüüd. Tema välisseina katab kristalse lubja kirme, mis annab talle kahvatu, kriitja ilme – märksa peenema, kui nii väikeselt olendilt oodata oskaks.',
+        image: 'https://s.err.ee/photo/orig/2026/05/20/3589135h793d.jpg'
+      },
+      {
+        id: 'heterotrichia_obvelata',
+        latin: 'Heterotrichia obvelata',
+        description: 'Pehme kollane rosett kõduneval puidul mõjub esmapilgul süütult, ent lähemal vaatlusel on see kui peenelt häälestatud eoste lennutaja. Selle elastsed niidid paiskavad eoseid laiali kohe, kui need valmivad – nagu tilluke metsapeo konfetikahur.',
+        image: 'https://s.err.ee/photo/orig/2026/05/20/3589141hfc6b.jpg'
+      },
+      {
+        id: 'arcyria_cinerea',
+        latin: 'Arcyria cinerea',
+        description: 'Esmapilgul on see igav napilt mõne millimeetri kõrgune hallikasvalge täpike. Kuid geneetiliselt on ta nagu trikster: see, mis paistab ühena, võib tegelikult varjata endas üle kahekümne liigi. Kõige tagasihoidlikum limak seltskonnas võib osutuda suurimaks petiseks.',
+        image: 'https://s.err.ee/photo/orig/2026/05/20/3589144h0212.jpg'
+      },
+      {
+        id: 'diderma_testaceum',
+        latin: 'Diderma testaceum',
+        description: 'See limak rüütab end paksu valgesse koorikusse nagu munakoorde. Ta kasvab elusate taimede vartel ja lehtedel – ilmselt poleks surnud puit tema jaoks piisavalt dramaatiline.',
+        image: 'https://s.err.ee/photo/orig/2026/05/20/3589147hfab0.jpg'
+      },
+      {
+        id: 'enerthenema_papillatum',
+        latin: 'Enerthenema papillatum',
+        description: 'Tilluke, riietatud peende musta sametisse – see limak oleks nagu saabunud mikroskoopilisele pidulikule sündmusele. Iga tema musta jalaga ümara viljakeha tipus on väike läikiv ketas - kuninglik limakukübar.',
+        image: 'https://s.err.ee/photo/orig/2026/05/20/3589150h8520.jpg'
+      },
+      {
+        id: 'physarum_viride',
+        latin: 'Physarum viride',
+        description: 'See limak toob surnud puidule, koorele ja vanadele pehkinud torikutele justkui mojito energiat. Selle viljakehi katab habras sidrunroheline lubikoorik – värske ja särtsakas, ent kindlasti mitte see, mida joogi sisse panna.',
+        image: 'https://s.err.ee/photo/orig/2026/05/20/3589153h708d.jpg'
+      },
+      {
+        id: 'hemitrichia_clavata',
+        latin: 'Hemitrichia clavata',
+        description: 'See limak moodustab läikivaid kollaseid nuiakesi, mis koonduvad tihedalt kokku justkui sõpruskond. Viljakehade avanedes jääb alles nagu kausike, millest kollakad niidid paiskavad eosed laia maailma. Nunnu, aga vaikselt plahvatuslik.',
+        image: 'https://s.err.ee/photo/orig/2026/05/20/3589156h047c.jpg'
+      },
+      {
+        id: 'stemonitis_fusca',
+        latin: 'Stemonitis fusca/axifera',
+        description: 'Välismaa fänniklubides on tal mitmeid nimesid: šokolaaditoru, puujuuksed, nõiajuuksed või isegi toruharja limak. Oma kummaliste karvaste sammastega meenutab ta midagi, mille metsahaldjas on unustanud puurondile.',
+        image: 'https://s.err.ee/photo/orig/2026/05/20/3589159h3ede.jpg'
+      },
+      {
+        id: 'lamproderma_pseudomaculatum',
+        latin: 'Lamproderma pseudomaculatum',
+        description: 'See liik kuulub iseäralikku varakevadel viljuvate lumehange limakute rühma. Kui kunagi arvati neid esinevat vaid mäestikes, siis nüüd on neid leitud ka Eestis. Ilmselt meie madala maa lumehanged vastavad nende pirtsakatele nõudmistele.',
+        image: 'https://s.err.ee/photo/orig/2026/05/20/3589162hea5a.jpg'
+      },
+      {
+        id: 'arcyria_major',
+        latin: 'Arcyria major',
+        description: 'See on üks tavalisemaid <i>Arcyria</i> liike Eestis, aga sugugi mitte igavamaid. Lõheroosad üsna suurte viljakehade kogumikud toovad metsadesse suvel ja sügisel õrna  õhetava limakuglamuuri.',
+        image: 'https://s.err.ee/photo/orig/2026/05/20/3589165h746a.jpg'
+      },
+      {
+        id: 'leocarpus_fragilis',
+        latin: 'Leocarpus fragilis',
+        description: 'Selle erekollane plasmoodium roomab läbi surnud männi- ja kuuseokaste, muutudes sügisel läikivateks pruunideks viljakehadeks. Elektrikollasest limast lihvitud pruunideks pärliteks – täielik muutumine!',
+        image: 'https://s.err.ee/photo/orig/2026/05/20/3589171h73bf.jpg'
+      },
+      {
+        id: 'comatricha_nigra',
+        latin: 'Comatricha nigra',
+        description: 'Ta on väike ja pruun, mida on kerge kahe silma vahele jätta, kuni tõstad kõduneva männirao valguse kätte. Siis ilmuvad ootamatult 2–4 millimeetrised tumedad nööpnõelad. Ta on kannatlike terava silmaga inimeste jaoks!',
+        image: 'https://s.err.ee/photo/orig/2026/05/21/3590518hcfad.jpg'
+      },
+      {
+        id: 'tubifera_ferruginosa',
+        latin: 'Tubifera ferruginosa',
+        description: 'Suured ja eredad viljakehad torkavad silma mõne sentimeetrise läbimõõduga kogumikena kõdupuidul. Noored säravad ereoranžina, kuid vananedes pleegivad helepruuniks – see limak läbib teatraalselt oma teismeea.',
+        image: 'https://s.err.ee/photo/orig/2026/05/21/3590521h7c85.jpg'
+      },
+      {
+        id: 'badhamia_utricularis',
+        latin: 'Badhamia utricularis',
+        description: 'Selle liigi viljakehade kobarad ripuvad kollastel jalgadel, mis näivad kummaliselt õrnad. Aga ärge laske end petta: selle plasmoodium toitub puitu lagundavatest seentest. Väike ja kena limaseen, kuid ihkab seeneliha.',
+        image: 'https://s.err.ee/photo/orig/2026/05/21/3590524h434b.jpg'
+      },
+      {
+        id: 'reticularia_lycoperdon',
+        latin: 'Reticularia lycoperdon',
+        description: 'See on üks hiigel-limakuid, mille viljakehad ulatuvad 10–15 sentimeetrini. Ta ilmub lamatüvedele ja püsti seisvatele surnud puudele, mõnikord silmade kõrgusele – justkui  puidule oleks kerkinud salapärane muhk.',
+        image: 'https://s.err.ee/photo/orig/2026/05/21/3590527h6f9c.jpg'
+      },
+      {
+        id: 'oligonema_persimile',
+        latin: 'Oligonema persimile',
+        description: 'Selle pisikese kollase eosevabriku tööd mõjutab niiskus nagu tal oleks keskkonnaagentuuri ilmaäpp. Tema sisemised niidid võivad krussi keerduda ja sirguda olenevalt õhuniiskusest, aidates eostel ära lennata, kui õhk on selle heaks kiitnud.',
+        image: 'https://s.err.ee/photo/orig/2026/05/21/3590530h30a9.jpg'
+      },
+      {
+        id: 'cribraria_purpurea',
+        latin: 'Cribraria purpurea',
+        description: 'Enamuse limakute viljakehad ilmuvad siis, kui ilm on ilus ja soe. Tema aga valib märtsi, aprilli, oktoobri ja novembri, et näidata oma helelillat olemust – justkui kandes vale aastaaja riietust.',
+        image: 'https://s.err.ee/photo/orig/2026/05/21/3590536hf99b.jpg'
+      },
+      {
+        id: 'craterium_leucocephalum',
+        latin: 'Craterium leucocephalum',
+        description:
+ 'Sellel limakul sirutuvad ühe millimeetri pikkused viljakehad justkui väikesed veiniklaasid mahalangenud lehtedel, sammaldel ja rohttaimede varrekestel. Kuigi keegi ei tellinud jooki, on metsaalune äkitselt valmis pisikülaliste vastuvõtuks.',
+        image: 'https://s.err.ee/photo/orig/2026/05/21/3590539hd586.jpg'
+      },
+      {
+        id: 'metatrichia_vesparia',
+        latin: 'Metatrichia vesparia',
+        description: 'Kui eosed on vabanenud, näivad punakaspruunide viljakehade jäänused kui pisikesed herilaste pesad. See Eestis väga sage liik on liiga sarmikas, et olla nimeta!',
+        image: 'https://s.err.ee/photo/orig/2026/05/21/3590542h0d46.jpg'
+      },
+    ];
+
+    function App() {
+      const [currentIndex, setCurrentIndex] = useState(0);
+      const [suggestion, setSuggestion] = useState('');
+      const [email, setEmail] = useState('');
+      const [status, setStatus] = useState('idle');
+      const [statusMessage, setStatusMessage] = useState('');
+      
+      // Sikutamise ja animeerimise osariik
+      const [dragStartPos, setDragStartPos] = useState(null);
+      const [dragOffset, setDragOffset] = useState(0);
+      const [slideOffset, setSlideOffset] = useState(-1); // -1 on keskmine slaid
+      const [isTransitioning, setIsTransitioning] = useState(false);
+      const [isJumping, setIsJumping] = useState(false);
+      
+      // Pisipiltide sikutamise osariik
+      const [isThumbDragging, setIsThumbDragging] = useState(false);
+      const [thumbStartX, setThumbStartX] = useState(0);
+      const [thumbScrollLeft, setThumbScrollLeft] = useState(0);
+      const [thumbDragDistance, setThumbDragDistance] = useState(0);
+      
+      const thumbnailContainerRef = useRef(null);
+
+      // Pane siia oma Google Apps Scripti URL
+      const GOOGLE_WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbxIERNuSH-ki4iSYR0zWdTOb_vCITNB6NQnX8T4Wg2pap6Cjws3m6kTxJvUSsVFUyO-Lw/exec'; 
+
+      const currentMushroom = mushrooms[currentIndex];
+      
+      // Leiame eelmise ja järgmise indeksi, et tekitada lõputu ringi efekt
+      const prevIndex = currentIndex === 0 ? mushrooms.length - 1 : currentIndex - 1;
+      const nextIndex = currentIndex === mushrooms.length - 1 ? 0 : currentIndex + 1;
+
+      // Kerib automaatselt valitud pisipildi nähtavale
+      useEffect(() => {
+        if (thumbnailContainerRef.current) {
+          const container = thumbnailContainerRef.current;
+          const selectedThumb = container.children[currentIndex];
+          if (selectedThumb) {
+            const scrollLeft = selectedThumb.offsetLeft - (container.offsetWidth / 2) + (selectedThumb.offsetWidth / 2);
+            container.scrollTo({ left: scrollLeft, behavior: 'smooth' });
+          }
+        }
+      }, [currentIndex]);
+
+      const handleNext = () => {
+        if (isTransitioning || isJumping) return;
+        setIsTransitioning(true);
+        setDragOffset(0);
+        setSlideOffset(-2); // Libistame vasakule järgmise pildi peale
+        
+        setTimeout(() => {
+          setIsTransitioning(false);
+          setSlideOffset(-1);
+          setCurrentIndex(nextIndex);
+          resetForm();
+        }, 300);
+      };
+
+      const handlePrev = () => {
+        if (isTransitioning || isJumping) return;
+        setIsTransitioning(true);
+        setDragOffset(0);
+        setSlideOffset(0); // Libistame paremale eelmise pildi peale
+        
+        setTimeout(() => {
+          setIsTransitioning(false);
+          setSlideOffset(-1);
+          setCurrentIndex(prevIndex);
+          resetForm();
+        }, 300);
+      };
+
+      const goToSlide = (index) => {
+        if (isTransitioning || isJumping || index === currentIndex) return;
+        // Kaugemale hüpates teeme lihtsalt fade animatsiooni, et mitte kogu linti läbi kerida
+        setIsJumping(true);
+        
+        setTimeout(() => {
+          setCurrentIndex(index);
+          resetForm();
+          setIsJumping(false);
+        }, 300);
+      };
+
+      const resetForm = () => {
+        setSuggestion('');
+        setEmail('');
+        setStatus('idle');
+        setStatusMessage('');
+      };
+
+      // --- Pisipiltide sikutamise (Drag) loogika ---
+      const handleThumbMouseDown = (e) => {
+        setIsThumbDragging(true);
+        setThumbDragDistance(0);
+        setThumbStartX(e.pageX - thumbnailContainerRef.current.offsetLeft);
+        setThumbScrollLeft(thumbnailContainerRef.current.scrollLeft);
+      };
+
+      const handleThumbMouseMove = (e) => {
+        if (!isThumbDragging) return;
+        e.preventDefault(); // Peatab brauseri vaikimisi teksti/pildi selekteerimise
+        const x = e.pageX - thumbnailContainerRef.current.offsetLeft;
+        const walk = x - thumbStartX;
+        setThumbDragDistance(Math.abs(walk));
+        thumbnailContainerRef.current.scrollLeft = thumbScrollLeft - walk;
+      };
+
+      const handleThumbMouseUpOrLeave = () => {
+        setIsThumbDragging(false);
+      };
+
+      // --- Peapildi sikutamise (Drag / Swipe) loogika ---
+      const handleDragStart = (clientX, clientY) => {
+        if (isTransitioning || isJumping) return;
+        setDragStartPos({ x: clientX, y: clientY });
+        setDragOffset(0);
+      };
+
+      const handleDragMove = (clientX, clientY) => {
+        if (!dragStartPos) return;
+        
+        const diffX = clientX - dragStartPos.x;
+        const diffY = clientY - dragStartPos.y;
+
+        // Kui kasutaja skrollib peamiselt vertikaalselt (lehte alla), katkestame sikutamise
+        if (Math.abs(diffY) > Math.abs(diffX) && Math.abs(dragOffset) < 10) {
+          setDragStartPos(null);
+          return;
+        }
+        
+        setDragOffset(diffX);
+      };
+
+      const handleDragEnd = () => {
+        if (!dragStartPos) return;
+        setDragStartPos(null);
+        
+        // Kas liigutati piisavalt kaugele, et slaidi vahetada?
+        if (dragOffset > 75) {
+          handlePrev();
+        } else if (dragOffset < -75) {
+          handleNext();
+        } else {
+          // Kui mitte, laseme slaidil tagasi keskele vetruda
+          setIsTransitioning(true);
+          setDragOffset(0);
+          setTimeout(() => setIsTransitioning(false), 300);
+        }
+      };
+
+      const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!suggestion.trim()) return;
+
+        setStatus('loading');
+
+        const payload = {
+          latinName: currentMushroom.latin,
+          suggestedName: suggestion.trim(),
+          email: email.trim(),
+          timestamp: new Date().toISOString()
+        };
+
+        if (!GOOGLE_WEBAPP_URL) {
+          setTimeout(() => {
+            setStatus('success');
+            setStatusMessage('Mängult saadetud. Lisa skripti URL, et päriselt Sheetsi saata.');
+            setSuggestion('');
+          }, 1500);
+          return;
+        }
+
+        try {
+          // Eemaldasime päised, et saata andmed toore tekstina (text/plain).
+          // See hoiab ära brauseri CORS preflight päringu, mida Google'i serverid vihkavad.
+          await fetch(GOOGLE_WEBAPP_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            body: JSON.stringify(payload)
+          });
+          
+          setStatus('success');
+          setStatusMessage('Ettepanek salvestatud andmebaasi.');
+          setSuggestion('');
+        } catch (error) {
+          console.error(error);
+          setStatus('error');
+          setStatusMessage('Viga ühendusel. Vaata konsooli ja kontrolli URL-i.');
+        }
+      };
+
+      return (
+        <div 
+          className="w-full min-h-screen flex items-center justify-center bg-transparent sm:p-4 transition-colors duration-500"
+          style={{ color: '#28902d', fontFamily: "'Fira Sans', sans-serif" }}
+        >
+          <div 
+            className="max-w-2xl w-full bg-[#eaf5eb] sm:rounded-2xl shadow-none sm:shadow-xl overflow-hidden border-y sm:border border-[#28902d]/20 relative"
+          >
+            {/* Peapilt ja pühkimisala */}
+            <div 
+              className="relative h-64 sm:h-80 md:h-96 w-full group bg-black select-none overflow-hidden touch-pan-y"
+              onMouseDown={(e) => handleDragStart(e.clientX, e.clientY)}
+              onMouseMove={(e) => handleDragMove(e.clientX, e.clientY)}
+              onMouseUp={handleDragEnd}
+              onMouseLeave={handleDragEnd}
+              onTouchStart={(e) => handleDragStart(e.touches[0].clientX, e.touches[0].clientY)}
+              onTouchMove={(e) => handleDragMove(e.touches[0].clientX, e.touches[0].clientY)}
+              onTouchEnd={handleDragEnd}
+            >
+              {/* Slaidide lint (3 pilti korraga) */}
+              <div 
+                className={`flex w-full h-full cursor-grab active:cursor-grabbing ${
+                  isTransitioning ? 'transition-transform duration-300 ease-in-out' : 'duration-0'
+                } ${isJumping ? 'opacity-0 scale-105 blur-sm transition-all duration-300' : 'opacity-100 scale-100 blur-0'}`}
+                style={{ transform: `translateX(calc(${slideOffset * 100}% + ${dragOffset}px))` }}
+              >
+                <img src={mushrooms[prevIndex].image} alt="" className="flex-shrink-0 w-full h-full object-cover pointer-events-none" />
+                <img src={currentMushroom.image} alt={currentMushroom.latin} className="flex-shrink-0 w-full h-full object-cover pointer-events-none" />
+                <img src={mushrooms[nextIndex].image} alt="" className="flex-shrink-0 w-full h-full object-cover pointer-events-none" />
+              </div>
+              
+              <button 
+                onMouseDown={(e) => e.stopPropagation()}
+                onMouseUp={(e) => e.stopPropagation()}
+                onTouchStart={(e) => e.stopPropagation()}
+                onTouchEnd={(e) => e.stopPropagation()}
+                onClick={(e) => { e.stopPropagation(); handlePrev(); }}
+                className="absolute left-2 top-1/2 -translate-y-1/2 p-2 bg-[#28902d]/80 text-white rounded-full hover:bg-[#28902d] transition-colors backdrop-blur-sm shadow-md z-20"
+                aria-label="Eelmine seen"
+              >
+                <ChevronLeft size={24} />
+              </button>
+              
+              <button 
+                onMouseDown={(e) => e.stopPropagation()}
+                onMouseUp={(e) => e.stopPropagation()}
+                onTouchStart={(e) => e.stopPropagation()}
+                onTouchEnd={(e) => e.stopPropagation()}
+                onClick={(e) => { e.stopPropagation(); handleNext(); }}
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-[#28902d]/80 text-white rounded-full hover:bg-[#28902d] transition-colors backdrop-blur-sm shadow-md z-20"
+                aria-label="Järgmine seen"
+              >
+                <ChevronRight size={24} />
+              </button>
+
+              <div className="absolute top-4 right-4 bg-[#28902d]/90 text-white px-3 py-1 rounded-full text-xs font-bold tracking-wider backdrop-blur-sm z-10 shadow-sm pointer-events-none">
+                {currentIndex + 1} / {mushrooms.length}
+              </div>
+            </div>
+
+            {/* Pisipiltide galerii navigeerimiseks */}
+            <div 
+              ref={thumbnailContainerRef}
+              className={`w-full bg-[#1a5e1d]/5 flex gap-2 overflow-x-auto hide-scrollbar p-3 border-b border-[#28902d]/10 items-center select-none ${isThumbDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+              onMouseDown={handleThumbMouseDown}
+              onMouseMove={handleThumbMouseMove}
+              onMouseUp={handleThumbMouseUpOrLeave}
+              onMouseLeave={handleThumbMouseUpOrLeave}
+            >
+              {mushrooms.map((mushroom, idx) => (
+                <button
+                  key={mushroom.id}
+                  onClick={(e) => {
+                    // Kui lohistati rohkem kui 5 pikslit, siis oli see kerimine, mitte klikk
+                    if (thumbDragDistance > 5) {
+                      e.preventDefault();
+                      return;
+                    }
+                    goToSlide(idx);
+                  }}
+                  className={`flex-shrink-0 w-14 h-14 sm:w-16 sm:h-16 rounded-md overflow-hidden transition-all duration-200 border-2 ${
+                    currentIndex === idx 
+                      ? 'border-[#28902d] opacity-100 shadow-sm scale-105' 
+                      : 'border-transparent opacity-50 hover:opacity-100 grayscale-[40%]'
+                  }`}
+                  aria-label={`Mine slaidile ${idx + 1}`}
+                >
+                  <img src={mushroom.image} alt="" className="w-full h-full object-cover pointer-events-none" />
+                </button>
+              ))}
+            </div>
+
+            <div className={`p-6 md:p-8 transition-all duration-300 ease-in-out ${
+              (isTransitioning || isJumping) ? 'opacity-0 translate-y-3' : 'opacity-100 translate-y-0'
+            }`}>
+              <h2 className="text-3xl font-bold italic mb-4" style={{ color: '#28902d' }}>
+                {currentMushroom.latin}
+              </h2>
+              
+              <div className="min-h-[7rem] sm:min-h-[6rem] mb-8 flex items-start">
+                <p className="leading-relaxed text-[1.05rem] font-medium" style={{ color: '#1a5e1d' }}>
+                  {currentMushroom.description}
+                </p>
+              </div>
+
+              <div className="bg-white/60 p-5 rounded-xl border border-[#28902d]/10">
+                <h3 className="text-sm uppercase tracking-wider font-bold mb-4 opacity-80">
+                  Kuidas seda eesti keeles kutsuma peaks?
+                </h3>
+                
+                <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+                  <style dangerouslySetInnerHTML={{__html: `
+                    /* Inline style to handle focus within Babel/React */
+                    .custom-input::placeholder { color: #28902d; font-weight: 300; font-size: 0.9rem; opacity: 0.6; }
+                    .custom-input:focus { box-shadow: 0 0 0 2px #28902d; outline: none; }
+                  `}} />
+                  <input
+                    id="suggestion-input"
+                    type="text"
+                    value={suggestion}
+                    onChange={(e) => setSuggestion(e.target.value)}
+                    disabled={status === 'loading'}
+                    placeholder="Kirjuta pakkumine siia"
+                    className="custom-input w-full bg-white border border-[#28902d]/30 rounded-lg py-3 px-4 transition-all disabled:opacity-50 font-medium"
+                    style={{ color: '#28902d', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)' }}
+                  />
+                  
+                  <input
+                    id="email-input"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    disabled={status === 'loading'}
+                    placeholder="Soovi korral lisa oma e-post"
+                    className="custom-input w-full bg-white border border-[#28902d]/30 rounded-lg py-3 px-4 transition-all disabled:opacity-50 font-medium text-[0.95rem]"
+                    style={{ color: '#28902d', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)' }}
+                  />
+                  
+                  <button
+                    type="submit"
+                    disabled={!suggestion.trim() || status === 'loading'}
+                    className="w-full text-white px-5 py-3 mt-1 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center shadow-sm hover:shadow"
+                    style={{ backgroundColor: '#28902d' }}
+                    aria-label="Saada ettepanek"
+                  >
+                    {status === 'loading' ? (
+                      <Loader2 size={18} />
+                    ) : (
+                      <span className="font-bold tracking-widest text-sm">SAADA</span>
+                    )}
+                  </button>
+                </form>
+
+                {statusMessage && (
+                  <div className={`mt-4 text-sm p-3 rounded-lg font-medium border ${
+                    status === 'error' ? 'bg-red-50 text-red-700 border-red-200' : 
+                    status === 'success' ? 'bg-[#eaf5eb] text-[#28902d] border-[#28902d]/30' : ''
+                  }`}>
+                    {statusMessage}
+                  </div>
+                )}
+              </div>
+            </div>
+
+          </div>
+        </div>
+      );
+    }
+
+    // Reacti renderdamine HTML-i
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>

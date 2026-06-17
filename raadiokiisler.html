@@ -1,0 +1,498 @@
+import React, { useState, useEffect, useMemo } from 'react';
+import { initializeApp } from 'firebase/app';
+import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from 'firebase/auth';
+import { getFirestore, doc, setDoc, onSnapshot } from 'firebase/firestore';
+import { AlertTriangle, Plus, X, Calendar, User, Activity, Printer } from 'lucide-react';
+
+// --- FIREBASE SETUP ---
+const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const appId = typeof __app_id !== 'undefined' ? __app_id : 'err-schedule-app';
+
+// --- KONSTANDID ---
+const ROLES = ["Pikad", "Hommik", "Õhtu", "Reporter", "Kultuur", "Tartu", "Välis", "Toimetaja"];
+// Kõik rollid lubavad mitut inimest, eraldi MULTI_ROLES nimekirja pole vaja.
+const DAYS = ['E', 'T', 'K', 'N', 'R', 'L', 'P'];
+
+// Genereerime 2026. aasta nädalad ISO standardi lähedaselt
+const generate2026Weeks = () => {
+  const weeks = [];
+  let currentDate = new Date(2025, 11, 29); 
+  
+  for (let i = 1; i <= 53; i++) {
+    const startStr = `${currentDate.getDate()}.${currentDate.getMonth() + 1}`;
+    const endOfWeek = new Date(currentDate);
+    endOfWeek.setDate(currentDate.getDate() + 6);
+    const endStr = `${endOfWeek.getDate()}.${endOfWeek.getMonth() + 1}`;
+    const monthName = new Intl.DateTimeFormat('et-EE', { month: 'long' }).format(endOfWeek);
+
+    weeks.push({
+      id: `W${i}`,
+      label: `Nädal ${i} (${startStr} - ${endStr})`,
+      month: monthName.charAt(0).toUpperCase() + monthName.slice(1)
+    });
+    currentDate.setDate(currentDate.getDate() + 7);
+  }
+  return weeks;
+};
+
+const WEEKS_2026 = generate2026Weeks();
+
+export default function App() {
+  const [user, setUser] = useState(null);
+  const [dbData, setDbData] = useState({ employees: [], schedule: {} });
+  const [selectedWeek, setSelectedWeek] = useState(WEEKS_2026[0].id);
+  const [newEmployeeName, setNewEmployeeName] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
+  const [loading, setLoading] = useState(true);
+  
+  // Milline maatriksi lahter on parajasti avatud muutmiseks (Modal'i jaoks)
+  const [editingCell, setEditingCell] = useState(null);
+
+  // --- AUTENTIMINE JA ANDMETE LAADIMINE ---
+  useEffect(() => {
+    const initAuth = async () => {
+      try {
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+          await signInWithCustomToken(auth, __initial_auth_token);
+        } else {
+          await signInAnonymously(auth);
+        }
+      } catch (err) {
+        console.error("Autentimise viga:", err);
+        setErrorMsg("Süsteemi sisselogimine ebaõnnestus. Andmeid ei saa salvestada.");
+      }
+    };
+    initAuth();
+
+    const unsubscribe = onAuthStateChanged(auth, setUser);
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'err_graafik', '2026');
+    
+    const unsubscribe = onSnapshot(docRef, (docSnap) => {
+      if (docSnap.exists()) {
+        setDbData(docSnap.data());
+      } else {
+        const initialData = {
+          employees: ['VOLTRI', 'PÕLENDIK', 'SALME', 'OTSMAA', 'PEEL', 'LANDEIRO', 'KOCH', 'TOOM', 'LEAS'],
+          schedule: {}
+        };
+        setDoc(docRef, initialData).catch(console.error);
+        setDbData(initialData);
+      }
+      setLoading(false);
+    }, (err) => {
+      console.error("Andmebaasi viga:", err);
+      setErrorMsg("Andmete laadimine ebaõnnestus.");
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [user]);
+
+  // --- ANDMETE SALVESTAMINE ---
+  const saveToDb = async (newData) => {
+    if (!user) return;
+    try {
+      const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'err_graafik', '2026');
+      await setDoc(docRef, newData, { merge: true });
+    } catch (err) {
+      console.error(err);
+      setErrorMsg("Salvestamine ebaõnnestus. Kontrolli võrguühendust.");
+    }
+  };
+
+  const handleAddEmployee = (e) => {
+    e.preventDefault();
+    const name = newEmployeeName.trim().toUpperCase();
+    if (!name || dbData.employees.includes(name)) return;
+    
+    const newData = { ...dbData, employees: [...dbData.employees, name].sort() };
+    saveToDb(newData);
+    setNewEmployeeName('');
+  };
+
+  const handleRemoveEmployee = (name) => {
+    const newData = { ...dbData, employees: dbData.employees.filter(e => e !== name) };
+    saveToDb(newData);
+  };
+
+  const showTempError = (msg) => {
+    setErrorMsg(msg);
+    setTimeout(() => setErrorMsg(''), 5000);
+  };
+
+  // Uus loogika Modal'i kaudu isikute lülitamiseks
+  const handleTogglePerson = (dayIdx, role, personName) => {
+    if (!personName) return;
+
+    const currentWeekSchedule = dbData.schedule[selectedWeek] || {};
+    const daySchedule = currentWeekSchedule[dayIdx] || {};
+    const existingPersonsInRole = daySchedule[role] || [];
+    
+    const isAlreadyAssigned = existingPersonsInRole.includes(personName);
+
+    if (isAlreadyAssigned) {
+      // KUI ON JUBA ROLLIS, SIIS EEMALDA
+      const newData = {
+        ...dbData,
+        schedule: {
+          ...dbData.schedule,
+          [selectedWeek]: {
+            ...currentWeekSchedule,
+            [dayIdx]: {
+              ...daySchedule,
+              [role]: existingPersonsInRole.filter(p => p !== personName)
+            }
+          }
+        }
+      };
+      saveToDb(newData);
+    } else {
+      // KUI EI OLE ROLLIS, SIIS LISA (kõik rollid lubavad mitut inimest)
+      
+      // 1. Kontrolli konflikti (kas on samal päeval muus rollis?)
+      let hasConflict = false;
+      let conflictRole = '';
+
+      Object.entries(daySchedule).forEach(([existingRole, persons]) => {
+        if (existingRole !== role && persons.includes(personName)) {
+          hasConflict = true;
+          conflictRole = existingRole;
+        }
+      });
+
+      if (hasConflict) {
+        showTempError(`Loogikaviga! ${personName} on samal päeval juba rollis "${conflictRole}".`);
+        return;
+      }
+
+      // 2. Lisa isik rolli
+      const newData = {
+        ...dbData,
+        schedule: {
+          ...dbData.schedule,
+          [selectedWeek]: {
+            ...currentWeekSchedule,
+            [dayIdx]: {
+              ...daySchedule,
+              [role]: [...existingPersonsInRole, personName]
+            }
+          }
+        }
+      };
+      saveToDb(newData);
+    }
+  };
+
+  // --- STATISTIKA ARVUTAMINE ---
+  const currentMonthData = useMemo(() => {
+    const activeWeekObj = WEEKS_2026.find(w => w.id === selectedWeek);
+    if (!activeWeekObj) return null;
+
+    const activeMonth = activeWeekObj.month;
+    const weeksInMonth = WEEKS_2026.filter(w => w.month === activeMonth).map(w => w.id);
+    
+    const stats = {}; 
+    
+    dbData.employees.forEach(emp => {
+      stats[emp] = { total: 0, roles: {} };
+      ROLES.forEach(r => stats[emp].roles[r] = 0);
+    });
+
+    weeksInMonth.forEach(weekId => {
+      const weekSched = dbData.schedule[weekId] || {};
+      Object.values(weekSched).forEach(daySched => {
+        Object.entries(daySched).forEach(([role, persons]) => {
+          persons.forEach(person => {
+            if (stats[person]) {
+              stats[person].roles[role]++;
+              stats[person].total++;
+            }
+          });
+        });
+      });
+    });
+
+    return { month: activeMonth, stats };
+  }, [selectedWeek, dbData]);
+
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center bg-gray-50 text-gray-500 font-sans">Initsialiseerin maatriksit...</div>;
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-100 text-gray-800 p-4 md:p-8" style={{ fontFamily: "'Fira Sans', sans-serif" }}>
+      {/* Dünaamiline Fira Sans font ja PDF Printimise seaded */}
+      <style dangerouslySetInnerHTML={{__html: `
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
+        * {
+          font-family: 'Fira Sans', sans-serif !important;
+        }
+        @media print {
+          @page { size: landscape; margin: 10mm; }
+          body { background-color: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          .print\\:hidden { display: none !important; }
+          .print\\:col-span-full { grid-column: 1 / -1 !important; }
+          .overflow-x-auto { overflow-x: visible !important; }
+          .shadow-sm { box-shadow: none !important; }
+          .bg-gray-100 { background-color: white !important; }
+        }
+      `}} />
+
+      <div className="max-w-7xl mx-auto space-y-6">
+        
+        {/* PÄIS */}
+        <header className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <h1 className="text-2xl font-bold mb-1 flex items-center gap-2">
+              <Calendar className="text-blue-600" /> Graafikugeneraator
+            </h1>
+            <p className="text-sm text-gray-500">Süsteem, mis allub füüsikaseadustele ja salvestab andmed pilve.</p>
+          </div>
+
+          <div className="w-full md:w-auto flex flex-col md:flex-row gap-3 print:hidden">
+            {/* Prindi Nupp */}
+            <button 
+              onClick={() => window.print()}
+              className="flex items-center justify-center gap-2 bg-slate-800 text-white px-4 py-2.5 rounded-md font-semibold hover:bg-slate-700 transition-colors shadow-sm"
+            >
+              <Printer size={18} /> Prindi / PDF
+            </button>
+            
+            {/* Nädala rippmenüü (parandatud) */}
+            <div className="w-full md:w-72">
+              <select 
+                value={selectedWeek}
+                onChange={(e) => setSelectedWeek(e.target.value)}
+                className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2.5 border bg-gray-50 font-medium"
+              >
+                {WEEKS_2026.map(w => (
+                  <option key={w.id} value={w.id}>{w.label} - {w.month}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </header>
+
+        {/* VEATEATED */}
+        {errorMsg && (
+          <div className="bg-red-50 border-l-4 border-red-500 text-red-800 p-4 rounded-md shadow-sm flex items-center gap-3 print:hidden">
+            <AlertTriangle size={20} />
+            <p className="font-semibold">{errorMsg}</p>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+          
+          {/* VASAK PANEEL: INIMESTE HALDUS */}
+          <div className="xl:col-span-1 space-y-6 print:hidden">
+            <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-200">
+              <h2 className="text-lg font-bold mb-4 flex items-center gap-2 border-b pb-2">
+                <User size={18} /> Töötajate register
+              </h2>
+              
+              <form onSubmit={handleAddEmployee} className="flex gap-2 mb-4">
+                <input 
+                  type="text" 
+                  value={newEmployeeName}
+                  onChange={(e) => setNewEmployeeName(e.target.value)}
+                  placeholder="Uus nimi..." 
+                  className="flex-1 rounded-md border-gray-300 shadow-sm border p-2 text-sm uppercase"
+                />
+                <button type="submit" className="bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700">
+                  <Plus size={18} />
+                </button>
+              </form>
+
+              <div className="flex flex-wrap gap-2 max-h-[400px] overflow-y-auto">
+                {dbData.employees.map(emp => (
+                  <span key={emp} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                    {emp}
+                    <button onClick={() => handleRemoveEmployee(emp)} className="text-slate-400 hover:text-red-500 ml-1">
+                      <X size={14} />
+                    </button>
+                  </span>
+                ))}
+                {dbData.employees.length === 0 && <p className="text-sm text-gray-400">Ühtegi ohvrit pole lisatud.</p>}
+              </div>
+            </div>
+          </div>
+
+          {/* PAREM PANEEL: GRAAFIKU MAATRIKS */}
+          <div className="xl:col-span-3 bg-white p-5 rounded-xl shadow-sm border border-gray-200 overflow-x-auto print:col-span-full print:shadow-none print:border-none print:p-0">
+            <h2 className="text-lg font-bold mb-4 border-b pb-2 print:hidden">Nädalagraafik</h2>
+            
+            <div className="min-w-[800px]">
+              {/* Päis (Päevad) */}
+              <div className="grid grid-cols-8 gap-2 mb-2">
+                <div className="font-bold text-gray-500 text-sm uppercase p-2">Roll</div>
+                {DAYS.map((day, idx) => (
+                  <div key={idx} className="font-bold text-center text-gray-700 bg-gray-50 py-2 rounded-t-md border-b-2 border-gray-200">
+                    {day}
+                  </div>
+                ))}
+              </div>
+
+              {/* Ridad (Rollid) */}
+              {ROLES.map(role => {
+                return (
+                  <div key={role} className="grid grid-cols-8 gap-2 mb-2 group">
+                    <div className="font-semibold text-sm p-2 flex items-center bg-blue-50/50 rounded-md text-blue-900 border border-blue-100">
+                      {role}
+                    </div>
+                    
+                    {DAYS.map((_, dayIdx) => {
+                      const assignedPersons = dbData.schedule[selectedWeek]?.[dayIdx]?.[role] || [];
+                      
+                      return (
+                        <div 
+                          key={dayIdx} 
+                          onClick={() => setEditingCell({ dayIdx, role, dayName: DAYS[dayIdx] })}
+                          className="border border-gray-200 rounded-md p-1.5 min-h-[60px] bg-white hover:border-blue-400 hover:shadow-md cursor-pointer transition-all flex flex-col gap-1 relative group/cell"
+                        >
+                          {assignedPersons.map(person => (
+                            <div key={person} className="flex items-center justify-between bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs px-1.5 py-1 rounded shadow-sm">
+                              <span className="font-bold truncate">{person}</span>
+                              <button 
+                                onClick={(e) => { e.stopPropagation(); handleTogglePerson(dayIdx, role, person); }} 
+                                className="text-emerald-600 hover:text-red-500 shrink-0 ml-1 print:hidden"
+                              >
+                                <X size={14} />
+                              </button>
+                            </div>
+                          ))}
+                          
+                          {/* Visuaalne vihje hoverdamisel */}
+                          <div className="mt-auto pt-1 flex justify-center opacity-0 group-hover/cell:opacity-100 transition-opacity print:hidden">
+                            <span className="text-[10px] text-blue-500 font-bold uppercase tracking-wider flex items-center gap-1 bg-blue-50 px-2 py-0.5 rounded-full">
+                              <Plus size={10}/> Muuda
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* ALUMINE PANEEL: KUU STATISTIKA */}
+        {currentMonthData && (
+          <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-200 overflow-x-auto print:hidden">
+            <h2 className="text-lg font-bold mb-4 flex items-center gap-2 border-b pb-2">
+              <Activity size={18} /> Kuu koormuse aruanne ({currentMonthData.month})
+            </h2>
+            <div className="min-w-[800px]">
+              <table className="w-full text-sm text-left">
+                <thead className="bg-gray-50 text-gray-600 uppercase text-xs">
+                  <tr>
+                    <th className="py-3 px-4 font-bold border-b">Nimi</th>
+                    {ROLES.map(r => <th key={r} className="py-3 px-2 font-medium border-b text-center">{r}</th>)}
+                    <th className="py-3 px-4 font-bold border-b text-center text-blue-700">KOKKU</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {Object.entries(currentMonthData.stats)
+                    .sort((a, b) => b[1].total - a[1].total)
+                    .map(([person, data]) => (
+                    <tr key={person} className="hover:bg-gray-50">
+                      <td className="py-2 px-4 font-bold text-gray-800">{person}</td>
+                      {ROLES.map(r => (
+                        <td key={r} className={`py-2 px-2 text-center ${data.roles[r] > 0 ? 'text-gray-900 font-semibold' : 'text-gray-300'}`}>
+                          {data.roles[r] || '-'}
+                        </td>
+                      ))}
+                      <td className="py-2 px-4 text-center font-bold text-blue-600 text-base bg-blue-50/30">
+                        {data.total}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* --- UUS UX: MODAL LAHTRI KIIRMUUTMISEKS --- */}
+        {editingCell && (
+          <div 
+            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 print:hidden"
+            onClick={() => setEditingCell(null)} // Sulgeb, kui klikkida tumedale taustale
+          >
+            <div 
+              className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200 border border-gray-200"
+              onClick={(e) => e.stopPropagation()} // Takistab sisu sees klikkides akna sulgumist
+            >
+              <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-gray-50">
+                <h3 className="font-bold text-lg text-gray-800 flex items-center gap-2">
+                  <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-md text-sm uppercase tracking-wider">
+                    {editingCell.dayName}
+                  </span> 
+                  {editingCell.role}
+                </h3>
+                <button 
+                  onClick={() => setEditingCell(null)} 
+                  className="text-gray-400 hover:text-gray-700 bg-white rounded-full p-1.5 border shadow-sm transition-colors"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+              
+              <div className="p-6">
+                <p className="text-sm text-gray-500 mb-5 text-center">
+                  Kliki nimele, et teda sellesse vahetusse lisada või sealt eemaldada.
+                </p>
+                
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {dbData.employees.map(emp => {
+                    const assignedPersons = dbData.schedule[selectedWeek]?.[editingCell.dayIdx]?.[editingCell.role] || [];
+                    const isSelected = assignedPersons.includes(emp);
+                    
+                    return (
+                      <button
+                        key={emp}
+                        onClick={() => handleTogglePerson(editingCell.dayIdx, editingCell.role, emp)}
+                        className={`flex items-center justify-center py-3 px-2 rounded-xl border text-sm font-bold transition-all ${
+                          isSelected 
+                            ? 'bg-emerald-100 border-emerald-300 text-emerald-800 shadow-sm ring-2 ring-emerald-500 ring-offset-1' 
+                            : 'bg-white border-gray-200 text-gray-600 hover:border-blue-300 hover:bg-blue-50 hover:text-blue-700'
+                        }`}
+                      >
+                        {emp}
+                      </button>
+                    );
+                  })}
+                  {dbData.employees.length === 0 && (
+                    <div className="col-span-full text-center text-sm text-gray-400 py-4 italic">
+                      Töötajaid pole veel lisatud. Lisa neid vasakult paneelist.
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              <div className="p-4 border-t border-gray-100 bg-gray-50 flex justify-center">
+                <button 
+                  onClick={() => setEditingCell(null)}
+                  className="w-full sm:w-auto bg-slate-800 text-white px-8 py-2.5 rounded-xl font-semibold hover:bg-slate-700 transition-colors shadow-md"
+                >
+                  Sulge ja salvesta
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+      </div>
+    </div>
+  );
+}

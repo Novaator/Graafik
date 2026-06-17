@@ -60,19 +60,19 @@
     // --- FIREBASE SEADED ---
     // MÄRKUS: Asenda need väärtused enda Firebase projekti andmetega!
     const firebaseConfig = {
-      apiKey: "SINU_PÄRIS_API_KEY",
-      authDomain: "SINU_PÄRIS_PROJEKT.firebaseapp.com",
-      projectId: "SINU_PÄRIS_PROJEKT",
-      storageBucket: "SINU_PÄRIS_PROJEKT.appspot.com",
-      messagingSenderId: "SINU_PÄRIS_SENDER_ID",
-      appId: "SINU_PÄRIS_APP_ID"
+  apiKey: "AIzaSyBbRL3C8EvPfrGeW6lObwixyu8aTb8iBZE",
+  authDomain: "raadiokiisler.firebaseapp.com",
+  projectId: "raadiokiisler",
+  storageBucket: "raadiokiisler.firebasestorage.app",
+  messagingSenderId: "91326686424",
+  appId: "1:91326686424:web:a364b04ff15b275827a3ad"
     };
 
     let app, auth, db;
     let isFirebaseConfigured = false;
     
     // Kontrollime, kas kasutaja on algsed andmed ära vahetanud
-      if (firebaseConfig.apiKey !== "SINU_API_KEY" && firebaseConfig.apiKey !== "SINU_PÄRIS_API_KEY") {
+    if (firebaseConfig.apiKey !== "SINU_API_KEY" && firebaseConfig.apiKey !== "SINU_PÄRIS_API_KEY") {
       try {
         app = initializeApp(firebaseConfig);
         auth = getAuth(app);

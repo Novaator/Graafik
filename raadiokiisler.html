@@ -464,7 +464,7 @@
                       draggable="true"
                       onDragStart={(e) => {
                         e.dataTransfer.setData("application/json", JSON.stringify({ name: emp, sourceDayIdx: null, sourceRole: null }));
-                        e.dataTransfer.effectAllowed = "copy";
+                        e.dataTransfer.effectAllowed = "all";
                       }}
                       className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-bold border cursor-grab hover:opacity-80 transition-opacity shadow-sm"
                       style={{ backgroundColor: getPaleColor(emp), color: getDarkColor(emp), borderColor: 'rgba(0,0,0,0.1)' }}

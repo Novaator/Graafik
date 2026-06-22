@@ -16,7 +16,8 @@
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   
   <!-- Babel, mis tõlgib Reacti (JSX) brauserile arusaadavaks JavaScriptiks lennult -->
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- Fikseeritud versiooniga Babel, et vältida ootamatuid uuendustest tulenevaid vigu -->
+  <script src="https://unpkg.com/@babel/standalone@7.24.4/babel.min.js"></script>
 
   <style>
     body {
@@ -38,8 +39,8 @@
 <body>
   <div id="root"></div>
 
-  <!-- Siin algab tegelik rakenduse kood, type="text/babel" on kriitiline! -->
-  <script type="text/babel">
+  <!-- Siin algab tegelik rakenduse kood. Lisatud data-type="module" ja data-presets="react,env" lahendavad impordi vead! -->
+  <script type="text/babel" data-type="module" data-presets="react,env">
     const { useState, useEffect, useRef } = React;
 
     // --- Ikoonide komponendid ---
@@ -166,8 +167,7 @@
       {
         id: 'craterium_leucocephalum',
         latin: 'Craterium leucocephalum',
-        description:
- 'Sellel limakul sirutuvad ühe millimeetri pikkused viljakehad justkui väikesed veiniklaasid mahalangenud lehtedel, sammaldel ja rohttaimede varrekestel. Kuigi keegi ei tellinud jooki, on metsaalune äkitselt valmis pisikülaliste vastuvõtuks.',
+        description: 'Sellel limakul sirutuvad ühe millimeetri pikkused viljakehad justkui väikesed veiniklaasid mahalangenud lehtedel, sammaldel ja rohttaimede varrekestel. Kuigi keegi ei tellinud jooki, on metsaalune äkitselt valmis pisikülaliste vastuvõtuks.',
         image: 'https://s.err.ee/photo/orig/2026/05/21/3590539hd586.jpg'
       },
       {
@@ -175,7 +175,7 @@
         latin: 'Metatrichia vesparia',
         description: 'Kui eosed on vabanenud, näivad punakaspruunide viljakehade jäänused kui pisikesed herilaste pesad. See Eestis väga sage liik on liiga sarmikas, et olla nimeta!',
         image: 'https://s.err.ee/photo/orig/2026/05/21/3590542h0d46.jpg'
-      },
+      }
     ];
 
     function App() {
@@ -469,9 +469,11 @@
               </h2>
               
               <div className="min-h-[7rem] sm:min-h-[6rem] mb-8 flex items-start">
-                <p className="leading-relaxed text-[1.05rem] font-medium" style={{ color: '#1a5e1d' }}>
-                  {currentMushroom.description}
-                </p>
+                <p 
+                  className="leading-relaxed text-[1.05rem] font-medium" 
+                  style={{ color: '#1a5e1d' }}
+                  dangerouslySetInnerHTML={{ __html: currentMushroom.description }}
+                />
               </div>
 
               <div className="bg-white/60 p-5 rounded-xl border border-[#28902d]/10">

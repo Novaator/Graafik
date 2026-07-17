@@ -5,47 +5,99 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bridži Tõenäosuste Arvutaja</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .split-bar { transition: width 0.5s ease-out; }
+    </style>
 </head>
-<body class="bg-gray-50 min-h-screen flex items-center justify-center p-4">
+<body class="bg-gray-50 min-h-screen p-2 sm:p-4 md:p-8">
 
-    <div class="max-w-md w-full bg-white rounded-2xl shadow-xl p-6 space-y-6">
-        <h1 class="text-xl font-bold text-gray-800 border-b pb-2">Bridži Tõenäosuste Arvutaja</h1>
+    <div class="max-w-2xl mx-auto space-y-6">
+        <h1 class="text-2xl font-bold text-gray-800 text-center">Bridži Tõenäosuste Arvutaja</h1>
         
-        <div class="space-y-4">
-            <!-- Minu andmed -->
-            <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">Minu käsi</label>
-                <div class="grid grid-cols-2 gap-3">
-                    <input type="number" id="hcp" placeholder="Minu HCP" value="13" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                    <input type="number" id="dp" placeholder="Jaotuspunktid" value="0" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Punktide arvutus -->
+            <div class="bg-white rounded-2xl shadow-xl p-6 space-y-6">
+                <h2 class="text-lg font-bold text-gray-800 border-b pb-2">Punktide tõenäosus</h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Minu HCP & Jaotuspunktid</label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <input type="number" id="hcp" placeholder="HCP" value="13" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                            <input type="number" id="dp" placeholder="Jaotus" value="0" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Eesmärk (punktide kogusumma)</label>
+                        <input type="number" id="target" value="25" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+
+                    <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
+                        <label class="block text-sm font-semibold text-blue-800 mb-2">Partneri lubatud vahemik</label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <input type="number" id="p-min" placeholder="Min" value="0" class="w-full px-3 py-2 border rounded-lg outline-none">
+                            <input type="number" id="p-max" placeholder="Max" value="27" class="w-full px-3 py-2 border rounded-lg outline-none">
+                        </div>
+                        <p id="range-limit-text" class="text-xs text-blue-600 mt-2">Max võimalik partneril: 27</p>
+                    </div>
+                </div>
+
+                <div class="bg-gray-900 rounded-xl p-4 text-white">
+                    <p class="text-xs text-gray-400">Tõenäosus eesmärgi saavutamiseks:</p>
+                    <div id="result" class="text-3xl font-bold text-blue-400 mt-1">-- %</div>
                 </div>
             </div>
 
-            <!-- Eesmärk -->
-            <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-1">Eesmärk (punktide kogusumma)</label>
-                <input type="number" id="target" value="25" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-            </div>
-
-            <!-- Partneri vahemik -->
-            <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
-                <label class="block text-sm font-semibold text-blue-800 mb-2">Partneri oletatav HCP vahemik</label>
-                <div class="grid grid-cols-2 gap-3">
-                    <input type="number" id="p-min" placeholder="Min" value="0" class="w-full px-3 py-2 border rounded-lg outline-none">
-                    <input type="number" id="p-max" placeholder="Max" value="40" class="w-full px-3 py-2 border rounded-lg outline-none">
+            <!-- Trumpide jaotus & Kombineeritud tulemus -->
+            <div class="bg-white rounded-2xl shadow-xl p-6 space-y-6">
+                <h2 class="text-lg font-bold text-gray-800 border-b pb-2">Trumpide jaotuse risk</h2>
+                
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Trumpide arv fitis</label>
+                    <select id="fit-size" class="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-green-500">
+                        <option value="5">5 trumpi</option>
+                        <option value="6">6 trumpi</option>
+                        <option value="7">7 trumpi</option>
+                        <option value="8" selected>8 trumpi</option>
+                        <option value="9">9 trumpi</option>
+                        <option value="10">10 trumpi</option>
+                        <option value="11">11 trumpi</option>
+                        <option value="12">12 trumpi</option>
+                        <option value="13">13 trumpi</option>
+                    </select>
                 </div>
-                <p id="range-limit-text" class="text-xs text-blue-600 mt-2">Max võimalik partneril: 27</p>
-            </div>
-        </div>
 
-        <!-- Tulemus -->
-        <div class="bg-gray-900 rounded-xl p-4 text-white">
-            <p class="text-sm text-gray-400">Tõenäosus partneri käest vajalik kätte saada:</p>
-            <div id="result" class="text-3xl font-bold text-blue-400 mt-1">-- %</div>
+                <div id="break-results" class="space-y-3">
+                    <!-- Siia tekivad jaotuse tõenäosused -->
+                </div>
+
+                <!-- Kombineeritud tulemus -->
+                <div class="mt-6 pt-4 border-t border-gray-100">
+                    <p class="text-xs text-gray-500 uppercase font-bold tracking-wider">Kombineeritud edukuse šanss</p>
+                    <div id="combined-result" class="text-2xl font-bold text-green-600 mt-1">-- %</div>
+                    <p class="text-[10px] text-gray-400 mt-1 italic">(Punktide tõenäosus × kõige tõenäolisem jaotus)</p>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
+        // Statistilised andmed
+        const breakData = {
+            5: { "4-4": 52.2, "5-3": 35.3, "6-2": 10.9, "7-1": 1.5, "8-0": 0.1 },
+            6: { "4-3": 64.0, "5-2": 29.2, "6-1": 6.3, "7-0": 0.5 },
+            7: { "3-3": 35.5, "4-2": 48.5, "5-1": 14.5, "6-0": 1.5 },
+            8: { "3-2": 67.8, "4-1": 28.3, "5-0": 3.9 },
+            9: { "2-2": 40.7, "3-1": 49.7, "4-0": 9.6 },
+            10: { "2-1": 78.0, "3-0": 22.0 },
+            11: { "1-1": 52.0, "2-0": 48.0 },
+            12: { "1-0": 100.0 },
+            13: { "0-0": 100.0 }
+        };
+
+        let lastPointProb = 0; // Hoiame punktide tõenäosust globaalselt kombineerimiseks
+
         function updateUI() {
             const hcp = parseInt(document.getElementById('hcp').value) || 0;
             const dp = parseInt(document.getElementById('dp').value) || 0;
@@ -53,10 +105,8 @@
             const pMinInput = document.getElementById('p-min');
             const pMaxInput = document.getElementById('p-max');
             
-            // Loogika: Partneri max punktid ei saa ületada 40 - minu HCP
             const maxPartnerPoints = Math.max(0, 40 - hcp);
             
-            // Piirangute jõustamine
             if (parseInt(pMaxInput.value) > maxPartnerPoints) {
                 pMaxInput.value = maxPartnerPoints;
             }
@@ -66,53 +116,79 @@
             const pMin = parseInt(pMinInput.value) || 0;
             const pMax = parseInt(pMaxInput.value) || 0;
 
-            // Arvutus
-            calculateProbability(hcp, dp, target, pMin, pMax, maxPartnerPoints);
+            // Punktide arvutuse loogika
+            lastPointProb = calculateProbability(hcp, dp, target, pMin, pMax);
+            
+            // Jaotuse arvutuse loogika
+            updateBreakResults();
+            updateCombinedResult();
         }
 
-        function calculateProbability(hcp, dp, target, pMin, pMax, maxPossible) {
+        function calculateProbability(hcp, dp, target, pMin, pMax) {
             const neededForGeim = target - (hcp + dp);
             
             if (neededForGeim <= 0) {
                 document.getElementById('result').innerText = "100%";
-                return;
+                return 1.0;
             }
 
-            // Lihtsustatud tõenäosusmudel: normaaljaotuse lähendus
-            // Keskmine punktide arv partneril on (40-hcp) / 3
             const mean = (40 - hcp) / 3;
-            // Standardhälve bridžis on umbes 4.5
             const stdDev = 4.5;
-            
-            // Arvutame z-score'i vajaliku punktisumma jaoks
             const z = (neededForGeim - mean) / stdDev;
             
-            // Normaaljaotuse tõenäosus (lihtsustatud ligikaudne väärtus)
             let prob = 0.5 - (0.5 * (Math.abs(z) * (1 + 0.049867347 * Math.abs(z) + 0.021141006 * Math.pow(z, 2) + 0.003277626 * Math.pow(z, 3) + 0.0000380036 * Math.pow(z, 4) + 0.0000488906 * Math.pow(z, 5) + 0.000005383 * Math.pow(z, 6))));
             if (z < 0) prob = 1 - prob;
             
-            // Arvestame sisse partneri antud vahemiku (tinglik tõenäosus)
-            // Kui vahemik on antud, piirame tulemust
             if (pMax > pMin) {
-                // Kui vajalik punktisumma on väljaspool antud vahemikku
                 if (neededForGeim > pMax) prob = 0;
                 else if (neededForGeim <= pMin) prob = 1;
                 else {
-                    // Lineaarne skaleerimine vahemiku sees
                     prob = 1 - ((neededForGeim - pMin) / (pMax - pMin));
                 }
             }
 
-            const percentage = (prob * 100).toFixed(1);
-            document.getElementById('result').innerText = `${percentage}%`;
+            document.getElementById('result').innerText = `${(prob * 100).toFixed(1)}%`;
+            return prob;
         }
 
-        // Event listeners
-        document.querySelectorAll('input').forEach(el => {
+        function updateBreakResults() {
+            const fit = document.getElementById('fit-size').value;
+            const container = document.getElementById('break-results');
+            container.innerHTML = '';
+            
+            const splits = breakData[fit];
+            for (const [split, prob] of Object.entries(splits)) {
+                const row = document.createElement('div');
+                row.className = 'space-y-1';
+                row.innerHTML = `
+                    <div class="flex justify-between text-sm">
+                        <span class="font-medium text-gray-700">${split} jaotus</span>
+                        <span class="text-gray-900 font-bold">${prob}%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="split-bar bg-green-500 h-2 rounded-full" style="width: ${prob}%"></div>
+                    </div>
+                `;
+                container.appendChild(row);
+            }
+        }
+
+        function updateCombinedResult() {
+            const fit = document.getElementById('fit-size').value;
+            const splits = breakData[fit];
+            
+            // Võtame kõige tõenäolisema (esimese) jaotuse turvaliseks baasiks
+            const firstSplitKey = Object.keys(splits)[0];
+            const bestSplitProb = splits[firstSplitKey] / 100;
+            
+            const combined = lastPointProb * bestSplitProb;
+            document.getElementById('combined-result').innerText = `${(combined * 100).toFixed(1)}%`;
+        }
+
+        document.querySelectorAll('input, select').forEach(el => {
             el.addEventListener('input', updateUI);
         });
 
-        // Init
         updateUI();
     </script>
 </body>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bridži Tõenäosuste Arvutaja</title>
+    <title>Bridži tõenäosuste arvutaja</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         .split-bar { transition: width 0.5s ease-out; }
@@ -11,55 +11,66 @@
 </head>
 <body class="bg-gray-50 min-h-screen p-2 sm:p-4 md:p-8">
 
-    <div class="max-w-2xl mx-auto space-y-6">
-        <h1 class="text-2xl font-bold text-gray-800 text-center">Bridži Tõenäosuste Arvutaja</h1>
+    <div class="max-w-3xl mx-auto space-y-6">
+        <div class="text-center space-y-2">
+            <h1 class="text-3xl font-bold text-gray-800">Bridži Tõenäosuste Arvutaja</h1>
+            <p class="text-sm text-gray-500">Toetub Richard Pavliceki empiirilisele double-dummy statistikale</p>
+        </div>
         
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Punktide arvutus -->
-            <div class="bg-white rounded-2xl shadow-xl p-6 space-y-6">
-                <h2 class="text-lg font-bold text-gray-800 border-b pb-2">Punktide tõenäosus</h2>
+            
+            <div class="bg-white rounded-2xl shadow-xl p-6 space-y-6 border-t-4 border-blue-500">
+                <h2 class="text-lg font-bold text-gray-800 border-b pb-2">1. Minu käsi ja eesmärk</h2>
                 
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Minu HCP & Jaotuspunktid</label>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Minu pildipunktid (HCP) & Jaotus (DP)</label>
                         <div class="grid grid-cols-2 gap-3">
-                            <input type="number" id="hcp" placeholder="HCP" value="13" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                            <input type="number" id="dp" placeholder="Jaotus" value="0" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                            <div>
+                                <span class="text-xs text-gray-500">HCP (0-37)</span>
+                                <input type="number" id="hcp" value="13" min="0" max="37" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                            </div>
+                            <div>
+                                <span class="text-xs text-gray-500">Lisapunktid (DP)</span>
+                                <input type="number" id="dp" value="0" min="0" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                            </div>
                         </div>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Eesmärk (punktide kogusumma)</label>
-                        <input type="number" id="target" value="25" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Eesmärk (Lepinguks vajalik summa)</label>
+                        <p class="text-xs text-gray-500 mb-2">Geim = 25, Väike slämm = 33</p>
+                        <input type="number" id="target" value="25" min="0" max="40" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
                     </div>
 
                     <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
-                        <label class="block text-sm font-semibold text-blue-800 mb-2">Partneri lubatud vahemik</label>
+                        <label class="block text-sm font-semibold text-blue-800 mb-2">Partneri oletatav punktivahemik</label>
+                        <p class="text-[11px] text-blue-600 mb-2 leading-tight">Määra pakkumise põhjal. Kui infot pole, jäta 0 ja "Max".</p>
                         <div class="grid grid-cols-2 gap-3">
-                            <input type="number" id="p-min" placeholder="Min" value="0" class="w-full px-3 py-2 border rounded-lg outline-none">
-                            <input type="number" id="p-max" placeholder="Max" value="27" class="w-full px-3 py-2 border rounded-lg outline-none">
+                            <input type="number" id="p-min" placeholder="Min" value="0" min="0" class="w-full px-3 py-2 border rounded-lg outline-none">
+                            <input type="number" id="p-max" placeholder="Max" value="27" min="0" class="w-full px-3 py-2 border rounded-lg outline-none">
                         </div>
-                        <p id="range-limit-text" class="text-xs text-blue-600 mt-2">Max võimalik partneril: 27</p>
+                        <p id="range-limit-text" class="text-xs font-bold text-red-500 mt-2">Pakis on järel maksimaalselt: 27 punkti</p>
                     </div>
                 </div>
 
-                <div class="bg-gray-900 rounded-xl p-4 text-white">
-                    <p class="text-xs text-gray-400">Tõenäosus eesmärgi saavutamiseks:</p>
-                    <div id="result" class="text-3xl font-bold text-blue-400 mt-1">-- %</div>
+                <div class="bg-gray-100 rounded-xl p-4 border border-gray-200">
+                    <p class="text-xs text-gray-600 font-semibold uppercase tracking-wider">Tõenäosus, et saavutame eesmärgi (ainult punktide baasil):</p>
+                    <div id="point-result" class="text-3xl font-bold text-gray-800 mt-1">-- %</div>
                 </div>
             </div>
 
-            <!-- Trumpide jaotus & Kombineeritud tulemus -->
-            <div class="bg-white rounded-2xl shadow-xl p-6 space-y-6">
-                <h2 class="text-lg font-bold text-gray-800 border-b pb-2">Trumpide jaotuse risk</h2>
+            <div class="bg-white rounded-2xl shadow-xl p-6 space-y-6 border-t-4 border-green-500 flex flex-col">
+                <h2 class="text-lg font-bold text-gray-800 border-b pb-2">2. Väljamängu potentsiaal</h2>
                 
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Trumpide arv fitis</label>
-                    <select id="fit-size" class="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-green-500">
+                    <p class="text-xs text-gray-500 mb-2">Iga trump üle 8 on väärt u. +1.25 lisapunkti (double-dummy andmetel).</p>
+                    <select id="fit-size" class="w-full px-3 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-green-500 bg-gray-50">
                         <option value="5">5 trumpi</option>
                         <option value="6">6 trumpi</option>
                         <option value="7">7 trumpi</option>
-                        <option value="8" selected>8 trumpi</option>
+                        <option value="8" selected>8 trumpi (Normaalne fit)</option>
                         <option value="9">9 trumpi</option>
                         <option value="10">10 trumpi</option>
                         <option value="11">11 trumpi</option>
@@ -68,127 +79,246 @@
                     </select>
                 </div>
 
-                <div id="break-results" class="space-y-3">
-                    <!-- Siia tekivad jaotuse tõenäosused -->
+                <!-- Lõplik Empiiriline Tulemus -->
+                <div class="mt-auto bg-gray-900 rounded-xl p-5 text-white shadow-inner">
+                    <p class="text-[11px] text-green-400 font-bold uppercase tracking-wider mb-2">Reaalne empiiriline edulootus</p>
+                    <div id="empirical-result" class="text-5xl font-extrabold text-white">-- %</div>
+                    <p class="text-xs text-gray-400 mt-3 leading-relaxed">
+                        Arvestab partneri võimalike punktisummade tõenäosust JA double-dummy statistikat antud punktisumma + fiti reaalsele väljamängitavusele.
+                    </p>
                 </div>
+            </div>
+        </div>
 
-                <!-- Kombineeritud tulemus -->
-                <div class="mt-6 pt-4 border-t border-gray-100">
-                    <p class="text-xs text-gray-500 uppercase font-bold tracking-wider">Kombineeritud edukuse šanss</p>
-                    <div id="combined-result" class="text-2xl font-bold text-green-600 mt-1">-- %</div>
-                    <p class="text-[10px] text-gray-400 mt-1 italic">(Punktide tõenäosus × kõige tõenäolisem jaotus)</p>
+        <div class="bg-white rounded-2xl shadow-xl p-6 space-y-4 border-t-4 border-purple-500 md:col-span-2 mt-6">
+            <h2 class="text-lg font-bold text-gray-800 border-b pb-2">3. Vastaste trumpide jaotuse (Break) riskianalüüs</h2>
+            <div class="flex flex-col md:flex-row gap-6 items-center">
+                <div class="md:w-1/3 space-y-2">
+                    <p class="text-sm text-gray-700">Meil on kokku <span id="split-fit-display" class="font-bold text-purple-600 text-lg">8</span> trumpi.</p>
+                    <p class="text-sm text-gray-700">Vastastel on järel <span id="split-missing-display" class="font-bold text-purple-600 text-lg">5</span> trumpi.</p>
+                    <p class="text-xs text-gray-500">Mida ebaühtlasemalt vastaste kaardid jagunevad (nt 4-1 või 5-0), seda suurem on risk lepingu nurjumiseks. See on puhta kombinatoorika tulemus.</p>
+                </div>
+                <div class="md:w-2/3 w-full grid grid-cols-2 sm:grid-cols-3 gap-3" id="split-results-container">
+                    <!-- Dünaamiline sisu genereeritakse JS abil -->
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Statistilised andmed
-        const breakData = {
-            5: { "4-4": 52.2, "5-3": 35.3, "6-2": 10.9, "7-1": 1.5, "8-0": 0.1 },
-            6: { "4-3": 64.0, "5-2": 29.2, "6-1": 6.3, "7-0": 0.5 },
-            7: { "3-3": 35.5, "4-2": 48.5, "5-1": 14.5, "6-0": 1.5 },
-            8: { "3-2": 67.8, "4-1": 28.3, "5-0": 3.9 },
-            9: { "2-2": 40.7, "3-1": 49.7, "4-0": 9.6 },
-            10: { "2-1": 78.0, "3-0": 22.0 },
-            11: { "1-1": 52.0, "2-0": 48.0 },
-            12: { "1-0": 100.0 },
-            13: { "0-0": 100.0 }
+        // Empiiriline väljamängu edukus (Pavliceki ja teiste andmetel põhinev logistiline kõver)
+        // Võti on (Kogupunktid - Eesmärk). Nt geimi (25) puhul on diff=0 võidutõenäosus ~60%.
+        const empiricalWinRates = {
+            "-5": 0.00,
+            "-4": 0.02,
+            "-3": 0.05,
+            "-2": 0.15,
+            "-1": 0.35,
+             "0": 0.60,
+             "1": 0.80,
+             "2": 0.92,
+             "3": 0.97,
+             "4": 0.99,
+             "5": 1.00
         };
 
-        let lastPointProb = 0; // Hoiame punktide tõenäosust globaalselt kombineerimiseks
+        // Funktsioon leiab reaalse võidutõenäosuse vastavalt punktide vahele (interpoleerib vajadusel)
+        function getEmpiricalRate(diff) {
+            if (diff <= -5) return 0.0;
+            if (diff >= 5) return 1.0;
+            
+            const floor = Math.floor(diff);
+            const ceil = Math.ceil(diff);
+            
+            if (floor === ceil) return empiricalWinRates[floor.toString()];
+            
+            const lower = empiricalWinRates[floor.toString()];
+            const upper = empiricalWinRates[ceil.toString()];
+            const fraction = diff - floor;
+            
+            // Lineaarne interpoleerimine kahe täisarvu vahel (nt 9-ne fit annab komaga boonuse)
+            return lower + (upper - lower) * fraction;
+        }
+
+        // Trumbi pikkuse teisendamine punktiväärtuseks (Double-dummy andmetel)
+        function getFitBonus(fit) {
+            const f = parseInt(fit);
+            if (f === 8) return 0;
+            if (f > 8) return (f - 8) * 1.25; // Lisatrump on tohutu eelis (vähendab ohtlike jaotuste riski)
+            if (f < 8) return (f - 8) * 1.50; // Trumbipuudus on suurem karistus
+            return 0;
+        }
+
+        function nCr(n, r) {
+            if (r < 0 || r > n) return 0;
+            let res = 1;
+            for (let i = 1; i <= r; i++) {
+                res = res * (n - i + 1) / i;
+            }
+            return res;
+        }
+
+        function renderSplits(fit) {
+            const missing = 13 - fit;
+            document.getElementById('split-fit-display').innerText = fit;
+            document.getElementById('split-missing-display').innerText = missing;
+            
+            const container = document.getElementById('split-results-container');
+            container.innerHTML = '';
+            
+            if (missing <= 0) {
+                container.innerHTML = '<div class="col-span-full text-center text-sm font-bold text-green-600 bg-green-50 rounded-xl py-4 border border-green-200">Kõik trumbid on teie käes! (0-0 jaotus: 100%)</div>';
+                return;
+            }
+
+            const totalWays = nCr(26, 13);
+            let results = [];
+
+            // Arvutame kõik võimalikud jaotused vastaste (k vs other) vahel
+            for (let k = 0; k <= Math.floor(missing / 2); k++) {
+                const other = missing - k;
+                let prob = 0;
+                if (k === other) {
+                    prob = (nCr(missing, k) * nCr(26 - missing, 13 - k)) / totalWays;
+                } else {
+                    const probK = (nCr(missing, k) * nCr(26 - missing, 13 - k)) / totalWays;
+                    const probOther = (nCr(missing, other) * nCr(26 - missing, 13 - other)) / totalWays;
+                    prob = probK + probOther;
+                }
+                
+                // Määrame "ohtlikkuse" visuaalse tagasiside jaoks (ekstreemsused on punased)
+                let isDangerous = false;
+                if (k === 0) isDangerous = true; 
+                if (k === 1 && missing >= 5) isDangerous = true;
+
+                results.push({
+                    label: `${other}-${k}`,
+                    prob: prob * 100,
+                    isDangerous: isDangerous
+                });
+            }
+
+            // Sorteerime nii, et kõige tõenäolisem on ees
+            results.sort((a, b) => b.prob - a.prob);
+
+            results.forEach(res => {
+                let colorClass = res.isDangerous ? 'bg-red-50 border-red-200 text-red-700' : 'bg-green-50 border-green-200 text-green-700';
+                if (!res.isDangerous && res.prob < 30) colorClass = 'bg-yellow-50 border-yellow-200 text-yellow-700';
+
+                container.innerHTML += `
+                    <div class="border rounded-xl p-3 flex flex-col items-center justify-center ${colorClass} shadow-sm">
+                        <span class="text-sm font-bold opacity-80">${res.label}</span>
+                        <span class="text-lg font-extrabold">${res.prob.toFixed(1)}%</span>
+                    </div>
+                `;
+            });
+        }
 
         function updateUI() {
+            // Loeme väärtused
             const hcp = parseInt(document.getElementById('hcp').value) || 0;
             const dp = parseInt(document.getElementById('dp').value) || 0;
             const target = parseInt(document.getElementById('target').value) || 0;
+            const fitSize = parseInt(document.getElementById('fit-size').value) || 8;
+            
             const pMinInput = document.getElementById('p-min');
             const pMaxInput = document.getElementById('p-max');
             
-            const maxPartnerPoints = Math.max(0, 40 - hcp);
+            // Kaitse: füüsiliselt pole võimalik, et pakis on rohkem punkte kui (40 - minu HCP)
+            const maxPointsInDeck = Math.max(0, 40 - hcp);
             
-            if (parseInt(pMaxInput.value) > maxPartnerPoints) {
-                pMaxInput.value = maxPartnerPoints;
+            let pMax = parseInt(pMaxInput.value) || 0;
+            if (pMax > maxPointsInDeck) {
+                pMax = maxPointsInDeck;
+                pMaxInput.value = maxPointsInDeck;
             }
-            pMaxInput.max = maxPartnerPoints;
-            document.getElementById('range-limit-text').innerText = `Max võimalik partneril: ${maxPartnerPoints}`;
+            document.getElementById('range-limit-text').innerText = `Pakis on järel maksimaalselt: ${maxPointsInDeck} pildipunkti.`;
 
             const pMin = parseInt(pMinInput.value) || 0;
-            const pMax = parseInt(pMaxInput.value) || 0;
 
-            // Punktide arvutuse loogika
-            lastPointProb = calculateProbability(hcp, dp, target, pMin, pMax);
+            // ---------------------------------------------------------
+            // ARVUTUS 1: Punktide saavutamise tõenäosus
+            // ---------------------------------------------------------
+            const neededForTarget = target - (hcp + dp);
             
-            // Jaotuse arvutuse loogika
-            updateBreakResults();
-            updateCombinedResult();
-        }
-
-        function calculateProbability(hcp, dp, target, pMin, pMax) {
-            const neededForGeim = target - (hcp + dp);
-            
-            if (neededForGeim <= 0) {
-                document.getElementById('result').innerText = "100%";
-                return 1.0;
+            let basePointProb = 0;
+            if (neededForTarget <= 0) {
+                basePointProb = 1.0;
+            } else {
+                const mean = maxPointsInDeck / 3; 
+                const stdDev = 4.5; // Keskmine standardhälve bridži punktijaotusel
+                
+                // Arvutame z-skoori ja tõenäosuse normaali lähendiga
+                const z = (neededForTarget - mean) / stdDev;
+                let prob = 0.5 - (0.5 * (Math.abs(z) * (1 + 0.049867347 * Math.abs(z) + 0.021141006 * Math.pow(z, 2) + 0.003277626 * Math.pow(z, 3) + 0.0000380036 * Math.pow(z, 4) + 0.0000488906 * Math.pow(z, 5) + 0.000005383 * Math.pow(z, 6))));
+                if (z < 0) prob = 1 - prob;
+                
+                // Rakendame pakkumise vahemiku piirangut
+                if (pMax >= pMin) {
+                    if (neededForTarget > pMax) prob = 0;
+                    else if (neededForTarget <= pMin) prob = 1;
+                    else {
+                        prob = 1 - ((neededForTarget - pMin) / (pMax - pMin + 1)); // Lihtsustatud lineaarne skaleerimine vahemikus
+                    }
+                }
+                basePointProb = Math.max(0, Math.min(1, prob));
             }
+            document.getElementById('point-result').innerText = `${(basePointProb * 100).toFixed(1)}%`;
 
-            const mean = (40 - hcp) / 3;
-            const stdDev = 4.5;
-            const z = (neededForGeim - mean) / stdDev;
+            // ---------------------------------------------------------
+            // ARVUTUS 2: Matemaatiline ootus (Expected Value) Double-Dummy pealt
+            // ---------------------------------------------------------
+            const meanDist = maxPointsInDeck / 3;
+            const stdDevDist = 4.5;
             
-            let prob = 0.5 - (0.5 * (Math.abs(z) * (1 + 0.049867347 * Math.abs(z) + 0.021141006 * Math.pow(z, 2) + 0.003277626 * Math.pow(z, 3) + 0.0000380036 * Math.pow(z, 4) + 0.0000488906 * Math.pow(z, 5) + 0.000005383 * Math.pow(z, 6))));
-            if (z < 0) prob = 1 - prob;
-            
-            if (pMax > pMin) {
-                if (neededForGeim > pMax) prob = 0;
-                else if (neededForGeim <= pMin) prob = 1;
-                else {
-                    prob = 1 - ((neededForGeim - pMin) / (pMax - pMin));
+            let expectedWinRate = 0;
+            let totalAllowedProb = 0;
+            const partnerProbabilities = {};
+
+            // Genereerime partneri võimalike punktisummade jaotuse (ainult lubatud vahemikus)
+            for (let pts = 0; pts <= maxPointsInDeck; pts++) {
+                if (pts >= pMin && pts <= pMax) {
+                    const z = (pts - meanDist) / stdDevDist;
+                    // Normaaljaotuse tõenäosustihedus
+                    const p = Math.exp(-0.5 * z * z) / (stdDevDist * Math.sqrt(2 * Math.PI));
+                    partnerProbabilities[pts] = p;
+                    totalAllowedProb += p;
                 }
             }
 
-            document.getElementById('result').innerText = `${(prob * 100).toFixed(1)}%`;
-            return prob;
-        }
-
-        function updateBreakResults() {
-            const fit = document.getElementById('fit-size').value;
-            const container = document.getElementById('break-results');
-            container.innerHTML = '';
-            
-            const splits = breakData[fit];
-            for (const [split, prob] of Object.entries(splits)) {
-                const row = document.createElement('div');
-                row.className = 'space-y-1';
-                row.innerHTML = `
-                    <div class="flex justify-between text-sm">
-                        <span class="font-medium text-gray-700">${split} jaotus</span>
-                        <span class="text-gray-900 font-bold">${prob}%</span>
-                    </div>
-                    <div class="w-full bg-gray-200 rounded-full h-2">
-                        <div class="split-bar bg-green-500 h-2 rounded-full" style="width: ${prob}%"></div>
-                    </div>
-                `;
-                container.appendChild(row);
+            // Arvutame tingliku matemaatilise ootuse väljamängule
+            if (totalAllowedProb > 0) {
+                for (const [ptsString, prob] of Object.entries(partnerProbabilities)) {
+                    const pts = parseInt(ptsString);
+                    const normalizedProb = prob / totalAllowedProb; // Skaleerime summa 1-ks
+                    
+                    const totalCombinedPoints = hcp + dp + pts;
+                    // Arvutame efektiivsete punktide vahe võrreldes eesmärgiga
+                    // Nt 24 punkti ja 9-ne fit on efektiivselt 24 + 1.25 = 25.25 (mis on üle eesmärgi 25)
+                    const diff = totalCombinedPoints + getFitBonus(fitSize) - target;
+                    
+                    expectedWinRate += normalizedProb * getEmpiricalRate(diff);
+                }
             }
+
+            // Väljastame lõpliku tulemuse
+            document.getElementById('empirical-result').innerText = `${(expectedWinRate * 100).toFixed(1)}%`;
+            
+            // Visuaalne tagasiside värvidega
+            const resultBox = document.getElementById('empirical-result');
+            if (expectedWinRate < 0.40) resultBox.className = "text-5xl font-extrabold text-red-500";
+            else if (expectedWinRate < 0.65) resultBox.className = "text-5xl font-extrabold text-yellow-400";
+            else resultBox.className = "text-5xl font-extrabold text-green-400";
+
+            renderSplits(fitSize);
         }
 
-        function updateCombinedResult() {
-            const fit = document.getElementById('fit-size').value;
-            const splits = breakData[fit];
-            
-            // Võtame kõige tõenäolisema (esimese) jaotuse turvaliseks baasiks
-            const firstSplitKey = Object.keys(splits)[0];
-            const bestSplitProb = splits[firstSplitKey] / 100;
-            
-            const combined = lastPointProb * bestSplitProb;
-            document.getElementById('combined-result').innerText = `${(combined * 100).toFixed(1)}%`;
-        }
-
+        // Kuulajad kõigile sisenditele
         document.querySelectorAll('input, select').forEach(el => {
             el.addEventListener('input', updateUI);
         });
 
+        // Esimene käivitus
         updateUI();
     </script>
 </body>

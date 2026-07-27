@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>August 12 solar eclipse</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0f172a; /* Tume taust (Tailwind slate-900) */
+            color: #f8fafc;
+            font-family: 'Fira Sans', sans-serif;
+            margin: 0;
+            overflow-x: hidden;
+        }
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            border-radius: 0.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
+            background: radial-gradient(circle at center, #1e293b 0%, #020617 100%);
+        }
+        /* Kohandatud liuguri stiil */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: #facc15;
+            cursor: pointer;
+            margin-top: -8px;
+            box-shadow: 0 0 10px rgba(250, 204, 21, 0.5);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: #475569;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4 md:p-8">
+
+    <div class="max-w-4xl w-full flex flex-col gap-6">
+        
+        <!-- Päis -->
+        <header class="text-center">
+            <h1 class="text-3xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-orange-500 mb-2">
+                August 12 solar eclipse
+            </h1>
+        </header>
+
+        <!-- Paneelid (Kontrollid ja Lõuend) -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Vasak paneel: Seaded -->
+            <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 shadow-xl flex flex-col gap-6">
+                
+                <!-- Linna valik -->
+                <div>
+                    <label for="citySelect" class="block text-sm font-medium text-slate-300 mb-2">Choose location (Vantage point)</label>
+                    <select id="citySelect" class="w-full bg-slate-900 border border-slate-600 text-white rounded-lg p-3 focus:ring-2 focus:ring-yellow-500 focus:outline-none transition">
+                        <option value="Tallinn" selected>Tallinn</option>
+                        <option value="Tartu">Tartu</option>
+                        <option value="Narva">Narva</option>
+                        <option value="Pärnu">Pärnu</option>
+                        <option value="Madrid">Madrid (Hispaania)</option>
+                        <option value="Reykjavik">Reykjavík (Island)</option>
+                    </select>
+                </div>
+
+                <!-- Info kuvamine -->
+                <div class="bg-slate-900/50 p-4 rounded-lg border border-slate-700/50">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-slate-400 text-sm">Local time:</span>
+                        <span id="timeDisplay" class="text-xl font-mono text-yellow-400 font-bold"></span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-400 text-sm">Eclipse coverage:</span>
+                        <span id="coverageDisplay" class="text-xl font-mono text-white font-bold">0.0%</span>
+                    </div>
+                    <div id="sunsetAlert" class="mt-3 text-center text-orange-400 font-bold text-sm hidden">
+                        The sun has set (below the horizon)
+                    </div>
+                    <div id="totalityAlert" class="mt-3 text-center text-red-400 font-bold text-sm hidden animate-pulse">
+                        TOTAL ECLPSE!
+                    </div>
+                </div>
+
+                <!-- Aja kontroll -->
+                <div>
+                    <div class="flex justify-between mb-2">
+                        <label id="timeRangeLabel" class="block text-sm font-medium text-slate-300">Time</label>
+                        <button id="playBtn" class="text-xs bg-yellow-500 hover:bg-yellow-400 text-slate-900 font-bold py-1 px-3 rounded transition">
+                            ▶ Play
+                        </button>
+                    </div>
+                    <input type="range" id="timeSlider" min="0" max="150" value="0" step="0.05">
+                </div>
+                
+                <div class="mt-auto pt-4 border-t border-slate-700">
+                    <p class="text-xs text-slate-500 leading-relaxed">
+                        Simplified illustration. Times (EEST) and eclipse coverage are approximate.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Parem paneel: Lõuend -->
+            <div class="lg:col-span-2 relative aspect-video md:aspect-[4/3] lg:aspect-auto h-[400px] lg:h-[500px]">
+                <canvas id="eclipseCanvas"></canvas>
+            </div>
+            
+        </div>
+    </div>
+
+    <script>
+        // --- Andmed linnade kohta ---
+        // Kellaajad on konverteeritud minutiteks alates vastava ajavööndi südaööst
+        // Andmed pärinevad kasutaja timeanddate.com väljavõttest
+        const citiesData = {
+            "Tallinn": { start: 1202.083, max: 1253.85, end: 1303.833, sunset: 1279.883, magnitude: 0.834, angle: Math.PI / 4, tz: "EEST" },
+            "Tartu": { start: 1203.4, max: 1254.7, end: 1304.217, sunset: 1267.017, magnitude: 0.800, angle: Math.PI / 4, tz: "EEST" },
+            "Narva": { start: 1202.083, max: 1252.667, end: 1302.2, sunset: 1265.817, magnitude: 0.780, angle: Math.PI / 4, tz: "EEST" },
+            "Pärnu": { start: 1203.867, max: 1255.517, end: 1305.333, sunset: 1275.95, magnitude: 0.840, angle: Math.PI / 4, tz: "EEST" },
+            "Madrid": { start: 1176.767, max: 1232.383, end: 1284.517, sunset: 1276.367, magnitude: 1.01, angle: Math.PI / 2.5, tz: "CEST" },
+            "Reykjavik": { start: 1007.217, max: 1068.8, end: 1127.667, sunset: 9999, magnitude: 1.05, angle: Math.PI / 6, tz: "GMT" } // Reykjavik ei looju varjutuse ajal
+        };
+
+        // --- DOM Elemendid ---
+        const canvas = document.getElementById('eclipseCanvas');
+        const ctx = canvas.getContext('2d');
+        const citySelect = document.getElementById('citySelect');
+        const timeSlider = document.getElementById('timeSlider');
+        const timeDisplay = document.getElementById('timeDisplay');
+        const coverageDisplay = document.getElementById('coverageDisplay');
+        const playBtn = document.getElementById('playBtn');
+        const totalityAlert = document.getElementById('totalityAlert');
+        const sunsetAlert = document.getElementById('sunsetAlert');
+        const timeRangeLabel = document.getElementById('timeRangeLabel');
+
+        // --- Muutujad ---
+        let currentCity = "Tallinn";
+        let timeMinutes = citiesData["Tallinn"].start - 10;
+        let isPlaying = false;
+        let animationFrameId;
+        const R = 80; // Päikese ja Kuu baasraadius
+        const stars = [];
+
+        // Loo staatilised tähed taustale
+        for (let i = 0; i < 150; i++) {
+            stars.push({
+                x: Math.random() * 2000,
+                y: Math.random() * 2000,
+                size: Math.random() * 1.5,
+                opacity: Math.random()
+            });
+        }
+
+        // Vorminda kellaaeg sekundite täpsusega (HH.MM.SS)
+        function formatTime(minutesTotal, tz) {
+            const totalSeconds = Math.round(minutesTotal * 60);
+            const sec = totalSeconds % 60;
+            const min = Math.floor(totalSeconds / 60) % 60;
+            const hr = Math.floor(totalSeconds / 3600) % 24;
+            return `${hr.toString().padStart(2, '0')}.${min.toString().padStart(2, '0')}.${sec.toString().padStart(2, '0')} ${tz}`;
+        }
+
+        // Kohanda liugurit vastavalt valitud linna sündmuse aegadele
+        function updateSliderForCity() {
+            const data = citiesData[currentCity];
+            const minT = Math.floor(data.start - 15);
+            const maxT = Math.ceil(data.end + 15);
+            
+            timeSlider.min = minT;
+            timeSlider.max = maxT;
+            
+            // Kui vahetame linna, säilitame võimalusel sama proportsionaalse aja või paneme algusesse
+            timeSlider.value = minT;
+            timeMinutes = minT;
+            
+            const minStr = formatTime(minT, "").trim().substring(0, 5);
+            const maxStr = formatTime(maxT, "").trim().substring(0, 5);
+            timeRangeLabel.innerText = `Aeg (${minStr} - ${maxStr})`;
+        }
+
+        // Kohandab lõuendi suurust vastavalt ekraanile ja joonistab sisu uuesti
+        function resizeCanvas() {
+            canvas.width = canvas.clientWidth;
+            canvas.height = canvas.clientHeight;
+            draw();
+        }
+
+        function draw() {
+            const data = citiesData[currentCity];
+            
+            // 1. Arvuta Kuu positsioon ja kattuvus täpsete faasiaegade põhjal
+            const { start, max, end, magnitude, angle, sunset, tz } = data;
+            
+            // Minimaalne kaugus keskpunktide vahel maksimumi hetkel (visuaalne geomeetria)
+            const minD = Math.max(0, 2 * R * (1 - magnitude)); 
+            
+            // Kui kaugele peab kuu liikuma, et katta distants 2*R kuni minD sirgjoonelisel trajektooril
+            const startX = -Math.sqrt(Math.max(0, 4 * R * R - minD * minD));
+            const endX = Math.sqrt(Math.max(0, 4 * R * R - minD * minD));
+            
+            // Interpoleerime Kuu asukoha täpselt kasutaja antud kellaaegade vahel
+            let moonBaseX;
+            if (timeMinutes <= max) {
+                if (timeMinutes < start) {
+                    moonBaseX = startX - (start - timeMinutes) * 2; // Liigub raamist välja enne algust
+                } else {
+                    const p = (timeMinutes - start) / (max - start);
+                    moonBaseX = startX + p * (0 - startX); // Liigub alguspunktist maksimumi suunas
+                }
+            } else {
+                if (timeMinutes > end) {
+                    moonBaseX = endX + (timeMinutes - end) * 2; // Liigub raamist välja pärast lõppu
+                } else {
+                    const p = (timeMinutes - max) / (end - max);
+                    moonBaseX = 0 + p * (endX - 0); // Liigub maksimumist lõpp-punkti
+                }
+            }
+            const moonBaseY = minD;
+            
+            // Pööra trajektoori vastavalt linna nurgale
+            const moonOffsetX = moonBaseX * Math.cos(angle) - moonBaseY * Math.sin(angle);
+            const moonOffsetY = moonBaseX * Math.sin(angle) + moonBaseY * Math.cos(angle);
+            
+            // Keskpunktid
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            
+            // Tõeline kaugus päikesest simulatsioonil
+            const currentDistance = Math.hypot(moonOffsetX, moonOffsetY);
+            
+            // Kattuvuse protsendi täpsem arvutus
+            let coveragePercentage = 0;
+            if (currentDistance < 2 * R) {
+                if (currentDistance <= minD && magnitude >= 1.0) {
+                    coveragePercentage = 100;
+                } else {
+                    // Visuaalne lineaarne lähendus kauguse põhjal
+                    const ratio = (2 * R - currentDistance) / (2 * R - minD);
+                    coveragePercentage = Math.max(0, ratio * (magnitude * 100));
+                    if (coveragePercentage > 100) coveragePercentage = 100;
+                }
+            }
+            
+            // Uuenda UI tekste
+            timeDisplay.innerText = formatTime(timeMinutes, tz);
+            coverageDisplay.innerText = coveragePercentage.toFixed(1) + "%";
+            
+            if (coveragePercentage > 99.9) {
+                totalityAlert.classList.remove('hidden');
+                coverageDisplay.classList.add('text-red-400');
+                coverageDisplay.classList.remove('text-white');
+            } else {
+                totalityAlert.classList.add('hidden');
+                coverageDisplay.classList.remove('text-red-400');
+                coverageDisplay.classList.add('text-white');
+            }
+
+            // Loojangu visuaalne indikaator
+            if (timeMinutes >= sunset) {
+                sunsetAlert.classList.remove('hidden');
+                canvas.style.opacity = '0.4'; // Teeme pildi visuaalselt hägusemaks/tumedamaks
+            } else {
+                sunsetAlert.classList.add('hidden');
+                canvas.style.opacity = '1';
+            }
+
+            // 2. Joonista taust ja taevas
+            // Mida suurem kattuvus, seda tumedamaks läheb
+            const darkness = coveragePercentage / 100;
+            const skyColorR = Math.floor(30 * (1 - darkness));
+            const skyColorG = Math.floor(41 * (1 - darkness));
+            const skyColorB = Math.floor(59 * (1 - darkness));
+            
+            ctx.fillStyle = `rgb(${skyColorR}, ${skyColorG}, ${skyColorB})`;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Tähed (muutuvad nähtavaks, kui on pime)
+            if (darkness > 0.5) {
+                const starOpacity = (darkness - 0.5) * 2; // 0 to 1
+                stars.forEach(star => {
+                    ctx.beginPath();
+                    ctx.arc(star.x % canvas.width, star.y % canvas.height, star.size, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(255, 255, 255, ${star.opacity * starOpacity})`;
+                    ctx.fill();
+                });
+            }
+
+            
+            // Päikese kroon / kuma (nähtav tugeva varjutuse ajal)
+            if (darkness > 0.7) {
+                const coronaGradient = ctx.createRadialGradient(cx, cy, R, cx, cy, R * 3);
+                coronaGradient.addColorStop(0, `rgba(255, 255, 255, ${darkness})`);
+                coronaGradient.addColorStop(0.2, `rgba(255, 250, 200, ${darkness * 0.5})`);
+                coronaGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+                
+                ctx.beginPath();
+                ctx.arc(cx, cy, R * 3, 0, Math.PI * 2);
+                ctx.fillStyle = coronaGradient;
+                ctx.fill();
+            }
+
+            // Päike (Kollane/Valge)
+            ctx.beginPath();
+            ctx.arc(cx, cy, R, 0, Math.PI * 2);
+            
+            // Päikese värv muutub punakamaks madalal horisondil, aga hoiame siin lihtsalt särava
+            const sunGradient = ctx.createRadialGradient(cx - R/3, cy - R/3, R/10, cx, cy, R);
+            sunGradient.addColorStop(0, '#ffffff');
+            sunGradient.addColorStop(0.8, '#fde047'); // yellow-300
+            sunGradient.addColorStop(1, '#eab308'); // yellow-500
+            
+            ctx.fillStyle = sunGradient;
+            
+            // Sära efekt (glow)
+            ctx.shadowBlur = 40;
+            ctx.shadowColor = '#facc15';
+            ctx.fill();
+            
+            // Eemalda varjud järgmiste elementide jaoks
+            ctx.shadowBlur = 0;
+
+            // Kuu (Tume / Must)
+            ctx.beginPath();
+            ctx.arc(cx + moonOffsetX, cy + moonOffsetY, R * 1.02, 0, Math.PI * 2); // Kuu on visuaalselt pisut suurem või sama suur
+            
+            // Kuu värv on taeva värvi, et see tekitaks augu efekti, 
+            // aga lisame natuke kera efekti
+            const moonGradient = ctx.createRadialGradient(
+                cx + moonOffsetX - R/2, cy + moonOffsetY - R/2, 
+                R/10, cx + moonOffsetX, cy + moonOffsetY, R
+            );
+            moonGradient.addColorStop(0, '#1e293b');
+            moonGradient.addColorStop(1, '#020617');
+            
+            ctx.fillStyle = moonGradient;
+            ctx.fill();
+            
+            // Kuu äärejoon, et see eristuks paremini 100% varjutuse ajal
+            if (darkness > 0.95) {
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
+        }
+
+        // Animatsiooni loogika
+        function animate() {
+            if (isPlaying) {
+                const data = citiesData[currentCity];
+                timeMinutes += 0.15; // Aja kulumise kiirus simulatsioonis
+                if (timeMinutes > data.end + 15) {
+                    timeMinutes = data.end + 15;
+                    togglePlay(false);
+                }
+                timeSlider.value = timeMinutes;
+                draw();
+                animationFrameId = requestAnimationFrame(animate);
+            }
+        }
+
+        function togglePlay(forceState) {
+            isPlaying = forceState !== undefined ? forceState : !isPlaying;
+            const data = citiesData[currentCity];
+            
+            if (isPlaying) {
+                if (timeMinutes >= data.end + 15) {
+                    timeMinutes = data.start - 15; // Alusta otsast, kui aeg oli läbi
+                }
+                playBtn.innerHTML = '⏸ Peata';
+                playBtn.classList.replace('bg-yellow-500', 'bg-red-500');
+                playBtn.classList.replace('hover:bg-yellow-400', 'hover:bg-red-400');
+                animate();
+            } else {
+                playBtn.innerHTML = '▶ Mängi';
+                playBtn.classList.replace('bg-red-500', 'bg-yellow-500');
+                playBtn.classList.replace('hover:bg-red-400', 'hover:bg-yellow-400');
+                cancelAnimationFrame(animationFrameId);
+            }
+        }
+
+        // Sündmused
+        window.addEventListener('resize', resizeCanvas);
+        
+        citySelect.addEventListener('change', (e) => {
+            currentCity = e.target.value;
+            updateSliderForCity(); // Uuenda liuguri akent
+            if (isPlaying) togglePlay(false); // Peata mängimine asukoha vahetusel
+            draw();
+        });
+
+        timeSlider.addEventListener('input', (e) => {
+            timeMinutes = parseFloat(e.target.value);
+            draw();
+        });
+        
+        // Peata animatsioon, kui kasutaja sikutab liugurit
+        timeSlider.addEventListener('mousedown', () => { if(isPlaying) togglePlay(false); });
+        timeSlider.addEventListener('touchstart', () => { if(isPlaying) togglePlay(false); });
+
+        playBtn.addEventListener('click', () => togglePlay());
+
+        // Esmane käivitamine
+        window.onload = function() {
+            updateSliderForCity();
+            resizeCanvas(); // See kutsub välja ka draw()
+        };
+
+    </script>
+</body>
+</html>
+

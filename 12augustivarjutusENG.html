@@ -188,7 +188,7 @@
             
             const minStr = formatTime(minT, "").trim().substring(0, 5);
             const maxStr = formatTime(maxT, "").trim().substring(0, 5);
-            timeRangeLabel.innerText = `Aeg (${minStr} - ${maxStr})`;
+            timeRangeLabel.innerText = `Time (${minStr} - ${maxStr})`;
         }
 
         // Kohandab lõuendi suurust vastavalt ekraanile ja joonistab sisu uuesti
@@ -379,12 +379,12 @@
                 if (timeMinutes >= data.end + 15) {
                     timeMinutes = data.start - 15; // Alusta otsast, kui aeg oli läbi
                 }
-                playBtn.innerHTML = '⏸ Peata';
+                playBtn.innerHTML = '⏸ Stop';
                 playBtn.classList.replace('bg-yellow-500', 'bg-red-500');
                 playBtn.classList.replace('hover:bg-yellow-400', 'hover:bg-red-400');
                 animate();
             } else {
-                playBtn.innerHTML = '▶ Mängi';
+                playBtn.innerHTML = '▶ Play';
                 playBtn.classList.replace('bg-red-500', 'bg-yellow-500');
                 playBtn.classList.replace('hover:bg-red-400', 'hover:bg-yellow-400');
                 cancelAnimationFrame(animationFrameId);

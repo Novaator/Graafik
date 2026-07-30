@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Topside Keskkonnamõju Stsenaariumid</title>
+    
+    <!-- Fira Sans fondi laadimine -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            font-family: 'Fira Sans', sans-serif;
+            background-color: #f1f5f9; /* Õrn hallikas-sinine taust */
+            display: flex;
+            justify-content: center;
+            padding: 1rem;
+        }
+        
+        /* Piirame laiuse 670px peale, nagu soovitud */
+        .app-container {
+            width: 100%;
+            max-width: 670px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+        }
+
+        /* Nuppude hover efektid */
+        .scenario-btn {
+            transition: all 0.2s ease-in-out;
+        }
+        .scenario-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Modali animatsioon */
+        .modal-enter {
+            opacity: 0;
+            transform: scale(0.95);
+            transition: all 0.2s ease-out;
+        }
+        .modal-enter-active {
+            opacity: 1;
+            transform: scale(1);
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased">
+
+    <div class="app-container p-4 md:p-6 flex flex-col gap-6">
+        
+        <!-- Päis -->
+        <header class="text-left space-y-2 border-b border-slate-100 pb-4">
+            <h1 class="text-2xl font-bold text-slate-800 tracking-tight">
+                Topside keskkonnamõju
+            </h1>
+            <p class="text-sm text-slate-500">
+                Ühekordsete ja korduvkasutatavate topside keskkonnamõju kuues erinevas stsenaariumis.
+            </p>
+        </header>
+
+        <main>
+            <!-- Graafiku lõuend (veidi kõrgem, et pikemad tekstid teljel ära mahuks) -->
+            <div class="relative h-[320px] w-full">
+                <canvas id="impactChart"></canvas>
+            </div>
+        </main>
+
+        <section class="mt-2 bg-slate-50 rounded-lg p-4">
+            <h2 class="text-sm font-semibold text-slate-600 mb-3 text-center">Klõpsa stsenaariumile, et näha selle lühikirjeldust.</h2>
+            <div class="flex flex-wrap justify-center gap-2">
+                <button onclick="openModal('PS')" class="scenario-btn bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium py-1.5 px-3 rounded-md text-sm">
+                    Põhistsenaarium (PS)
+                </button>
+                <button onclick="openModal('A')" class="scenario-btn bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium py-1.5 px-3 rounded-md text-sm">
+                    Stsenaarium A
+                </button>
+                <button onclick="openModal('B')" class="scenario-btn bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium py-1.5 px-3 rounded-md text-sm">
+                    Stsenaarium B
+                </button>
+                <button onclick="openModal('C')" class="scenario-btn bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium py-1.5 px-3 rounded-md text-sm">
+                    Stsenaarium C
+                </button>
+                <button onclick="openModal('D')" class="scenario-btn bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium py-1.5 px-3 rounded-md text-sm">
+                    Stsenaarium D
+                </button>
+                <button onclick="openModal('E')" class="scenario-btn bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium py-1.5 px-3 rounded-md text-sm">
+                    Stsenaarium E
+                </button>
+            </div>
+        </section>
+    </div>
+
+    <!-- Modal (Peidetud vaikimisi) -->
+    <div id="scenarioModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm" onclick="closeModalOnOutsideClick(event)">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-md transform transition-all p-6 modal-enter" id="modalContent">
+            
+            <div class="flex justify-between items-start mb-4">
+                <h3 id="modalTitle" class="text-xl font-bold text-slate-800">
+                    <!-- Dünaamiline pealkiri -->
+                </h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 transition-colors p-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            
+            <p id="modalDescription" class="text-slate-600 text-sm leading-relaxed">
+                <!-- Dünaamiline tekst -->
+            </p>
+            
+            <div class="mt-6 flex justify-end">
+                <button onclick="closeModal()" class="bg-slate-800 hover:bg-slate-700 text-white font-medium py-2 px-4 rounded-lg text-sm transition-colors">
+                    Sulge
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Stsenaariumite kirjeldused manustatud failist
+        const scenariosInfo = {
+            'PS': {
+                title: 'Põhistsenaarium (PS)',
+                text: 'Uurimistöö baasmudelis hinnatakse Tallinnas Vabaduse väljakul toimuva ürituse näitel ühekordse papptopsi, ühekordse plasttopsi ning keskmiselt viis korda ringleva korduskasutatava plasttopsi keskkonnamõju tingimustes, kus kõik topsid suunatakse eluea lõpus jäätmeenergia tootmiseks põletusse.'
+            },
+            'A': {
+                title: 'Stsenaarium A: kauge üritus',
+                text: 'Ürituse asukohaks on Tallinna asemel Tartu Raeplats, mis pikendab märgatavalt topside logistikaahelat ja transpordivahemaid nii üritusele kohaleveol kui ka hilisemal transpordil pessu või jäätmekäitlusse.'
+            },
+            'B': {
+                title: 'Stsenaarium B: ringne elulõpp',
+                text: 'Jäätmepõletuse asemel rakendatakse ringset elulõpu lahendust, kus kõik topsid suunatakse pärast viimast kasutuskorda ümbertöötlemisele ja materjalina uuesti ringlusse.'
+            },
+            'C': {
+                title: 'Stsenaarium C: pikem eluiga',
+                text: 'Korduskasutatava topsi eluiga ja süsteemis püsimist pikendatakse kahekordselt, eeldades, et tops läbib enne kasutusest välja langemist ja põletusse jõudmist viie korra asemel kümme reaalset kasutustsüklit.'
+            },
+            'D': {
+                title: 'Stsenaarium D: roheenergia',
+                text: 'Kordustopside pesemisprotsessis ja ühekorratopside ladustamisetapis asendatakse tavaline võrguelekter keskkonnasäästlikuma, taastuvatest allikatest toodetud elektrienergiaga.'
+            },
+            'E': {
+                title: 'Stsenaarium E: ringlussevõetud toore',
+                text: 'Neitsilikust esmasest toormest toodetud topside asemel kasutatakse mudelis topse, mille valmistamisel on toormena kasutatud kas osaliselt (papptopsi puhul) või täielikult (plasttopside puhul) juba eelnevalt ringlussevõetud materjali.'
+            }
+        };
+
+        function openModal(scenarioId) {
+            const modal = document.getElementById('scenarioModal');
+            const modalContent = document.getElementById('modalContent');
+            const titleEl = document.getElementById('modalTitle');
+            const descEl = document.getElementById('modalDescription');
+            
+            // Täida andmetega
+            titleEl.textContent = scenariosInfo[scenarioId].title;
+            descEl.textContent = scenariosInfo[scenarioId].text;
+            
+            // Kuva modal
+            modal.classList.remove('hidden');
+            
+            // Väike viivitus animatsiooni jaoks
+            setTimeout(() => {
+                modalContent.classList.add('modal-enter-active');
+            }, 10);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('scenarioModal');
+            const modalContent = document.getElementById('modalContent');
+            
+            modalContent.classList.remove('modal-enter-active');
+            
+            // Oota animatsiooni lõppu enne peitmist
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 200);
+        }
+
+        // Sulge modal, kui klikitakse mustal taustal
+        function closeModalOnOutsideClick(event) {
+            if (event.target.id === 'scenarioModal') {
+                closeModal();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Andmed tabelist pilt.png
+            // Komad asendatud punktidega koodi jaoks. Vormindame graafikul tagasi komadeks.
+            const paberTopsAndmed = [2.52, 2.93, 2.44, 2.52, 2.49, 2.07];
+            const plastTopsAndmed = [2.64, 2.92, 2.15, 2.64, 2.61, 1.45];
+            const korduvTopsAndmed = [2.78, 5.35, 2.44, 1.97, 2.18, 2.01];
+
+            const ctx = document.getElementById('impactChart').getContext('2d');
+            
+            // Värvid on valitud neutraalsed (Papp: sinine, Plast: indigo, Kordus: teal)
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: [
+                        'PS: põhistsenaarium', 
+                        'A: kauge üritus', 
+                        'B: ringne elulõpp', 
+                        'C: pikem eluiga', 
+                        'D: roheenergia', 
+                        'E: ringlussevõetud toore'
+                    ],
+                    datasets: [
+                        {
+                            label: 'Papptops',
+                            data: paberTopsAndmed,
+                            backgroundColor: 'rgba(56, 189, 248, 0.85)', // Sky-400
+                            borderColor: 'rgba(2, 132, 199, 1)',      // LightBlue-600
+                            borderWidth: 1,
+                            borderRadius: 3,
+                            barPercentage: 0.85,
+                            categoryPercentage: 0.8
+                        },
+                        {
+                            label: 'Plasttops',
+                            data: plastTopsAndmed,
+                            backgroundColor: 'rgba(167, 139, 250, 0.85)', // Violet-400
+                            borderColor: 'rgba(124, 58, 237, 1)',       // Violet-600
+                            borderWidth: 1,
+                            borderRadius: 3,
+                            barPercentage: 0.85,
+                            categoryPercentage: 0.8
+                        },
+                        {
+                            label: 'Kordustops',
+                            data: korduvTopsAndmed,
+                            backgroundColor: 'rgba(45, 212, 191, 0.85)', // Teal-400
+                            borderColor: 'rgba(13, 148, 136, 1)',      // Teal-600
+                            borderWidth: 1,
+                            borderRadius: 3,
+                            barPercentage: 0.85,
+                            categoryPercentage: 0.8
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    onClick: (event, elements, chart) => {
+                        // Reageerime klikile X-teljel (kategooriate nimedel)
+                        const xAxis = chart.scales.x;
+                        if (event.y >= xAxis.top && event.y <= xAxis.bottom && event.x >= xAxis.left && event.x <= xAxis.right) {
+                            const index = xAxis.getValueForPixel(event.x);
+                            const scenarioIds = ['PS', 'A', 'B', 'C', 'D', 'E'];
+                            if (index !== undefined && index >= 0 && index < scenarioIds.length) {
+                                openModal(scenarioIds[index]);
+                            }
+                        }
+                    },
+                    onHover: (event, elements, chart) => {
+                        // Muudame kursori X-telje kohal, et näidata klikitavust
+                        const xAxis = chart.scales.x;
+                        if (event.y >= xAxis.top && event.y <= xAxis.bottom && event.x >= xAxis.left && event.x <= xAxis.right) {
+                            event.native.target.style.cursor = 'pointer';
+                        } else {
+                            event.native.target.style.cursor = 'default';
+                        }
+                    },
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                font: {
+                                    family: "'Fira Sans', sans-serif",
+                                    size: 13,
+                                },
+                                usePointStyle: true,
+                                boxWidth: 8,
+                                boxHeight: 8
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(30, 41, 59, 0.95)', // Slate-800
+                            titleFont: {
+                                family: "'Fira Sans', sans-serif",
+                                size: 13,
+                                weight: '600'
+                            },
+                            bodyFont: {
+                                family: "'Fira Sans', sans-serif",
+                                size: 12
+                            },
+                            padding: 10,
+                            cornerRadius: 6,
+                            callbacks: {
+                                // Teisendame punktid tagasi komadeks (nt 2.52 -> 2,52)
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        // Vormindame numbri komaga (Eesti formaat)
+                                        label += context.parsed.y.toString().replace('.', ',');
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(241, 245, 249, 1)', // Slate-100
+                            },
+                            ticks: {
+                                font: {
+                                    family: "'Fira Sans', sans-serif",
+                                    size: 11
+                                },
+                                color: '#64748b',
+                                // Teisendame Y-telje numbrid komadega
+                                callback: function(value) {
+                                    return value.toString().replace('.', ',');
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false,
+                            },
+                            ticks: {
+                                font: {
+                                    family: "'Fira Sans', sans-serif",
+                                    size: 11,
+                                    weight: '500'
+                                },
+                                color: '#475569'
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 800,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

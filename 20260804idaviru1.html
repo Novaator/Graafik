@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sotsiaaldemograafiliste Näitajate Visualiseering</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Fira Sans', sans-serif;
+            background-color: #f8fafc;
+        }
+    </style>
+</head>
+<body class="text-slate-800 h-screen flex justify-center items-center p-4 md:p-8 overflow-hidden">
+
+    <div class="w-full max-w-7xl bg-white rounded-2xl shadow-lg border border-slate-200 flex flex-col md:flex-row overflow-hidden max-h-[550px] h-full">
+        
+        <!-- Vasak veerg (Menüü) -->
+        <aside class="w-full md:w-64 bg-slate-50/50 border-b md:border-b-0 md:border-r border-slate-100 flex flex-col flex-shrink-0 h-full">
+            <div class="p-6 border-b border-slate-100 bg-white">
+                <p class="text-sm text-slate-600 leading-snug">Klõpsa sotsiaaldemograafilistele rühmadele, et näha täpsemat jaotust.</p>
+            </div>
+            
+            <div class="p-4 flex-grow overflow-y-auto">
+                <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 px-2 mt-2">Vali rühm</h2>
+                <nav class="space-y-1" id="nav-buttons">
+                    <!-- Nupud genereeritakse JavaScriptiga -->
+                </nav>
+            </div>
+        </aside>
+
+        <!-- Parem veerg (Graafik) -->
+        <main class="flex-grow flex flex-col p-6 md:p-8 overflow-hidden w-full h-full relative bg-white">
+            <header class="mb-6 flex-shrink-0">
+                <h2 id="chart-title" class="text-2xl font-bold text-slate-800">Kõik vastajad</h2>
+            </header>
+
+            <div class="flex-grow relative w-full h-full min-h-[300px]">
+                <canvas id="myChart"></canvas>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Andmestik, mis on pildilt pilt.png välja loetud
+        const rawData = {
+            "Kõik": [
+                { label: "Kõik", values: [83.1, 59.3, 24.5, 12.9] }
+            ],
+            "Sugu": [
+                { label: "Naised", values: [87.0, 55.2, 19.8, 11.9] },
+                { label: "Mehed", values: [80.4, 62.3, 29.6, 14.0] }
+            ],
+            "Piirkond": [
+                { label: "Narva-Jõesuu", values: [85.1, 67.0, 35.6, 23.8] },
+                { label: "Narva", values: [86.1, 54.5, 25.2, 15.6] },
+                { label: "Sillamäe", values: [77.9, 44.4, 20.3, 4.0] },
+                { label: "Kohtla-Järve", values: [80.6, 48.4, 14.0, 7.9] },
+                { label: "Jõhvi", values: [82.7, 61.5, 22.8, 11.9] },
+                { label: "Alutaguse", values: [87.5, 81.0, 33.3, 11.1] },
+                { label: "Toila", values: [87.7, 82.1, 32.7, 14.0] },
+                { label: "Lüganuse", values: [78.9, 63.5, 18.2, 5.3] }
+            ],
+            "Emakeel": [
+                { label: "Eesti keel", values: [83.8, 77.3, 32.9, 18.8] },
+                { label: "Vene keel", values: [83.4, 55.7, 23.7, 12.0] }
+            ],
+            "Vanuserühm": [
+                { label: "18-34", values: [68.3, 52.1, 15.5, 15.6] },
+                { label: "35-54", values: [86.3, 61.7, 27.1, 11.4] },
+                { label: "55-64", values: [88.4, 59.1, 27.6, 13.8] }
+            ],
+            "Haridus": [
+                { label: "Kuni põhiharidus", values: [80.4, 48.0, 17.2, 9.1] },
+                { label: "Keskharidus", values: [70.4, 54.5, 14.3, 8.7] },
+                { label: "Kutseharidus", values: [88.0, 58.0, 22.7, 9.6] },
+                { label: "Kõrgharidus", values: [80.8, 63.2, 31.7, 18.0] }
+            ]
+        };
+
+        // Kaks esimest tulpa on pildil lühendatud sarnaselt ("Osaleb ko..."), 
+        // eristame neid numbritega, et graafikul oleks selge.
+        const metricNames = [
+            "Osaleb kogukonnas", 
+            "Osaleb kodanikuühiskonnas", 
+            "Osaleb ühes või mitmes vabaühenduses", 
+            "On raha taotlenud"
+        ];
+
+        // Värvipalett eri näitajatele (4 näitajat = 4 värvi)
+        const metricColors = [
+            { bg: 'rgba(56, 189, 248, 0.85)', border: 'rgb(14, 165, 233)' },   // Sky blue
+            { bg: 'rgba(167, 139, 250, 0.85)', border: 'rgb(139, 92, 246)' },  // Violet
+            { bg: 'rgba(251, 146, 60, 0.85)', border: 'rgb(249, 115, 22)' },   // Orange
+            { bg: 'rgba(52, 211, 153, 0.85)', border: 'rgb(16, 185, 129)' }    // Emerald
+        ];
+
+        // Globaalne muutuja graafiku eksemplari hoidmiseks
+        let myChart = null;
+
+        function getChartDataForCategory(categoryKey) {
+            const groupData = rawData[categoryKey];
+            const labels = groupData.map(item => item.label);
+            
+            const datasets = metricNames.map((metricName, metricIndex) => {
+                return {
+                    label: metricName,
+                    data: groupData.map(item => item.values[metricIndex]),
+                    backgroundColor: metricColors[metricIndex].bg,
+                    borderColor: metricColors[metricIndex].border,
+                    borderWidth: 1,
+                    borderRadius: 4,
+                    barPercentage: 0.8,
+                    categoryPercentage: 0.9
+                };
+            });
+            
+            return { labels, datasets };
+        }
+
+        function renderChart(categoryKey) {
+            const ctx = document.getElementById('myChart').getContext('2d');
+            const chartData = getChartDataForCategory(categoryKey);
+
+            // Uuenda pealkirja
+            document.getElementById('chart-title').textContent = categoryKey;
+
+            // Kui graafik on juba olemas, siis hävita see enne uue tegemist
+            if (myChart) {
+                myChart.destroy();
+            }
+
+            myChart = new Chart(ctx, {
+                type: 'bar',
+                data: chartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20,
+                                font: {
+                                    family: "'Fira Sans', sans-serif",
+                                    size: 13
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                            titleFont: { family: "'Fira Sans', sans-serif", size: 14 },
+                            bodyFont: { family: "'Fira Sans', sans-serif", size: 13 },
+                            padding: 12,
+                            cornerRadius: 8,
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        // Lisa protsendimärk
+                                        label += context.parsed.y + '%';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100, // Kuna tegemist on protsentidega, hoiame telje max 100 peal
+                            grid: {
+                                color: 'rgba(226, 232, 240, 1)',
+                                drawBorder: false,
+                            },
+                            ticks: {
+                                stepSize: 20,
+                                callback: function(value) {
+                                    return value + '%';
+                                },
+                                font: { family: "'Fira Sans', sans-serif" },
+                                color: '#64748b'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false,
+                                drawBorder: false,
+                            },
+                            ticks: {
+                                font: { family: "'Fira Sans', sans-serif", size: 12 },
+                                color: '#475569'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function setupNavigation() {
+            const navContainer = document.getElementById('nav-buttons');
+            const categories = Object.keys(rawData);
+
+            categories.forEach(category => {
+                const btn = document.createElement('button');
+                btn.className = `w-full text-left px-4 py-2.5 rounded-lg mb-1 transition-all duration-200 font-medium text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-1 flex items-center justify-between`;
+                
+                // Määra aktiivne/passiivne stiil
+                const setActiveStyle = (isActive) => {
+                    if(isActive) {
+                        btn.classList.add('bg-sky-50', 'text-sky-700', 'border', 'border-sky-100');
+                        btn.classList.remove('text-slate-600', 'hover:bg-slate-50', 'border-transparent', 'border');
+                    } else {
+                        btn.classList.remove('bg-sky-50', 'text-sky-700', 'border-sky-100');
+                        btn.classList.add('text-slate-600', 'hover:bg-slate-50', 'border', 'border-transparent');
+                    }
+                };
+
+                btn.textContent = category;
+                
+                btn.onclick = () => {
+                    // Eemalda kõigilt aktiivne stiil ja lisa vajutatule
+                    Array.from(navContainer.children).forEach(child => {
+                        child.classList.remove('bg-sky-50', 'text-sky-700', 'border-sky-100');
+                        child.classList.add('text-slate-600', 'hover:bg-slate-50', 'border-transparent');
+                    });
+                    
+                    btn.classList.remove('text-slate-600', 'hover:bg-slate-50', 'border-transparent');
+                    btn.classList.add('bg-sky-50', 'text-sky-700', 'border-sky-100');
+                    
+                    renderChart(category);
+                };
+
+                navContainer.appendChild(btn);
+            });
+
+            // Aktiveeri esialgne vaade ("Sugu" toob kohe võrdluse esile, "Kõik" on lihtsalt üksik väärtus)
+            const initialCategory = "Sugu";
+            
+            // Simuleeri klikki esialgsel nupul stiilide seadistamiseks
+            const initialBtnIndex = categories.indexOf(initialCategory);
+            if(initialBtnIndex !== -1 && navContainer.children[initialBtnIndex]) {
+                 navContainer.children[initialBtnIndex].click();
+            } else {
+                 renderChart(categories[0]);
+                 navContainer.children[0].classList.add('bg-sky-50', 'text-sky-700', 'border-sky-100');
+                 navContainer.children[0].classList.remove('text-slate-600', 'border-transparent');
+            }
+        }
+
+        // Käivita rakendus, kui leht on laetud
+        window.onload = () => {
+            setupNavigation();
+        };
+    </script>
+</body>
+</html>

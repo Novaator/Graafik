@@ -208,8 +208,9 @@
             
             // Vanusegrupi tiitel slaidil
             const ageBadge = document.createElement('div');
-            // Kohandatud paigutust, et see ei jääks sisu alla või peale valesti
-            ageBadge.className = 'sticky md:absolute top-0 md:top-2 left-1/2 -translate-x-1/2 bg-slate-100 px-4 py-1 rounded-full text-slate-700 font-bold text-lg shadow-sm border border-slate-200 z-20 mb-4 md:mb-0';
+            // Parandatud paigutus: kitsastel ekraanidel (nt 670px) on silt lihtsalt reas keskel,
+            // laiematel (md) aga absoluutselt positsioneeritud slaidide vahele.
+            ageBadge.className = 'self-center bg-slate-100 px-4 py-1 rounded-full text-slate-700 font-bold text-lg shadow-sm border border-slate-200 z-20 mb-2 md:absolute md:top-2 md:left-1/2 md:-translate-x-1/2 md:mb-0';
             ageBadge.textContent = `Vanus ${group.age}`;
             slide.appendChild(ageBadge);
 
@@ -255,6 +256,10 @@
                     plugins: {
                         legend: { display: false },
                         tooltip: {
+                            // Suurendatud hüpikakna (tooltip) fonti loetavuse parandamiseks (20px)
+                            titleFont: { size: 20 },
+                            bodyFont: { size: 20 },
+                            padding: 12,
                             callbacks: {
                                 label: function(context) { return context.raw + '%'; }
                             }

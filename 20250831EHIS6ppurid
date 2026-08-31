@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EHIS Statistika (31.08.2026)</title>
+    <!-- Fira Sans font -->
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Laeme sisse Chart.js teegi graafiku joonistamiseks -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Laeme sisse DataLabels plugina, et kuvada teksti otse tulpade kõrval -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <style>
+        body {
+            font-family: 'Fira Sans', sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .chart-container {
+            width: 100%;
+            max-width: 900px;
+            height: 700px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="chart-container">
+        <!-- Siia sisse joonistatakse meie graafik -->
+        <canvas id="myChart"></canvas>
+    </div>
+
+    <script>
+        // Andmed Pythoni skriptist
+        const maakonnad = [
+            "Lääne-Viru", "Valga", "Harju", "Tartu", "Pärnu", "Jõgeva", 
+            "Järva", "Ida-Viru", "Rapla", "Lääne", "Hiiu", "Võru", 
+            "Saare", "Põlva", "Viljandi"
+        ];
+        const osakaal = [14, 12, 11, 8, 8, 8, 7, 6, 6, 6, 6, 4, 3, 3, 2];
+        const arvud = [83, 32, 775, 167, 82, 21, 23, 61, 26, 13, 5, 13, 11, 7, 7];
+
+        // Seame graafiku globaalseks fondiks Fira Sans
+        Chart.defaults.font.family = "'Fira Sans', sans-serif";
+
+        // Arvutame tulpadele värvigradiendi tumedamast (35% heledust) heledamani (85% heledust)
+        const count = maakonnad.length;
+        const bgColors = maakonnad.map((_, i) => `hsl(200, 75%, ${35 + (50 * (i / (count - 1)))}%)`);
+        const bdColors = maakonnad.map((_, i) => `hsl(200, 75%, ${30 + (50 * (i / (count - 1)))}%)`);
+
+        // Registreerime plugina teksti kuvamiseks
+        Chart.register(ChartDataLabels);
+
+        // Seadistame ja joonistame graafiku
+        const ctx = document.getElementById('myChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar', // tulpgraafik
+            data: {
+                labels: maakonnad,
+                datasets: [{
+                    label: 'Osakaal (%)',
+                    data: osakaal,
+                    backgroundColor: bgColors,
+                    borderRadius: 3,
+                    borderWidth: 1,
+                    borderColor: bdColors
+                }]
+            },
+            options: {
+                indexAxis: 'y', // Teeb graafiku horisontaalseks
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'EHIS-esse sisestamata põhikoolilõpetajate osakaal (31.08.2026)',
+                        font: { size: 18, weight: 'bold' },
+                        padding: { bottom: 20 }
+                    },
+                    legend: {
+                        display: false // Peidame legendi, kuna meil on vaid üks andmestik
+                    },
+                    datalabels: {
+                        anchor: 'end',
+                        align: 'right',
+                        // Formateerime teksti, mis ilmub tulba lõppu (nt "14% (83 noort)")
+                        formatter: function(value, context) {
+                            return value + '% (' + arvud[context.dataIndex] + ' noort)';
+                        },
+                        font: { size: 12, family: "'Fira Sans', sans-serif" },
+                        color: '#333'
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Osakaal (%)',
+                            font: { weight: 'bold' }
+                        },
+                        suggestedMax: 17 // Jätame veidi ruumi siltide jaoks paremal
+                    },
+                    y: {
+                        ticks: {
+                            font: { size: 13 }
+                        }
+                    }
+                },
+                layout: {
+                    padding: {
+                        right: 120 // Lisame paremale ruumi, et pikad sildid ära mahuks
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

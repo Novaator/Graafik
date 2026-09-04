@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>72h Viibimiskeelu Graafik</title>
+    <!-- Tailwind CSS kujunduse jaoks -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js graafiku joonistamiseks -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4 sm:p-8 font-sans">
+
+    <div class="max-w-4xl w-full bg-white p-6 sm:p-8 rounded-xl shadow-lg">
+        
+        <header class="mb-8 text-center">
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">72-tunnise viibimiskeelu juhtumite analüüs</h1>
+           
+        </header>
+
+        <!-- Graafiku konteiner (suhteline kõrgus responsiivsuseks) -->
+        <div class="relative h-72 sm:h-96 w-full mb-8">
+            <canvas id="viibimiskeeldChart"></canvas>
+        </div>
+
+        <!-- Detailsem info -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-100 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-1">Toimepanijad</h3>
+                <p class="text-sm text-gray-600">Kokku 28 isikut, kellest 24 (85.7%) on mehed.</p>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-100 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-1">Juhtumid</h3>
+                <p class="text-sm text-gray-600">Kokku 29 juhtumit, millest 24 (82.8%) pani toime (endine) elukaaslane.</p>
+            </div>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-100 shadow-sm">
+                <h3 class="font-semibold text-gray-800 mb-1">Kannatanud</h3>
+                <p class="text-sm text-gray-600">Kokku 32 isikut, kellest 2 (6.3%) kogesid vaadeldaval perioodil korduvat vägivalda.</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Ootame, kuni leht on laetud
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('viibimiskeeldChart').getContext('2d');
+
+            // Graafiku seadistamine
+            const viibimiskeeldChart = new Chart(ctx, {
+                type: 'bar', // Tulpdiagramm
+                data: {
+                    // X-telje kategooriad
+                    labels: ['Toimepanijad', 'Juhtumid', 'Kannatanud'],
+                    datasets: [
+                        {
+                            label: 'Koguarv (Kõik isikud/juhtumid)',
+                            data: [28, 29, 32],
+                            borderColor: '#2563eb', // Tumedam sinine äär
+                            backgroundColor: 'rgba(59, 130, 246, 0.8)', // Poolläbipaistev sinine
+                            borderWidth: 1,
+                            borderRadius: 4 // Ümardame tulpade nurki
+                        },
+                        {
+                            label: 'Spetsiifiline grupp (Mehed / Elukaaslased / Korduvkannatanud)',
+                            data: [24, 24, 2],
+                            borderColor: '#dc2626', // Tumedam punane äär
+                            backgroundColor: 'rgba(239, 68, 68, 0.8)', // Poolläbipaistev punane
+                            borderWidth: 1,
+                            borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false, // Lubab meil kõrgust CSS-iga kontrollida
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                font: {
+                                    family: "'Helvetica Neue', 'Helvetica', 'Arial', sans-serif"
+                                }
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleFont: { size: 14 },
+                            bodyFont: { size: 13 },
+                            padding: 10
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            suggestedMax: 35, // Jätame veidi ruumi üles
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)',
+                                drawBorder: false
+                            },
+                            ticks: {
+                                stepSize: 5
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

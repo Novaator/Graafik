@@ -13,7 +13,6 @@
             background-color: #f3f4f6;
             color: #1f2937;
         }
-        /* Custom scrollbar for file content preview if needed */
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
@@ -33,7 +32,6 @@
 <body class="min-h-screen p-4 md:p-8">
 
     <div class="max-w-6xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
-        <!-- Header -->
         <div class="bg-gray-900 text-white p-6 md:p-8">
             <h1 class="text-3xl font-bold mb-2">Tänavamüra Analüsaator</h1>
             <p class="text-gray-400 text-sm md:text-base">
@@ -42,7 +40,6 @@
         </div>
 
         <div class="p-6 md:p-8 space-y-8">
-            <!-- File Upload Area -->
             <div id="drop-zone" class="border-2 border-dashed border-gray-300 rounded-xl p-10 text-center hover:bg-gray-50 transition-colors cursor-pointer relative">
                 <input type="file" id="file-input" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" accept=".csv" />
                 <div class="space-y-3 pointer-events-none">
@@ -54,12 +51,9 @@
                 </div>
             </div>
 
-            <!-- Error/Info Message Box -->
             <div id="message-box" class="hidden rounded-lg p-4 text-sm font-medium"></div>
 
-            <!-- Results Dashboard -->
             <div id="results-dashboard" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 hidden">
-                
                 <div class="bg-blue-50 border border-blue-100 rounded-xl p-5 shadow-sm">
                     <div class="text-blue-500 text-xs font-bold uppercase tracking-wider mb-1">Ekvivalentne tase (L<sub>eq</sub>)</div>
                     <div class="flex items-baseline space-x-1">
@@ -97,16 +91,24 @@
                     <div class="text-xs text-gray-500 mt-2">Sisaldab ±4dB riistvaralist viga</div>
                 </div>
                 
-                <!-- Conclusion Sentence -->
                 <div class="col-span-1 md:col-span-2 lg:col-span-4 bg-gray-50 p-4 rounded-lg border border-gray-200 mt-2">
                     <p id="conclusion-text" class="text-gray-700 italic font-medium text-center"></p>
                 </div>
-
             </div>
 
-            <!-- Chart Area -->
-            <div id="chart-container" class="w-full h-[400px] hidden border border-gray-200 rounded-xl p-4">
-                <canvas id="noiseChart"></canvas>
+            <div id="chart-container" class="w-full hidden border border-gray-200 rounded-xl p-4 space-y-4">
+                <div class="flex flex-col sm:flex-row justify-between items-center px-2 gap-4">
+                    <h3 class="font-bold text-gray-700">Mõõtmistulemuste graafik</h3>
+                    <button id="download-btn" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded-lg shadow-sm transition-colors flex items-center gap-2 cursor-pointer">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                        </svg>
+                        Laadi PNG alla
+                    </button>
+                </div>
+                <div class="w-full h-[400px] relative">
+                    <canvas id="noiseChart"></canvas>
+                </div>
             </div>
         </div>
     </div>
@@ -117,10 +119,11 @@
         const messageBox = document.getElementById('message-box');
         const resultsDashboard = document.getElementById('results-dashboard');
         const chartContainer = document.getElementById('chart-container');
+        const downloadBtn = document.getElementById('download-btn');
         
         let noiseChartInstance = null;
+        let lastChartData = { data: [], labels: [], leq: 0, l10: 0, l90: 0 };
 
-        // --- UI Helper Functions ---
         function showMessage(msg, type = 'error') {
             messageBox.textContent = msg;
             messageBox.classList.remove('hidden', 'bg-red-100', 'text-red-700', 'bg-green-100', 'text-green-700');
@@ -135,23 +138,21 @@
             messageBox.classList.add('hidden');
         }
 
-        // --- File Handling ---
         fileInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
-            if (file) {
-                processFile(file);
-            }
+            if (file) processFile(file);
         });
 
-        // Drag and drop styling
         dropZone.addEventListener('dragover', (e) => {
             e.preventDefault();
             dropZone.classList.add('bg-blue-50', 'border-blue-400');
         });
+        
         dropZone.addEventListener('dragleave', (e) => {
             e.preventDefault();
             dropZone.classList.remove('bg-blue-50', 'border-blue-400');
         });
+        
         dropZone.addEventListener('drop', (e) => {
             e.preventDefault();
             dropZone.classList.remove('bg-blue-50', 'border-blue-400');
@@ -161,7 +162,6 @@
             }
         });
 
-        // --- CSV Processing ---
         function processFile(file) {
             hideMessage();
             resultsDashboard.classList.add('hidden');
@@ -169,8 +169,7 @@
 
             const reader = new FileReader();
             reader.onload = function(e) {
-                const text = e.target.result;
-                parseCSV(text);
+                parseCSV(e.target.result);
             };
             reader.onerror = function() {
                 showMessage("Viga faili lugemisel.");
@@ -180,23 +179,18 @@
 
         function parseCSV(csvText) {
             const lines = csvText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-            
             if (lines.length < 2) {
                 showMessage("Fail tundub olevat tühi või ei sisalda piisavalt andmeid.");
                 return;
             }
 
-            // Detect separator (comma or semicolon)
             const headerLine = lines[0];
             const separator = headerLine.includes(';') ? ';' : ',';
-            
             const headers = headerLine.split(separator).map(h => h.trim().toLowerCase());
             
-            // Find columns flexibly
             let dbIndex = headers.findIndex(h => h.includes('leq') || h.includes('db'));
             let timeIndex = headers.findIndex(h => h.includes('time') || h.includes('date'));
 
-            // Fallback if headers are weird, assume 0 is db, 1 is time (based on prompt)
             if (dbIndex === -1 && !isNaN(parseFloat(lines[1].split(separator)[0]))) dbIndex = 0;
             if (timeIndex === -1 && lines[1].split(separator).length > 1) timeIndex = 1;
 
@@ -219,7 +213,6 @@
                 let timeValue = `Punkt ${i}`;
                 if (timeIndex !== -1 && cols.length > timeIndex) {
                     const rawTime = cols[timeIndex].trim();
-                    // Check if it's a Unix timestamp in ms
                     if (/^\d{12,14}$/.test(rawTime)) {
                         const date = new Date(parseInt(rawTime));
                         timeValue = date.toLocaleTimeString('et-EE', { hour12: false });
@@ -240,32 +233,20 @@
             calculateAndDisplay(rawDbs, labels);
         }
 
-        // --- Acoustic Math ---
         function calculateAndDisplay(dbArray, timeLabels) {
             const n = dbArray.length;
-            
-            // 1. Calculate Leq (Energetic average)
-            // L_eq = 10 * log10( (1/n) * SUM( 10^(L_i / 10) ) )
             let sumEnergy = 0;
             for (let i = 0; i < n; i++) {
                 sumEnergy += Math.pow(10, dbArray[i] / 10);
             }
             const leq = 10 * Math.log10(sumEnergy / n);
 
-            // 2. Calculate L10 and L90
-            // Sort ascending for percentiles
             const sortedDb = [...dbArray].sort((a, b) => a - b);
-            
-            // L10: exceeded 10% of the time -> value at the 90th percentile index
             const indexL10 = Math.floor((n - 1) * 0.90);
             const l10 = sortedDb[indexL10];
-            
-            // L90: exceeded 90% of the time -> value at the 10th percentile index
             const indexL90 = Math.floor((n - 1) * 0.10);
             const l90 = sortedDb[indexL90];
 
-            // 3. Calculate Uncertainty
-            // Standard Deviation of dB values
             let sumDb = 0;
             for(let i=0; i<n; i++) sumDb += dbArray[i];
             const meanDb = sumDb / n;
@@ -274,21 +255,16 @@
             for(let i=0; i<n; i++) {
                 sumSqDiff += Math.pow(dbArray[i] - meanDb, 2);
             }
-            // Sample standard deviation
             const stdDevDb = Math.sqrt(sumSqDiff / (n > 1 ? n - 1 : 1));
-            
-            // Standard Error of the mean
             const stdError = stdDevDb / Math.sqrt(n);
             
-            // Combined uncertainty: Hardware error (4dB) + Statistical error
             const hardwareError = 4.0; 
             const combinedUncertainty = Math.sqrt(Math.pow(hardwareError, 2) + Math.pow(stdError, 2));
 
-            // Update UI
             document.getElementById('res-leq').textContent = leq.toFixed(1);
             document.getElementById('res-l10').textContent = l10.toFixed(1);
             document.getElementById('res-l90').textContent = l90.toFixed(1);
-            document.getElementById('res-unc').textContent = Math.ceil(combinedUncertainty); // Ümardame üles turvalisuse huvides
+            document.getElementById('res-unc').textContent = Math.ceil(combinedUncertainty);
 
             document.getElementById('conclusion-text').innerHTML = 
                 `"Tänava ekvivalentne müratase perioodi jooksul oli <strong>${leq.toFixed(1)} dBA</strong>, kombineeritud mõõtemääramatusega <strong>±${Math.ceil(combinedUncertainty)} dBA</strong>."`;
@@ -296,11 +272,12 @@
             resultsDashboard.classList.remove('hidden');
             chartContainer.classList.remove('hidden');
 
+            lastChartData = { data: dbArray, labels: timeLabels, leq: leq, l10: l10, l90: l90 };
+
             renderChart(dbArray, timeLabels, leq, l10, l90);
             showMessage(`Edukalt analüüsitud ${n} andmepunkti.`, 'success');
         }
 
-        // --- Visualization (Chart.js) ---
         function renderChart(data, labels, leq, l10, l90) {
             const ctx = document.getElementById('noiseChart').getContext('2d');
             
@@ -308,13 +285,22 @@
                 noiseChartInstance.destroy();
             }
 
-            // Create arrays for constant horizontal lines
             const leqData = new Array(data.length).fill(leq);
             const l10Data = new Array(data.length).fill(l10);
             const l90Data = new Array(data.length).fill(l90);
-
-            // Determine optimal point radius (if too many points, hide dots)
             const ptRadius = data.length > 300 ? 0 : 2;
+
+            const whiteBgPlugin = {
+                id: 'customCanvasBackgroundColor',
+                beforeDraw: (chart) => {
+                    const {ctx} = chart;
+                    ctx.save();
+                    ctx.globalCompositeOperation = 'destination-over';
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, chart.width, chart.height);
+                    ctx.restore();
+                }
+            };
 
             noiseChartInstance = new Chart(ctx, {
                 type: 'line',
@@ -324,7 +310,7 @@
                         {
                             label: 'Toorandmed (dBA)',
                             data: data,
-                            borderColor: '#9ca3af', // Gray-400
+                            borderColor: '#9ca3af',
                             backgroundColor: 'rgba(156, 163, 175, 0.1)',
                             borderWidth: 1,
                             pointRadius: ptRadius,
@@ -334,7 +320,7 @@
                         {
                             label: `Leq (${leq.toFixed(1)} dB)`,
                             data: leqData,
-                            borderColor: '#3b82f6', // Blue-500
+                            borderColor: '#3b82f6',
                             borderWidth: 2,
                             pointRadius: 0,
                             borderDash: [5, 5]
@@ -342,7 +328,7 @@
                         {
                             label: `L10 (${l10.toFixed(1)} dB)`,
                             data: l10Data,
-                            borderColor: '#ef4444', // Red-500
+                            borderColor: '#ef4444',
                             borderWidth: 2,
                             pointRadius: 0,
                             borderDash: [2, 2]
@@ -350,7 +336,7 @@
                         {
                             label: `L90 (${l90.toFixed(1)} dB)`,
                             data: l90Data,
-                            borderColor: '#22c55e', // Green-500
+                            borderColor: '#22c55e',
                             borderWidth: 2,
                             pointRadius: 0,
                             borderDash: [2, 2]
@@ -360,18 +346,9 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    interaction: {
-                        mode: 'index',
-                        intersect: false,
-                    },
+                    interaction: { mode: 'index', intersect: false },
                     plugins: {
-                        legend: {
-                            position: 'top',
-                            labels: {
-                                usePointStyle: true,
-                                boxWidth: 8
-                            }
-                        },
+                        legend: { position: 'top', labels: { usePointStyle: true, boxWidth: 8 } },
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
@@ -381,22 +358,81 @@
                         }
                     },
                     scales: {
-                        x: {
-                            grid: { display: false },
-                            ticks: { maxTicksLimit: 10 }
-                        },
+                        x: { grid: { display: false }, ticks: { maxTicksLimit: 10 } },
                         y: {
-                            title: {
-                                display: true,
-                                text: 'Helitase (dBA)'
-                            },
+                            title: { display: true, text: 'Helitase (dBA)' },
                             suggestedMin: Math.max(30, Math.min(...data) - 10),
                             suggestedMax: Math.min(120, Math.max(...data) + 10)
                         }
                     }
-                }
+                },
+                plugins: [whiteBgPlugin]
             });
         }
+
+        downloadBtn.addEventListener('click', () => {
+            if (!lastChartData || !lastChartData.data || !lastChartData.data.length) return;
+
+            const exportCanvas = document.createElement('canvas');
+            exportCanvas.width = 1920; 
+            exportCanvas.height = 1080;
+            const ctx = exportCanvas.getContext('2d');
+
+            const leqData = new Array(lastChartData.data.length).fill(lastChartData.leq);
+            const l10Data = new Array(lastChartData.data.length).fill(lastChartData.l10);
+            const l90Data = new Array(lastChartData.data.length).fill(lastChartData.l90);
+            
+            const ptRadius = lastChartData.data.length > 300 ? 0 : 4; 
+
+            const whiteBgPlugin = {
+                id: 'customCanvasBackgroundColor',
+                beforeDraw: (chart) => {
+                    const {ctx} = chart;
+                    ctx.save();
+                    ctx.globalCompositeOperation = 'destination-over';
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, chart.width, chart.height);
+                    ctx.restore();
+                }
+            };
+
+            const tempChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: lastChartData.labels,
+                    datasets: [
+                        { label: 'Toorandmed (dBA)', data: lastChartData.data, borderColor: '#9ca3af', backgroundColor: 'rgba(156, 163, 175, 0.1)', borderWidth: 2, pointRadius: ptRadius, fill: true, tension: 0.1 },
+                        { label: `Leq (${lastChartData.leq.toFixed(1)} dB)`, data: leqData, borderColor: '#3b82f6', borderWidth: 4, pointRadius: 0, borderDash: [8, 8] },
+                        { label: `L10 (${lastChartData.l10.toFixed(1)} dB)`, data: l10Data, borderColor: '#ef4444', borderWidth: 4, pointRadius: 0, borderDash: [4, 4] },
+                        { label: `L90 (${lastChartData.l90.toFixed(1)} dB)`, data: l90Data, borderColor: '#22c55e', borderWidth: 4, pointRadius: 0, borderDash: [4, 4] }
+                    ]
+                },
+                options: {
+                    responsive: false, 
+                    animation: false,  
+                    plugins: {
+                        legend: { position: 'top', labels: { font: { size: 18 }, boxWidth: 20, padding: 20 } }
+                    },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { maxTicksLimit: 15, font: { size: 16 } } },
+                        y: { 
+                            title: { display: true, text: 'Helitase (dBA)', font: { size: 20 } }, 
+                            suggestedMin: Math.max(30, Math.min(...lastChartData.data) - 10), 
+                            suggestedMax: Math.min(120, Math.max(...lastChartData.data) + 10),
+                            ticks: { font: { size: 16 } }
+                        }
+                    }
+                },
+                plugins: [whiteBgPlugin]
+            });
+
+            const link = document.createElement('a');
+            link.download = 'mura-analuus-korgresolutsioon.png';
+            link.href = tempChart.toBase64Image();
+            link.click();
+            
+            tempChart.destroy();
+        });
     </script>
 </body>
 </html>

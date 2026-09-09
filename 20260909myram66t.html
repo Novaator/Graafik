@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mürakaart - Novaator</title>
+    
+    <!-- Lisame Fira Sans fondi Google Fontsist -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    
+    <style>
+        /* Põhifondiks Fira Sans */
+        body { font-family: 'Fira Sans', system-ui, -apple-system, sans-serif; }
+        
+        /* Leaflet kaardi ja hüpikakna stiilide ylekirjutamine, et need mobiilis ei puruneks */
+        .leaflet-popup-content-wrapper { 
+            border-radius: 12px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15); 
+        }
+        .leaflet-popup-content { 
+            width: 100% !important; 
+            max-width: 450px !important; 
+            margin: 16px; 
+            box-sizing: border-box;
+        }
+        
+        /* Kitsa ekraani puhul teeme hüpikakna sisu veelgi kompaktsemaks */
+        @media (max-width: 480px) {
+            .leaflet-popup-content { 
+                max-width: 260px !important; 
+                margin: 10px !important; 
+            }
+        }
+    </style>
+</head>
+<body class="bg-green-50 p-4 sm:p-8 min-h-screen text-gray-800">
+
+    <!-- Peamine konteiner - max laius 670px, tsentreeritud -->
+    <div class="max-w-[670px] mx-auto bg-white/80 backdrop-blur-sm p-5 sm:p-8 rounded-2xl shadow-sm border border-green-200/60">
+        
+        <!-- Sissejuhatav tekst -->
+        <div class="prose prose-sm sm:prose-base text-gray-700 mb-8 space-y-4 leading-relaxed">
+            <p>
+                Novaator võttis ette hobiteadusliku katse, et saada vahetult aimu sellest, kui mürarikkad on Tallinna ja Tartu liiklussõlmed. Selleks valisime välja neli ristmikku, kus liigub palju inimesi nii autodega, ühistranspordiga kui ka jalgsi.
+            </p>
+            <p>
+                Tallinnas mõõtsime müra Hobujaama trammipeatuses, Balti jaama bussipeatuses ning Kristiine keskuse bussipeatuses. Tartus valisime mõõtmiseks Kvartali kaubanduskeskuse esise bussipeatuse.<br>
+                Igas punktis tegime õhtusel tipptunnil korduvaid mõõtmisi, milleks kasutasime nutitelefonide mikrofone ning Decibel X-i nimelist rakendust.
+            </p>
+            <p class="font-medium text-gray-800">Eristasime tulemustes kolme näitajat:</p>
+            <ol class="list-decimal pl-5 space-y-2">
+                <li><strong>müra ekvivalenttase</strong> ehk terve mõõteperioodi helirõhu keskmine energia. See näitab ühe stabiilse numbrina kogu kõrva jõudnud mürakoormust;</li>
+                <li><strong>Tippmüra</strong> ehk helitase, mille tänav ületab kümnendikul ajast. Sinna liigituvad hetkelised valjud helid, näiteks kiirendavad bussid ja ragisevad trammirattad;</li>
+                <li><strong>Foonimüra</strong> ehk helitase, mille tänav ületab 90 protsenti ajast.</li>
+            </ol>
+            <p class="text-sm bg-green-100/50 p-3 rounded-lg border border-green-100 mt-4 text-gray-600">
+                On oluline märkida, et kõikidele näitudele rakendub kombineeritud mõõtemääramatus pluss-miinus viis detsibelli. Veel oluline, et tegime mõõtmised kuiva ilmaga. Sajuse ilmaga oleks liiklusmüra veelgi valjem, sest vihm täidab asfaldi mikropoorid veega ning muudab teekatte siledaks helipeegliks. Nii lisandub rehvide lirtsumise toel igale numbrile veel kolm kuni viis detsibelli otsa.
+            </p>
+        </div>
+
+        <!-- Interaktiivse kaardi ja laadija konteiner -->
+        <div class="relative w-full h-[400px] sm:h-[500px] rounded-xl overflow-hidden shadow-inner border border-gray-200 z-10">
+            <!-- Kaart -->
+            <div id="map" class="absolute inset-0"></div>
+
+            <!-- Laadimisekraan -->
+            <div id="loading" class="absolute inset-0 bg-white/90 z-[2000] flex flex-col justify-center items-center transition-opacity duration-500">
+                <div class="animate-spin rounded-full h-10 w-10 border-t-4 border-b-4 border-green-600 mb-3"></div>
+                <h2 class="text-base font-medium text-gray-700">Laen mõõtmisandmeid...</h2>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // =========================================================================
+        // KLEEBI OMA GOOGLE SHEETS AVALIK CSV LINK SIIA (jutumärkide vahele):
+        // =========================================================================
+        const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTdnEj6ZUnsb7FKT1DIY1HcJYqUbBC8pVuUVMgG9XIqHYLHKkN3PLR5QPB8hiQukY75h9w9emwzjoZW/pub?output=csv";
+        
+        // Initsialiseerime kaardi, fookuses on Eesti
+        const map = L.map('map').setView([58.8, 25.5], 7);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        let mapMarkers = [];
+
+        window.onload = function() {
+            if (!CSV_URL || CSV_URL === "" || CSV_URL.includes("2PACX-1vTXYZ")) {
+                document.getElementById('loading').innerHTML = '<p class="text-red-600 font-bold p-4 text-center">Palun lisa koodis (rida 65) CSV_URL muutujale õige Google Sheets link!</p>';
+                return;
+            }
+            fetchAndProcessData(CSV_URL);
+        };
+
+        function fetchAndProcessData(url) {
+            Papa.parse(url, {
+                download: true,
+                header: true,
+                skipEmptyLines: true,
+                complete: function(results) {
+                    if (results.errors.length > 0 && results.data.length === 0) {
+                        alert("Andmete laadimine ebaõnnestus. Kontrolli linki.");
+                        return;
+                    }
+                    processTidyData(results.data);
+                },
+                error: function(err) {
+                    alert("Viga faili allalaadimisel. Kas leht on avalikustatud ja link õige?");
+                }
+            });
+        }
+
+        function processTidyData(data) {
+            mapMarkers.forEach(m => map.removeLayer(m));
+            mapMarkers = [];
+            const groupedData = {};
+
+            data.forEach(row => {
+                const keys = Object.keys(row);
+                // Otsime tulpi paindlikult, et eirata tühikuid või suur/väiketähti
+                const keyLeq = keys.find(k => k.toLowerCase().includes('leq'));
+                const keyTime = keys.find(k => k.toLowerCase().includes('time') || k.toLowerCase().includes('aeg'));
+                const keyLoc = keys.find(k => k.toLowerCase().includes('location') || k.toLowerCase().includes('koord'));
+                const keyName = keys.find(k => k.toLowerCase().includes('name') || k.toLowerCase().includes('nimi'));
+                const keyDesc = keys.find(k => k.toLowerCase().includes('kirjeldus') || k.toLowerCase().includes('desc'));
+
+                if (!keyLeq || !keyName || !keyTime) return;
+
+                const name = row[keyName].trim();
+                const valStr = row[keyLeq];
+                if (!valStr) return;
+
+                const val = parseFloat(valStr.replace(',', '.'));
+                if (isNaN(val)) return;
+                
+                // Unix ajatempel peab olema number
+                const timeMs = parseInt(row[keyTime].trim(), 10);
+                if (isNaN(timeMs)) return;
+
+                if (!groupedData[name]) {
+                    groupedData[name] = { dataPoints: [], lat: null, lng: null, description: '' };
+                }
+
+                groupedData[name].dataPoints.push({ val: val, ts: timeMs });
+
+                // Salvestame koordinaadid esimeselt realt, kus need olemas on
+                if (!groupedData[name].lat && row[keyLoc] && row[keyLoc].includes(',')) {
+                    const parts = row[keyLoc].split(',');
+                    groupedData[name].lat = parseFloat(parts[0].trim());
+                    groupedData[name].lng = parseFloat(parts[1].trim());
+                }
+
+                // Salvestame kirjelduse esimeselt realt, kus see olemas on
+                if (!groupedData[name].description && keyDesc && row[keyDesc]) {
+                    groupedData[name].description = row[keyDesc].trim();
+                }
+            });
+
+            const bounds = [];
+
+            Object.keys(groupedData).forEach((name, index) => {
+                const loc = groupedData[name];
+                
+                if (loc.dataPoints.length > 0 && loc.lat && loc.lng) {
+                    
+                    // Sorteerime toorandmed Unix ajatempli alusel, et graafik jookseks ajas õigesti
+                    loc.dataPoints.sort((a, b) => a.ts - b.ts);
+                    
+                    loc.raw = [];
+                    loc.times = [];
+                    
+                    loc.dataPoints.forEach(pt => {
+                        loc.raw.push(pt.val);
+                        const dateObj = new Date(pt.ts);
+                        loc.times.push(dateObj.toLocaleTimeString('et-EE', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+                    });
+
+                    const n = loc.raw.length;
+                    
+                    // 1. Leq (Energeetiline keskmine)
+                    let sumEnergetic = 0;
+                    let sumLinear = 0;
+                    loc.raw.forEach(v => {
+                        sumEnergetic += Math.pow(10, v / 10);
+                        sumLinear += v;
+                    });
+                    const calcLeq = 10 * Math.log10(sumEnergetic / n);
+                    
+                    // 2. Protsentiilid
+                    const sorted = [...loc.raw].sort((a, b) => b - a);
+                    const idx10 = Math.floor(n * 0.1);
+                    const idx90 = Math.floor(n * 0.9);
+                    const calcL10 = sorted[Math.min(idx10, n - 1)];
+                    const calcL90 = sorted[Math.min(idx90, n - 1)];
+
+                    // 3. Määramatus (Standardhälve alusel, kuigi artiklis on ka +3...+5dB hoiatustekst)
+                    const meanLinear = sumLinear / n;
+                    let sumSqDiff = 0;
+                    loc.raw.forEach(v => { sumSqDiff += Math.pow(v - meanLinear, 2); });
+                    const calcU = Math.sqrt(sumSqDiff / (n > 1 ? n - 1 : 1));
+
+                    // Tekitame Leaflet markeri
+                    const marker = L.circleMarker([loc.lat, loc.lng], {
+                        radius: 10,
+                        fillColor: "#16a34a", // Roheline teema
+                        color: "#14532d",
+                        weight: 2,
+                        opacity: 1,
+                        fillOpacity: 0.9
+                    }).addTo(map);
+
+                    bounds.push([loc.lat, loc.lng]);
+
+                    const canvasId = `chart-${index}`;
+                    
+                    const descriptionHTML = loc.description 
+                        ? `<p class="text-[11px] text-gray-500 mb-1.5 italic leading-snug">${loc.description}</p>` 
+                        : '';
+
+                    // Hüpikakna (popup) sisu HTML - kompaktsem
+                    const popupHTML = `
+                        <div class="text-gray-800 p-0.5">
+                            <h3 class="text-base font-bold text-green-900 mb-0.5 leading-tight">${name}</h3>
+                            ${descriptionHTML}
+                            
+                            <div class="grid grid-cols-2 gap-x-4 gap-y-1 mb-2 mt-1 bg-green-50/70 p-2 rounded-md text-[11px] border border-green-100">
+                                <div class="flex justify-between items-end border-b border-green-100/80 pb-0.5">
+                                    <span class="text-gray-500 font-medium">Leq</span>
+                                    <span class="text-sm font-bold text-green-700 leading-none">${calcLeq.toFixed(1)}<span class="text-[9px] font-normal text-gray-400 ml-0.5">dBA</span></span>
+                                </div>
+                                <div class="flex justify-between items-end border-b border-green-100/80 pb-0.5">
+                                    <span class="text-gray-500 font-medium">L10</span>
+                                    <span class="text-xs font-semibold text-gray-700 leading-none">${calcL10.toFixed(1)}<span class="text-[9px] font-normal text-gray-400 ml-0.5">dBA</span></span>
+                                </div>
+                                <div class="flex justify-between items-end">
+                                    <span class="text-gray-500 font-medium">L90</span>
+                                    <span class="text-xs font-semibold text-gray-700 leading-none">${calcL90.toFixed(1)}<span class="text-[9px] font-normal text-gray-400 ml-0.5">dBA</span></span>
+                                </div>
+                                <div class="flex justify-between items-end">
+                                    <span class="text-gray-500 font-medium">&plusmn; U</span>
+                                    <span class="text-xs font-semibold text-gray-500 leading-none">${calcU.toFixed(1)}<span class="text-[9px] font-normal text-gray-400 ml-0.5">dBA</span></span>
+                                </div>
+                            </div>
+                            
+                            <h4 class="font-medium text-gray-500 mb-0.5 text-[10px] uppercase tracking-wider">Graafik (n=${n})</h4>
+                            <div class="relative w-full" style="height: 120px;">
+                                <canvas id="${canvasId}"></canvas>
+                            </div>
+                        </div>
+                    `;
+
+                    marker.bindPopup(popupHTML);
+
+                    marker.on('popupopen', function() {
+                        const ctx = document.getElementById(canvasId).getContext('2d');
+                        
+                        const leqLine = new Array(n).fill(calcLeq);
+                        const l10Line = new Array(n).fill(calcL10);
+                        const l90Line = new Array(n).fill(calcL90);
+
+                        new Chart(ctx, {
+                            type: 'line',
+                            data: {
+                                labels: loc.times,
+                                datasets: [
+                                    {
+                                        label: 'Toorandmed (dBA)',
+                                        data: loc.raw,
+                                        borderColor: 'rgba(22, 163, 74, 0.7)', // green-600
+                                        backgroundColor: 'rgba(22, 163, 74, 0.1)',
+                                        borderWidth: 1.5,
+                                        fill: true,
+                                        pointRadius: 0,
+                                        pointHitRadius: 10,
+                                        tension: 0.1
+                                    },
+                                    {
+                                        label: 'Leq', data: leqLine,
+                                        borderColor: 'rgba(220, 38, 38, 0.9)', borderWidth: 2, pointRadius: 0, borderDash: [5, 5] // red
+                                    },
+                                    {
+                                        label: 'L10', data: l10Line,
+                                        borderColor: 'rgba(234, 88, 12, 0.8)', borderWidth: 2, pointRadius: 0, borderDash: [3, 3] // orange
+                                    },
+                                    {
+                                        label: 'L90', data: l90Line,
+                                        borderColor: 'rgba(37, 99, 235, 0.8)', borderWidth: 2, pointRadius: 0, borderDash: [3, 3] // blue
+                                    }
+                                ]
+                            },
+                            options: {
+                                animation: false,
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                scales: {
+                                    y: { 
+                                        min: Math.floor(Math.min(...loc.raw, calcL90) - 5),
+                                        max: Math.ceil(Math.max(...loc.raw, calcL10) + 5),
+                                        ticks: { font: { size: 9 }, maxTicksLimit: 5 }
+                                    },
+                                    x: { display: false }
+                                },
+                                plugins: {
+                                    legend: { position: 'bottom', labels: { boxWidth: 8, font: { size: 9 }, padding: 6 } },
+                                    tooltip: { callbacks: { title: function(context) { return 'Kell: ' + context[0].label; } } }
+                                }
+                            }
+                        });
+                    });
+
+                    mapMarkers.push(marker);
+                }
+            });
+
+            if (bounds.length > 0) {
+                map.fitBounds(bounds, { padding: [30, 30] });
+            }
+            
+            // Eemaldame laadimisekraani sujuva hajumisega
+            const loading = document.getElementById('loading');
+            loading.style.opacity = '0';
+            setTimeout(() => { loading.style.display = 'none'; }, 500);
+        }
+    </script>
+</body>
+</html>

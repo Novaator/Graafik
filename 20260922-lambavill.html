@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lambavilla uued kasutusviisid</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Fira Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        'sheep-body': '#faf6f3',
+                        'sheep-outline': '#d6c8bd',
+                        'sheep-dark': '#4a3b32',
+                        'accent': '#b45309'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Smooth transitions for popups */
+        .popup-enter {
+            opacity: 0;
+            transform: scale(0.95) translateY(-10px);
+        }
+        .popup-enter-active {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+            transition: opacity 200ms ease-out, transform 200ms ease-out;
+        }
+        .popup-exit {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+        .popup-exit-active {
+            opacity: 0;
+            transform: scale(0.95) translateY(-10px);
+            transition: opacity 150ms ease-in, transform 150ms ease-in;
+        }
+        
+        /* Subtle pulse for buttons to indicate interactivity */
+        .interactive-btn:hover .icon-ring {
+            transform: scale(1.1);
+            stroke: #b45309;
+        }
+    </style>
+</head>
+<body class="bg-stone-100 min-h-screen flex items-center justify-center p-4 font-sans text-stone-800">
+
+    <div id="graphic-wrapper" class="relative w-full max-w-[670px] mx-auto bg-[#fcfaf8] rounded-2xl shadow-sm border border-stone-200 overflow-visible">
+        
+        <!-- Title area -->
+        <div class="text-center pt-6 pb-2 px-4 relative z-10">
+            <h1 class="text-xl sm:text-2xl font-semibold text-stone-700">Jääkvilla innovaatilised kasutusviisid</h1>
+            <p class="text-sm text-stone-500 mt-1">Klõpsa ikoonidel, et näha doktoritöö põhitulemusi.</p>
+        </div>
+
+        <!-- Interactive graphic area -->
+        <div class="relative w-full aspect-[4/3] sm:aspect-[16/10] overflow-visible">
+            
+            <svg viewBox="0 0 670 420" class="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="xMidYMid meet">
+                
+                <!-- Sheep Legs (Nihutatud ülespoole ja uued toonid) -->
+                <rect x="230" y="260" width="16" height="90" rx="8" fill="#5c4d43"/>
+                <rect x="270" y="270" width="16" height="80" rx="8" fill="#4a3b32"/>
+                <rect x="420" y="260" width="16" height="90" rx="8" fill="#5c4d43"/>
+                <rect x="460" y="270" width="16" height="80" rx="8" fill="#4a3b32"/>
+
+                <!-- Sheep Body Background Fluff -->
+                <g fill="#faf6f3" stroke="#d6c8bd" stroke-width="5" stroke-linejoin="round">
+                    <circle cx="260" cy="150" r="70" />
+                    <circle cx="340" cy="120" r="80" />
+                    <circle cx="430" cy="140" r="75" />
+                    <circle cx="490" cy="200" r="65" />
+                    <circle cx="210" cy="220" r="60" />
+                    <circle cx="340" cy="260" r="60" />
+                    <circle cx="430" cy="250" r="65" />
+                    <!-- Main solid center to connect fluff -->
+                    <rect x="210" y="140" width="280" height="150" rx="40" />
+                </g>
+                
+                <!-- Clean inner body (hides inner strokes) -->
+                <g fill="#faf6f3">
+                    <circle cx="260" cy="150" r="66" />
+                    <circle cx="340" cy="120" r="76" />
+                    <circle cx="430" cy="140" r="71" />
+                    <circle cx="490" cy="200" r="61" />
+                    <circle cx="210" cy="220" r="56" />
+                    <circle cx="340" cy="260" r="56" />
+                    <circle cx="430" cy="250" r="61" />
+                    <rect x="210" y="140" width="280" height="150" rx="40" />
+                </g>
+
+                <!-- Little wool details -->
+                <path d="M 280 160 Q 300 140 320 160" fill="none" stroke="#e5d9d1" stroke-width="3" stroke-linecap="round" />
+                <path d="M 380 150 Q 400 130 420 150" fill="none" stroke="#e5d9d1" stroke-width="3" stroke-linecap="round" />
+                <path d="M 440 220 Q 460 200 470 230" fill="none" stroke="#e5d9d1" stroke-width="3" stroke-linecap="round" />
+                <path d="M 240 230 Q 250 200 270 230" fill="none" stroke="#e5d9d1" stroke-width="3" stroke-linecap="round" />
+
+                <!-- Sheep Head & Ears -->
+                <ellipse cx="175" cy="215" rx="22" ry="12" fill="#4a3b32" transform="rotate(25 175 215)"/>
+                <ellipse cx="140" cy="225" rx="35" ry="45" fill="#4a3b32" transform="rotate(-15 140 225)"/>
+                <circle cx="130" cy="215" r="4" fill="#ffffff"/> <!-- Eye -->
+                <!-- Head wool tuft -->
+                <circle cx="130" cy="180" r="15" fill="#faf6f3" stroke="#d6c8bd" stroke-width="3"/>
+                <circle cx="155" cy="185" r="18" fill="#faf6f3" stroke="#d6c8bd" stroke-width="3"/>
+                <circle cx="145" cy="175" r="16" fill="#faf6f3"/>
+                
+            </svg>
+
+            <!-- Node 1: Meditsiin (Nihutatud paremale: 34%) -->
+            <div class="absolute top-[48%] left-[34%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center group z-20">
+                <button class="popup-trigger interactive-btn relative bg-white w-12 h-12 rounded-full shadow-md flex items-center justify-center cursor-pointer transition-all focus:outline-none focus:ring-2 focus:ring-accent" data-target="popup-1" aria-label="Meditsiin ja taastusravi">
+                    <!-- Medical Icon -->
+                    <svg class="w-6 h-6 text-stone-700 transition-colors pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v4m-2-2h4"></path></svg>
+                    <svg class="icon-ring absolute inset-0 w-full h-full text-transparent transition-transform duration-300 pointer-events-none rounded-full" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="none" stroke-width="4"></circle></svg>
+                </button>
+                <span class="mt-2 text-xs sm:text-sm font-semibold text-stone-800 bg-white/80 px-2 py-0.5 rounded backdrop-blur-sm pointer-events-none">Meditsiin</span>
+                
+                <!-- Popup 1 (Laiem ja detailsem sisu) -->
+                <div id="popup-1" class="popup hidden absolute top-full left-0 sm:-left-1/4 mt-3 w-64 sm:w-72 bg-white border border-stone-200 p-4 rounded-xl shadow-xl text-sm text-stone-600 z-30">
+                    <button class="close-btn absolute top-2 right-2 text-stone-400 hover:text-stone-700"><svg class="w-4 h-4 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+                    <h3 class="font-bold text-stone-800 mb-2 flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-accent"></span> Mudaravi tuubused
+                    </h3>
+                    <p class="leading-snug mb-2">Koostöös Haapsalu tervisedenduse ja rehabilitatsiooni kompetentsikeskusega asendasin mudaravis kallid elektriseadmed villaste tuubustega.</p>
+                    <p class="leading-snug"><strong>Tulemus:</strong> Kolme millimeetri paksune täisvillane vilt säilitab ravimuda soojuse nõutavas vahemikus kogu 20-minutilise protseduuri vältel. Lisaks pakkusid tuubused patsiendile mugavat anatoomilist toetuspinda.</p>
+                </div>
+            </div>
+
+            <!-- Node 2: Siseruumid (Jääb keskele: 50%) -->
+            <div class="absolute top-[48%] left-[50%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center group z-20">
+                <button class="popup-trigger interactive-btn relative bg-white w-12 h-12 rounded-full shadow-md flex items-center justify-center cursor-pointer transition-all focus:outline-none focus:ring-2 focus:ring-accent" data-target="popup-2" aria-label="Siseruumide akustika">
+                    <!-- Interior/Air Icon -->
+                    <svg class="w-6 h-6 text-stone-700 transition-colors pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                    <svg class="icon-ring absolute inset-0 w-full h-full text-transparent transition-transform duration-300 pointer-events-none rounded-full" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="none" stroke-width="4"></circle></svg>
+                </button>
+                <span class="mt-2 text-xs sm:text-sm font-semibold text-stone-800 bg-white/80 px-2 py-0.5 rounded backdrop-blur-sm pointer-events-none">Siseruumid</span>
+                
+                <!-- Popup 2 -->
+                <div id="popup-2" class="popup hidden absolute top-full left-1/2 -translate-x-1/2 mt-3 w-64 sm:w-72 bg-white border border-stone-200 p-4 rounded-xl shadow-xl text-sm text-stone-600 z-30">
+                    <button class="close-btn absolute top-2 right-2 text-stone-400 hover:text-stone-700"><svg class="w-4 h-4 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+                    <h3 class="font-bold text-stone-800 mb-2 flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-accent"></span> Akustilised paneelid
+                    </h3>
+                    <p class="leading-snug mb-2">Koostöös ettevõttega Silen testisin villal põhinevaid kolmekihilisi akustilisi seinapaneele.</p>
+                    <p class="leading-snug"><strong>Tulemus:</strong> Vill neelas heli sama hästi kui mineraalvill, sidudes samal ajal õhust niiskust ja ohtlikke gaase (nt formaldehüüde). Kvalitatiivne uuring näitas, et inimesed hindasid villase kabiini õhukvaliteeti märgatavalt meeldivamaks.</p>
+                </div>
+            </div>
+
+            <!-- Node 3: Pakend (Nihutatud vasakule: 66%) -->
+            <div class="absolute top-[48%] left-[66%] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center group z-20">
+                <button class="popup-trigger interactive-btn relative bg-white w-12 h-12 rounded-full shadow-md flex items-center justify-center cursor-pointer transition-all focus:outline-none focus:ring-2 focus:ring-accent" data-target="popup-3" aria-label="Ökoloogiline pakend">
+                    <!-- Packaging Icon -->
+                    <svg class="w-6 h-6 text-stone-700 transition-colors pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path></svg>
+                    <svg class="icon-ring absolute inset-0 w-full h-full text-transparent transition-transform duration-300 pointer-events-none rounded-full" viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" fill="none" stroke-width="4"></circle></svg>
+                </button>
+                <span class="mt-2 text-xs sm:text-sm font-semibold text-stone-800 bg-white/80 px-2 py-0.5 rounded backdrop-blur-sm pointer-events-none">Pakend</span>
+                
+                <!-- Popup 3 -->
+                <div id="popup-3" class="popup hidden absolute top-full right-0 sm:-right-1/4 mt-3 w-64 sm:w-72 bg-white border border-stone-200 p-4 rounded-xl shadow-xl text-sm text-stone-600 z-30">
+                    <button class="close-btn absolute top-2 right-2 text-stone-400 hover:text-stone-700"><svg class="w-4 h-4 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+                    <h3 class="font-bold text-stone-800 mb-2 flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-accent"></span> Villast turvaümbrikud
+                    </h3>
+                    <p class="leading-snug mb-2">Lõin villakomposiidist turvaümbrikud, et asendada naftapõhist mullikilet ja polüetüleeni.</p>
+                    <p class="leading-snug"><strong>Tulemus:</strong> Materjal talus mehaaniliselt kuni 1,5 kg raskust ja taastus vaakumist nelja ööpäevaga. Tallinna ja Tartu Kaubamajas testitud tagastussüsteem tõestas ümbrike korduvkasutatavust, kahandades pakendi süsinikujalajälge 40 protsenti.</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const popups = document.querySelectorAll('.popup');
+            const triggers = document.querySelectorAll('.popup-trigger');
+            
+            // Function to close all popups with animation
+            const closeAllPopups = () => {
+                popups.forEach(popup => {
+                    if (!popup.classList.contains('hidden')) {
+                        popup.classList.add('popup-exit-active');
+                        popup.classList.remove('popup-enter-active', 'popup-enter');
+                        
+                        setTimeout(() => {
+                            popup.classList.add('hidden');
+                            popup.classList.remove('popup-exit-active');
+                        }, 150); // Matches CSS transition duration
+                    }
+                });
+            };
+
+            // Global click listener to handle open and outside clicks
+            document.addEventListener('click', (event) => {
+                
+                // 1. Is it a trigger button?
+                const trigger = event.target.closest('.popup-trigger');
+                
+                // 2. Is it inside a popup?
+                const popupInnerClick = event.target.closest('.popup');
+                
+                // 3. Is it a specific close button inside a popup?
+                const closeBtnClick = event.target.closest('.close-btn');
+
+                if (closeBtnClick) {
+                    closeAllPopups();
+                    return;
+                }
+
+                if (trigger) {
+                    const targetId = trigger.getAttribute('data-target');
+                    const targetPopup = document.getElementById(targetId);
+                    
+                    const isCurrentlyOpen = !targetPopup.classList.contains('hidden');
+                    
+                    // Close everything first
+                    closeAllPopups();
+                    
+                    // If it wasn't open, open it
+                    if (!isCurrentlyOpen) {
+                        targetPopup.classList.remove('hidden');
+                        targetPopup.classList.add('popup-enter');
+                        
+                        // Force reflow
+                        void targetPopup.offsetWidth; 
+                        
+                        targetPopup.classList.remove('popup-enter');
+                        targetPopup.classList.add('popup-enter-active');
+                    }
+                } else if (!popupInnerClick) {
+                    // Clicked outside of triggers and popups -> Close all
+                    closeAllPopups();
+                }
+            });
+            
+            // Handle Escape key to close popups
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeAllPopups();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

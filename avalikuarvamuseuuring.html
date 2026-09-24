@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kaitseväe ja ERR-i usaldus (2026)</title>
+    <!-- Laadime Chart.js teegi ja andmesiltide plugina CDN-ist -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f9;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+        h2 {
+            text-align: center;
+            color: #34495e;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 10px;
+            margin-top: 40px;
+        }
+        .dashboard {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .chart-container {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            padding: 20px;
+            width: 45%;
+            min-width: 400px;
+        }
+        canvas {
+            width: 100% !important;
+            height: 350px !important;
+        }
+        @media (max-width: 900px) {
+            .chart-container { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Institutsioonide usaldusväärsus (September 2026)</h1>
+
+    <h2>Kaitsevägi</h2>
+    <div class="dashboard">
+        <div class="chart-container">
+            <canvas id="kvDistChart"></canvas>
+        </div>
+        <div class="chart-container">
+            <canvas id="kvGroupChart"></canvas>
+        </div>
+    </div>
+
+    <h2>Eesti Rahvusringhääling (ERR)</h2>
+    <div class="dashboard">
+        <div class="chart-container">
+            <canvas id="errDistChart"></canvas>
+        </div>
+        <div class="chart-container">
+            <canvas id="errGroupChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        // Aktiveerime andmesiltide plugina
+        Chart.register(ChartDataLabels);
+
+        // Ühised andmesiltide seaded
+        const datalabelsConfig = {
+            color: '#000',
+            font: { weight: 'bold', size: 12 },
+            formatter: function(value) { return value + '%'; }
+        };
+
+        // --- 1. KAITSEVÄE ÜLDINE JAOTUS ---
+        new Chart(document.getElementById('kvDistChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Usaldan täielikult', 'Pigem usaldab', 'Pigem ei usalda', 'Üldse ei usalda', 'Ei oska öelda'],
+                datasets: [{
+                    label: 'Osakaal (%)',
+                    data: [25, 41, 14, 11, 9],
+                    backgroundColor: ['#1b4d3e', '#2e8b57', '#e76f51', '#d62828', '#a0aab2']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: { display: true, text: 'Kaitseväe usaldushinnangute jaotus', font: {size: 16} },
+                    legend: { display: false },
+                    datalabels: { ...datalabelsConfig, anchor: 'end', align: 'end' }
+                },
+                scales: { y: { suggestedMax: 50 } }
+            }
+        });
+
+        // --- ANDMED RÜHMADE LÕIKES (Pööratud järjestus, et 'Kogu elanikkond' jääks üles) ---
+        const groups = [
+            'Kogu elanikkond', 'Eestlased', 'Muu rahvus', 'Mehed', 'Naised',
+            '15–24 a', '75+ a', '3. tase (kõrgharidus)', '1. tase (põhiharidus)',
+            'Lõuna-Eesti', 'Kirde-Eesti', 'Tallinn'
+        ].reverse();
+
+        const kvGroupData = [66, 78, 43, 65, 67, 66, 68, 71, 60, 74, 53, 59].reverse();
+        const errGroupData = [66, 76, 47, 64, 69, 73, 70, 71, 57, 73, 50, 64].reverse();
+
+        // --- 2. KAITSEVÄGI RÜHMADE LÕIKES ---
+        new Chart(document.getElementById('kvGroupChart'), {
+            type: 'bar',
+            data: {
+                labels: groups,
+                datasets: [{
+                    label: 'Usaldajate osakaal (%)',
+                    data: kvGroupData,
+                    backgroundColor: '#1f77b4'
+                }]
+            },
+            options: {
+                indexAxis: 'y', // Teeb graafiku horisontaalseks
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: { display: true, text: 'Kaitseväe usaldamine rühmade lõikes (täielikult+pigem)', font: {size: 16} },
+                    legend: { display: false },
+                    datalabels: { ...datalabelsConfig, anchor: 'end', align: 'end' }
+                },
+                scales: { x: { suggestedMax: 100 } }
+            }
+        });
+
+        // --- 3. ERR ÜLDINE JAOTUS ---
+        new Chart(document.getElementById('errDistChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Usaldan täielikult', 'Pigem usaldab', 'Pigem ei usalda', 'Üldse ei usalda', 'Ei oska öelda'],
+                datasets: [{
+                    label: 'Osakaal (%)',
+                    data: [21, 46, 14, 9, 11],
+                    backgroundColor: ['#1b4d3e', '#2e8b57', '#e76f51', '#d62828', '#a0aab2']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: { display: true, text: 'ERR-i usaldushinnangute jaotus', font: {size: 16} },
+                    legend: { display: false },
+                    datalabels: { ...datalabelsConfig, anchor: 'end', align: 'end' }
+                },
+                scales: { y: { suggestedMax: 55 } }
+            }
+        });
+
+        // --- 4. ERR RÜHMADE LÕIKES ---
+        new Chart(document.getElementById('errGroupChart'), {
+            type: 'bar',
+            data: {
+                labels: groups,
+                datasets: [{
+                    label: 'Usaldajate osakaal (%)',
+                    data: errGroupData,
+                    backgroundColor: '#e67e22'
+                }]
+            },
+            options: {
+                indexAxis: 'y', // Teeb graafiku horisontaalseks
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: { display: true, text: 'ERR-i usaldamine rühmade lõikes (täielikult+pigem)', font: {size: 16} },
+                    legend: { display: false },
+                    datalabels: { ...datalabelsConfig, anchor: 'end', align: 'end' }
+                },
+                scales: { x: { suggestedMax: 100 } }
+            }
+        });
+    </script>
+</body>
+</html>

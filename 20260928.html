@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eesti Iduettevõtluse Näitajad</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+
+    <style>
+        body {
+            font-family: 'Fira Sans', sans-serif;
+            background-color: #f3f4f6;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        #app-container {
+            width: 100%;
+            max-width: 670px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Fullscreen styles */
+        #app-container.fullscreen-mode {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            max-width: none;
+            border-radius: 0;
+            z-index: 9999;
+            margin: 0;
+        }
+
+        #map {
+            height: 500px;
+            width: 100%;
+            flex-grow: 1;
+            z-index: 1;
+        }
+
+        .leaflet-popup-content-wrapper {
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+
+        .leaflet-popup-content {
+            font-family: 'Fira Sans', sans-serif;
+            margin: 16px;
+            width: 280px !important;
+        }
+
+        .popup-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        
+        .popup-table th {
+            text-align: left;
+            font-size: 16px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e5e7eb;
+            color: #111827;
+        }
+
+        .popup-table td {
+            padding: 8px 0;
+            border-bottom: 1px solid #f3f4f6;
+            color: #4b5563;
+        }
+
+        .popup-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .popup-table td.value {
+            text-align: right;
+            font-weight: 500;
+            color: #111827;
+        }
+
+        .legend {
+            line-height: 18px;
+            color: #333;
+            background: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            font-size: 12px;
+        }
+        
+        .legend i {
+            width: 18px;
+            height: 18px;
+            float: left;
+            margin-right: 8px;
+            opacity: 0.8;
+            border-radius: 3px;
+        }
+
+        /* Tab styling */
+        .tab-btn {
+            transition: all 0.2s;
+            border-bottom: 3px solid transparent;
+        }
+        .tab-btn.active {
+            border-bottom-color: #3b82f6;
+            color: #1d4ed8;
+            background-color: #eff6ff;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app-container">
+        <!-- Header with Tabs and Fullscreen Button -->
+        <div class="flex justify-between items-center border-b border-gray-200 bg-white px-2 pt-2">
+            <div class="flex space-x-1 overflow-x-auto w-full no-scrollbar" id="tabs-container">
+                <button onclick="switchTab('idu')" id="tab-idu" class="tab-btn active px-4 py-3 text-sm text-gray-600 hover:bg-gray-50 flex-1 text-center whitespace-nowrap">
+                    Iduettevõtteid / 1000 el
+                </button>
+                <button onclick="switchTab('org')" id="tab-org" class="tab-btn px-4 py-3 text-sm text-gray-600 hover:bg-gray-50 flex-1 text-center whitespace-nowrap">
+                    Organisatsioone ja programme / 1000 el
+                </button>
+            </div>
+            
+            <button onclick="toggleFullscreen()" class="p-3 text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded-lg ml-2 transition-colors" title="Täisekraan">
+                <svg id="fullscreen-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Map Container -->
+        <div id="map"></div>
+    </div>
+
+    <script>
+        // Manustatud tabeli andmed
+        const tableData = {
+            "Hiiumaa": { elanikeArv: 8330, jurIsikud: 1690, tugiOrg: 5, noorteOrg: 1, iduettevotted: 0, idu1000: 0, org1000: 0.6 },
+            "Ida-Virumaa": { elanikeArv: 127909, jurIsikud: 10665, tugiOrg: 26, noorteOrg: 4, iduettevotted: 12, idu1000: 0.094, org1000: 0.203 },
+            "Järvamaa": { elanikeArv: 29573, jurIsikud: 3748, tugiOrg: 9, noorteOrg: 1, iduettevotted: 2, idu1000: 0.068, org1000: 0.304 },
+            "Jõgevamaa": { elanikeArv: 26526, jurIsikud: 3406, tugiOrg: 10, noorteOrg: 5, iduettevotted: 2, idu1000: 0.075, org1000: 0.377 },
+            "Lääne-Virumaa": { elanikeArv: 58309, jurIsikud: 7811, tugiOrg: 11, noorteOrg: 2, iduettevotted: 5, idu1000: 0.086, org1000: 0.189 },
+            "Läänemaa": { elanikeArv: 20200, jurIsikud: 3442, tugiOrg: 7, noorteOrg: 2, iduettevotted: 1, idu1000: 0.05, org1000: 0.347 },
+            "Põlvamaa": { elanikeArv: 23223, jurIsikud: 3116, tugiOrg: 17, noorteOrg: 9, iduettevotted: 0, idu1000: 0, org1000: 0.732 },
+            "Pärnumaa": { elanikeArv: 87015, jurIsikud: 14344, tugiOrg: 19, noorteOrg: 4, iduettevotted: 18, idu1000: 0.207, org1000: 0.218 },
+            "Raplamaa": { elanikeArv: 33733, jurIsikud: 5505, tugiOrg: 12, noorteOrg: 2, iduettevotted: 3, idu1000: 0.089, org1000: 0.356 },
+            "Saaremaa": { elanikeArv: 31521, jurIsikud: 6028, tugiOrg: 14, noorteOrg: 2, iduettevotted: 7, idu1000: 0.222, org1000: 0.444 },
+            "Valgamaa": { elanikeArv: 27034, jurIsikud: 3413, tugiOrg: 16, noorteOrg: 8, iduettevotted: 0, idu1000: 0, org1000: 0.592 },
+            "Viljandimaa": { elanikeArv: 44598, jurIsikud: 6359, tugiOrg: 19, noorteOrg: 6, iduettevotted: 12, idu1000: 0.269, org1000: 0.426 },
+            "Võrumaa": { elanikeArv: 33191, jurIsikud: 4922, tugiOrg: 20, noorteOrg: 8, iduettevotted: 1, idu1000: 0.03, org1000: 0.603 }
+        };
+
+        let currentTab = 'idu';
+        let map, geojsonLayer, legendControl;
+        
+        // Leiame maksimumväärtused dünaamiliselt legendi jaoks
+        const maxIdu = Math.max(...Object.values(tableData).map(d => d.idu1000));
+        const maxOrg = Math.max(...Object.values(tableData).map(d => d.org1000));
+
+        // Format numbritel
+        function formatNumber(num) {
+            return num.toLocaleString('et-EE');
+        }
+        
+        // Format komadega (0.5 -> 0,5)
+        function formatFloat(num) {
+            return num.toString().replace('.', ',');
+        }
+
+        // Normalize county names from GeoJSON to match our data keys
+        function normalizeCountyName(name) {
+            if(!name) return "Unknown";
+            
+            // Puhastame nime
+            let cleanName = name.replace(' maakond', '');
+            
+            // Mapime stabiilselt õiged nimed
+            const countyMap = {
+                'Hiiu': 'Hiiumaa',
+                'Ida-Viru': 'Ida-Virumaa',
+                'Järva': 'Järvamaa',
+                'Jõgeva': 'Jõgevamaa',
+                'Lääne-Viru': 'Lääne-Virumaa',
+                'Lääne': 'Läänemaa',
+                'Põlva': 'Põlvamaa',
+                'Pärnu': 'Pärnumaa',
+                'Rapla': 'Raplamaa',
+                'Saare': 'Saaremaa',
+                'Valga': 'Valgamaa',
+                'Viljandi': 'Viljandimaa',
+                'Võru': 'Võrumaa',
+                'Harju': 'Harjumaa',
+                'Tartu': 'Tartumaa'
+            };
+
+            return countyMap[cleanName] || cleanName;
+        }
+
+        // Soojuskaardi värvid
+        function getColor(val) {
+            if (val === undefined) return '#e5e7eb'; // Hall puuduva info korral (Harjumaa/Tartumaa pildil polnud)
+            
+            if (currentTab === 'idu') {
+                // Sinised toonid
+                return val > 0.25 ? '#08519c' :
+                       val > 0.15 ? '#3182bd' :
+                       val > 0.08 ? '#6baed6' :
+                       val > 0.04 ? '#bdd7e7' : 
+                                    '#eff3ff';
+            } else {
+                // Oranžid/Punased toonid
+                return val > 0.6  ? '#a63603' :
+                       val > 0.4  ? '#e6550d' :
+                       val > 0.3  ? '#fd8d3c' :
+                       val > 0.2  ? '#fdbe85' : 
+                                    '#feedde';
+            }
+        }
+
+        // Vormista kaardi kihid
+        function style(feature) {
+            let pName = null;
+            // Otsime feature alt õiget maakonna nime omadust
+            for (let key in feature.properties) {
+                if (typeof feature.properties[key] === 'string' && feature.properties[key].includes('maa')) {
+                    pName = feature.properties[key];
+                    break;
+                }
+            }
+            if(!pName && feature.properties.name) pName = feature.properties.name;
+            if(!pName && feature.properties.MNIMI) pName = feature.properties.MNIMI;
+
+            let countyName = normalizeCountyName(pName);
+            let countyInfo = tableData[countyName];
+            
+            let val = undefined;
+            if (countyInfo) {
+                val = currentTab === 'idu' ? countyInfo.idu1000 : countyInfo.org1000;
+            }
+
+            return {
+                fillColor: getColor(val),
+                weight: 1,
+                opacity: 0.8,
+                color: '#000000',
+                dashArray: '',
+                fillOpacity: 0.85
+            };
+        }
+
+        function highlightFeature(e) {
+            var layer = e.target;
+            layer.setStyle({
+                weight: 3,
+                color: '#000000',
+                dashArray: '',
+                fillOpacity: 1
+            });
+            layer.bringToFront();
+        }
+
+        function resetHighlight(e) {
+            geojsonLayer.resetStyle(e.target);
+        }
+
+        function createPopupContent(countyName, data) {
+            if (!data) {
+                return `
+                    <div class="p-2">
+                        <h3 class="font-semibold text-lg border-b pb-2 mb-2">${countyName}</h3>
+                        <p class="text-sm text-gray-500">Selle maakonna kohta andmed tabelis puuduvad.</p>
+                    </div>
+                `;
+            }
+
+            return `
+                <table class="popup-table">
+                    <thead>
+                        <tr><th colspan="2">${countyName}</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>Elanike arv</td><td class="value">${formatNumber(data.elanikeArv)}</td></tr>
+                        <tr><td>Registreeritud juriidiliste isikute arv</td><td class="value">${formatNumber(data.jurIsikud)}</td></tr>
+                        <tr><td>Tugiorganisatsioonide ja -programmide arv</td><td class="value">${data.tugiOrg}</td></tr>
+                        <tr><td>sh noorteettevõtlust edendavate org. ja progr. arv</td><td class="value">${data.noorteOrg}</td></tr>
+                        <tr><td>Registreeritud iduettevõtete arv</td><td class="value">${data.iduettevotted}</td></tr>
+                        <tr><td>Iduettevõtteid / 1000 elaniku kohta</td><td class="value text-blue-600 font-bold">${formatFloat(data.idu1000)}</td></tr>
+                        <tr><td>Organisatsioone ja programme / 1000 elaniku kohta</td><td class="value text-orange-600 font-bold">${formatFloat(data.org1000)}</td></tr>
+                    </tbody>
+                </table>
+            `;
+        }
+
+        function onEachFeature(feature, layer) {
+            // Find county name
+            let pName = null;
+            for (let key in feature.properties) {
+                if (typeof feature.properties[key] === 'string' && (feature.properties[key].includes('maa') || feature.properties[key].includes('County'))) {
+                    pName = feature.properties[key];
+                    break;
+                }
+            }
+            if(!pName) pName = feature.properties.name || "Tundmatu";
+            let countyName = normalizeCountyName(pName);
+            
+            // Add interactions
+            layer.on({
+                mouseover: highlightFeature,
+                mouseout: resetHighlight
+            });
+
+            // Add Popup
+            layer.bindPopup(createPopupContent(countyName, tableData[countyName]));
+        }
+
+        function initMap() {
+            // Eesti keskpunkt
+            map = L.map('map', {
+                center: [58.5953, 25.0136],
+                zoom: 7,
+                minZoom: 6,
+                maxZoom: 10,
+                zoomControl: false 
+            });
+            
+            // Paneme zoom control'i paremale alla
+            L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+            // Aluskaart Esri-lt (hele ja neutraalne, ei vaja API võtit)
+            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+                attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
+                maxZoom: 16
+            }).addTo(map);
+
+            // Laeme Eesti maakondade GeoJSON (kasutame stabiilset Highcharts andmebaasi)
+            fetch('https://code.highcharts.com/mapdata/countries/ee/ee-all.geo.json')
+                .then(response => {
+                    if (!response.ok) throw new Error("Viga andmete laadimisel");
+                    return response.json();
+                })
+                .then(data => {
+                    geojsonLayer = L.geoJson(data, {
+                        style: style,
+                        onEachFeature: onEachFeature
+                    }).addTo(map);
+                    
+                    // Kohanda kaardi vaade
+                    map.fitBounds(geojsonLayer.getBounds());
+                })
+                .catch(err => {
+                    console.error("Viga kaardi laadimisel:", err);
+                    document.getElementById('map').innerHTML = '<div class="flex items-center justify-center h-full text-red-500 p-6 text-center">Kaardifaili laadimine ebaõnnestus. Palun kontrolli internetiühendust.</div>';
+                });
+
+            updateLegend();
+        }
+
+        function updateLegend() {
+            if (legendControl) {
+                map.removeControl(legendControl);
+            }
+
+            legendControl = L.control({position: 'bottomleft'});
+            legendControl.onAdd = function (map) {
+                var div = L.DomUtil.create('div', 'info legend');
+                let grades = [];
+                let labels = [];
+
+                if (currentTab === 'idu') {
+                    grades = [0, 0.04, 0.08, 0.15, 0.25];
+                    div.innerHTML += '<div class="font-semibold mb-1 text-xs">Iduettevõtteid / 1000 el</div>';
+                } else {
+                    grades = [0, 0.2, 0.3, 0.4, 0.6];
+                    div.innerHTML += '<div class="font-semibold mb-1 text-xs">Organisatsioone / 1000 el</div>';
+                }
+
+                for (var i = 0; i < grades.length; i++) {
+                    let nextVal = grades[i + 1];
+                    let labelStr = formatFloat(grades[i]) + (nextVal ? ' &ndash; ' + formatFloat(nextVal) : '+');
+                    
+                    // Saame värvi veidi suurema väärtusega et test tingimust tabada
+                    let colorVal = grades[i] + 0.001;
+                    
+                    div.innerHTML +=
+                        '<i style="background:' + getColor(colorVal) + '"></i> ' +
+                        labelStr + '<br>';
+                }
+                
+                div.innerHTML += '<i style="background:#e5e7eb; margin-top:4px;"></i> Andmed puuduvad<br>';
+                
+                return div;
+            };
+            legendControl.addTo(map);
+        }
+
+        window.switchTab = function(tabName) {
+            currentTab = tabName;
+            
+            // Uuenda nupude disaini
+            document.getElementById('tab-idu').classList.remove('active', 'text-blue-700', 'bg-blue-50', 'border-blue-500');
+            document.getElementById('tab-idu').classList.add('text-gray-600', 'border-transparent');
+            document.getElementById('tab-org').classList.remove('active', 'text-blue-700', 'bg-blue-50', 'border-blue-500');
+            document.getElementById('tab-org').classList.add('text-gray-600', 'border-transparent');
+            
+            let activeTab = document.getElementById('tab-' + tabName);
+            activeTab.classList.remove('text-gray-600', 'border-transparent');
+            activeTab.classList.add('active', 'text-blue-700', 'bg-blue-50', 'border-blue-500');
+
+            // Uuenda kihtide värve ja legendi
+            if (geojsonLayer) {
+                geojsonLayer.setStyle(style);
+            }
+            updateLegend();
+        };
+
+        window.toggleFullscreen = function() {
+            const container = document.getElementById('app-container');
+            const icon = document.getElementById('fullscreen-icon');
+            const isFullscreen = container.classList.contains('fullscreen-mode');
+
+            if (!isFullscreen) {
+                container.classList.add('fullscreen-mode');
+                // Muuda ikoon kahanemiseks
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 14h4v4M21 10h-4V6M10 21v-4H6M14 3v4h4M10 3L3 10M21 14l-7 7M14 21l7-7M3 14l7-7" />';
+            } else {
+                container.classList.remove('fullscreen-mode');
+                // Muuda ikoon tagasi laienemiseks
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />';
+            }
+
+            // Teavita Leaflet kaarti suuruse muutusest
+            setTimeout(() => {
+                if(map) map.invalidateSize();
+            }, 300);
+        };
+
+        // Alglaadimine
+        document.addEventListener('DOMContentLoaded', () => {
+            initMap();
+        });
+    </script>
+</body>
+</html>

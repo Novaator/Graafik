@@ -6,10 +6,10 @@
   <title>Palju õnne sünnipäevaks! - 8-Bit Quest</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google Fonts: Press Start 2P & VT323 -->
+  <!-- Google Fonts: Press Start 2P, VT323 & Hexen Dark Gothic Fonts (Pirata One, Nosifer, Russo One) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Nosifer&family=Pirata+One&family=Press+Start+2P&family=Russo+One&family=VT323&display=swap" rel="stylesheet">
   <style>
     * {
       box-sizing: border-box;
@@ -119,6 +119,66 @@
     }
     .rainbow-flow {
       animation: rainbowStream 2.5s infinite linear;
+    }
+
+    /* Hexen: Beyond Heretic (1995) Dark Gothic & Bloody Typography */
+    @keyframes hexenBloodPulse {
+      0%, 100% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 16px rgba(220, 20, 60, 0.9))
+                drop-shadow(2px 3px 0px #300000)
+                drop-shadow(-2px 3px 0px #300000)
+                drop-shadow(0 6px 1px #1a0000)
+                drop-shadow(0 14px 22px rgba(0, 0, 0, 0.98));
+      }
+      50% {
+        transform: scale(1.02);
+        filter: drop-shadow(0 0 34px rgba(255, 0, 0, 1))
+                drop-shadow(3px 4px 0px #550000)
+                drop-shadow(-3px 4px 0px #550000)
+                drop-shadow(0 8px 2px #200000)
+                drop-shadow(0 18px 28px rgba(0, 0, 0, 1));
+      }
+    }
+
+    .hexen-title {
+      font-family: 'Pirata One', 'Nosifer', serif;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      background: linear-gradient(180deg, 
+        #ffffff 0%, 
+        #ff7373 12%, 
+        #dc2626 34%, 
+        #880808 60%, 
+        #3b0000 84%,
+        #120000 100%
+      );
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: hexenBloodPulse 2.8s infinite ease-in-out;
+      display: inline-block;
+      line-height: 1.05;
+    }
+
+    .hexen-font-pirata {
+      font-family: 'Pirata One', serif !important;
+      letter-spacing: 0.15em;
+    }
+
+    .hexen-font-nosifer {
+      font-family: 'Nosifer', cursive, serif !important;
+      letter-spacing: 0.05em;
+      font-size: 82%;
+    }
+
+    @keyframes bloodDripAnim {
+      0% { transform: scaleY(0.7); opacity: 0.8; }
+      50% { transform: scaleY(1.2); opacity: 1; }
+      100% { transform: scaleY(0.7); opacity: 0.8; }
+    }
+    .blood-drip {
+      transform-origin: top center;
+      animation: bloodDripAnim 2.8s infinite ease-in-out;
     }
 
     /* Pixel speech bubble pointer */
@@ -507,6 +567,63 @@ kuni mäger haua lõpuni kaevab."
 
   </main>
 
+  <!-- Fullscreen Bloody "MÄNG LÄBI" Overlay -->
+  <div id="gameOverScreen" class="fixed inset-0 z-[100] bg-black/92 backdrop-blur-md hidden flex flex-col items-center justify-center p-4 text-center select-none">
+    
+    <!-- Blood drip decorative silhouettes at top -->
+    <div class="absolute top-0 left-0 w-full overflow-hidden leading-none pointer-events-none opacity-80">
+      <svg class="w-full h-16 sm:h-24 text-red-900 fill-current blood-drip" preserveAspectRatio="none" viewBox="0 0 1200 120">
+        <path d="M0,0 L1200,0 L1200,30 Q1150,90 1120,40 Q1060,110 1020,30 Q940,120 900,45 Q820,95 780,25 Q710,130 660,35 Q600,105 550,20 Q480,125 430,30 Q360,95 320,40 Q250,115 200,25 Q120,95 70,30 L0,45 Z"></path>
+      </svg>
+    </div>
+
+    <!-- Hexen: Beyond Heretic (1995) Gothic Blood Title -->
+    <div class="relative mb-3 sm:mb-5">
+      <!-- Dark Gothic Spikes Decoration -->
+      <div class="flex items-center justify-center gap-2 text-red-600 text-xs sm:text-sm tracking-[0.3em] font-serif mb-1 opacity-80">
+        <span>⚔️ 𝕳𝕰𝖃𝕰𝕹 ⚔️</span>
+      </div>
+
+      <div class="inline-block relative px-3 py-1">
+        <h2 id="gameOverTitle" class="hexen-title hexen-font-pirata text-5xl sm:text-7xl md:text-9xl uppercase drop-shadow-[0_10px_20px_rgba(0,0,0,0.9)]">
+          MÄNG LÄBI
+        </h2>
+      </div>
+
+      <!-- SVG blood drip accent below title -->
+      <svg class="w-72 sm:w-[420px] h-10 mx-auto mt-1 text-red-600 fill-current" viewBox="0 0 300 28">
+        <path d="M 10 0 C 15 15, 20 22, 22 26 C 24 22, 28 15, 32 0 M 60 0 C 65 20, 70 26, 73 26 C 76 24, 82 16, 88 0 M 130 0 C 135 22, 142 28, 146 28 C 150 24, 156 18, 160 0 M 210 0 C 215 18, 220 26, 224 26 C 228 24, 234 16, 238 0 M 270 0 C 274 14, 278 20, 281 20 C 284 18, 288 12, 292 0" stroke="#dc2626" stroke-width="4" stroke-linecap="round" fill="#b91c1c"/>
+      </svg>
+
+      <!-- Font Style Switcher: Hexen Gothic vs Pure Dripping Gore -->
+      <div class="flex justify-center items-center gap-2 mt-2">
+        <button onclick="setHexenFont('pirata')" id="btnGothicPirata" class="pixel-btn bg-red-950 text-red-300 border border-red-700 hover:bg-red-900 px-2 py-1 text-[9px]">
+          ⚔️ HEXEN GOOTI
+        </button>
+        <button onclick="setHexenFont('nosifer')" id="btnGothicNosifer" class="pixel-btn bg-black text-gray-400 border border-red-900 hover:bg-red-950 px-2 py-1 text-[9px]">
+          🩸 TILKUV VERI
+        </button>
+      </div>
+    </div>
+
+    <!-- Reason text for Game Over -->
+    <p id="gameOverReason" class="text-xs sm:text-sm text-red-400 mb-6 font-medium tracking-wide">
+      Mäger kaevas haua valmis!
+    </p>
+
+    <!-- Requested points format: "Kogusid XXX präänikut" -->
+    <div class="pixel-box border-4 border-red-600 bg-red-950/70 py-4 px-6 sm:px-10 mb-8 max-w-lg shadow-[0_0_30px_rgba(220,38,38,0.5)]">
+      <p id="gameOverCookiesText" class="text-xs sm:text-sm md:text-base text-yellow-300 font-bold tracking-wider leading-relaxed">
+        Kogusid 0 präänikut
+      </p>
+    </div>
+
+    <!-- Restart button to play again -->
+    <button onclick="restartGame()" class="pixel-btn bg-red-700 hover:bg-red-600 text-yellow-200 px-6 py-3 text-xs sm:text-sm border-2 border-yellow-400 shadow-[0_6px_0_#450a0a]">
+      🔄 ALUSTA UUESTI
+    </button>
+  </div>
+
   <script>
     /* ==========================================================================
        CHIPTUNE SYNTHESIZER & SOUND EFFECTS (Using pure Web Audio API)
@@ -515,6 +632,9 @@ kuni mäger haua lõpuni kaevab."
     let isMusicPlaying = false;
     let melodyTimeoutId = null;
     let noteStep = 0;
+    let isGameOver = false;
+    let silentTimerId = null;
+    const MAX_DIG_CLICKS = 15; // Number of digs to fully finish the grave
 
     // Initialize or resume the Web Audio Context
     function getAudioContext() {
@@ -635,6 +755,32 @@ kuni mäger haua lõpuni kaevab."
 
         osc.start();
         osc.stop(ctx.currentTime + 0.17);
+      } catch (e) {
+        console.warn(e);
+      }
+    }
+
+    // Dramatic 8-bit Funeral Game Over Jingle
+    function playGameOverJingle() {
+      try {
+        const ctx = getAudioContext();
+        const doomNotes = [
+          { freq: 220, dur: 0.45 },
+          { freq: 220, dur: 0.45 },
+          { freq: 220, dur: 0.45 },
+          { freq: 174.61, dur: 0.7 },
+          { freq: 196, dur: 0.3 },
+          { freq: 164.81, dur: 1.1 }
+        ];
+
+        let timeOffset = 0;
+        doomNotes.forEach(note => {
+          setTimeout(() => {
+            playTone(note.freq, 'sawtooth', note.dur, 0.25);
+            playTone(note.freq / 2, 'triangle', note.dur, 0.35);
+          }, timeOffset);
+          timeOffset += (note.dur * 1000) + 70;
+        });
       } catch (e) {
         console.warn(e);
       }
@@ -808,6 +954,8 @@ kuni mäger haua lõpuni kaevab."
     }, 850);
 
     function manualDig(e) {
+      if (isGameOver) return;
+
       playDigSound();
       spawnDirtParticles();
       spawnDirtParticles();
@@ -830,20 +978,20 @@ kuni mäger haua lõpuni kaevab."
       const crossEl = document.getElementById('graveCrossEl');
 
       if (pitRect) {
-        // Deepen the grave downwards
-        const newDepth = Math.min(24 + digClicks * 4, 95);
+        // Deepen the grave downwards towards completion
+        const newDepth = Math.min(24 + digClicks * 5.2, 102);
         pitRect.setAttribute('height', newDepth);
       }
 
       if (holeOpening) {
         // Broaden the pit opening slightly
-        const newRx = Math.min(52 + digClicks * 1.2, 70);
+        const newRx = Math.min(52 + digClicks * 1.4, 74);
         holeOpening.setAttribute('rx', newRx);
       }
 
       if (dirtMound) {
         // Make dirt piles pile up higher around the rim
-        const pileHeight = Math.min(digClicks * 2.2, 36);
+        const pileHeight = Math.min(digClicks * 2.5, 42);
         dirtMound.setAttribute('d', `M 5 ${60 + pileHeight * 0.3} Q 95 ${32 - pileHeight} 195 ${60 + pileHeight * 0.3} Z`);
       }
 
@@ -853,10 +1001,91 @@ kuni mäger haua lõpuni kaevab."
       }
 
       if (crossEl) {
-        // Cross slightly tilts and sinks into the dirt mound with each dig
-        const wobble = (digClicks % 2 === 0 ? 1 : -1) * Math.min(digClicks * 0.5, 6);
-        crossEl.style.transform = `rotate(${wobble}deg)`;
+        // Cross tilts and sinks deeper into the mound with each dig
+        const wobble = (digClicks % 2 === 0 ? 1 : -1) * Math.min(digClicks * 0.8, 12);
+        crossEl.style.transform = `rotate(${wobble}deg) translateY(${Math.min(digClicks * 1.2, 14)}px)`;
       }
+
+      // Check if badger has finished digging the grave completely
+      if (digClicks >= MAX_DIG_CLICKS) {
+        setTimeout(() => {
+          triggerGameOver("Mäger kaevas haua valmis!");
+        }, 450);
+      }
+    }
+
+    // Trigger Game Over overlay screen
+    function triggerGameOver(reasonText = "Mäger kaevas haua valmis!") {
+      if (isGameOver) return;
+      isGameOver = true;
+
+      // Stop background birthday music and quiet any timer
+      if (isMusicPlaying) {
+        toggleAudio();
+      }
+      if (silentTimerId) {
+        clearTimeout(silentTimerId);
+      }
+
+      // Play dramatic doom sound
+      playGameOverJingle();
+
+      // Set cookie message in the exact requested format
+      const cookiesEl = document.getElementById('gameOverCookiesText');
+      if (cookiesEl) {
+        cookiesEl.textContent = `Kogusid ${currentScore} präänikut`;
+      }
+
+      const reasonEl = document.getElementById('gameOverReason');
+      if (reasonEl) {
+        reasonEl.textContent = reasonText;
+      }
+
+      // Display the bloody game over overlay
+      const screen = document.getElementById('gameOverScreen');
+      if (screen) {
+        screen.classList.remove('hidden');
+      }
+    }
+
+    // Restart game state
+    function restartGame() {
+      isGameOver = false;
+      digClicks = 0;
+      currentScore = 0;
+      updateScoreDisplay();
+
+      // Reset grave graphics
+      const pitRect = document.getElementById('gravePitRect');
+      const holeOpening = document.getElementById('graveHoleOpening');
+      const dirtMound = document.getElementById('graveDirtMound');
+      const secretBones = document.getElementById('graveBones');
+      const crossEl = document.getElementById('graveCrossEl');
+
+      if (pitRect) pitRect.setAttribute('height', '24');
+      if (holeOpening) holeOpening.setAttribute('rx', '52');
+      if (dirtMound) dirtMound.setAttribute('d', 'M 5 60 Q 95 32 195 60 Z');
+      if (secretBones) secretBones.style.opacity = '0';
+      if (crossEl) crossEl.style.transform = 'none';
+
+      // Hide overlay
+      const screen = document.getElementById('gameOverScreen');
+      if (screen) {
+        screen.classList.add('hidden');
+      }
+
+      // Restart the silent 120-second timer
+      startSilentTimer();
+    }
+
+    // Silent 120s timer (no visible UI)
+    function startSilentTimer() {
+      if (silentTimerId) clearTimeout(silentTimerId);
+      silentTimerId = setTimeout(() => {
+        if (!isGameOver) {
+          triggerGameOver("120 sekundit sai täis - aeg sai otsa!");
+        }
+      }, 120000); // exactly 120 seconds
     }
 
     // Trigger explosive rainbow fart boost
@@ -901,6 +1130,38 @@ kuni mäger haua lõpuni kaevab."
       playHobbitJumpSound();
       playTone(440 + index * 60, 'square', 0.12, 0.2);
       addScore(50);
+    }
+
+    // Toggle between Hexen Gothic (Pirata One) and Dripping Blood (Nosifer)
+    function setHexenFont(style) {
+      const title = document.getElementById('gameOverTitle');
+      const btnPirata = document.getElementById('btnGothicPirata');
+      const btnNosifer = document.getElementById('btnGothicNosifer');
+      if (!title) return;
+
+      if (style === 'nosifer') {
+        title.classList.remove('hexen-font-pirata');
+        title.classList.add('hexen-font-nosifer');
+        if (btnNosifer) {
+          btnNosifer.classList.add('bg-red-950', 'text-red-300');
+          btnNosifer.classList.remove('bg-black', 'text-gray-400');
+        }
+        if (btnPirata) {
+          btnPirata.classList.add('bg-black', 'text-gray-400');
+          btnPirata.classList.remove('bg-red-950', 'text-red-300');
+        }
+      } else {
+        title.classList.remove('hexen-font-nosifer');
+        title.classList.add('hexen-font-pirata');
+        if (btnPirata) {
+          btnPirata.classList.add('bg-red-950', 'text-red-300');
+          btnPirata.classList.remove('bg-black', 'text-gray-400');
+        }
+        if (btnNosifer) {
+          btnNosifer.classList.add('bg-black', 'text-gray-400');
+          btnNosifer.classList.remove('bg-red-950', 'text-red-300');
+        }
+      }
     }
 
     function tapCross() {
@@ -961,6 +1222,8 @@ kuni mäger haua lõpuni kaevab."`;
     window.addEventListener('DOMContentLoaded', () => {
       // Typewriter initial effect on user gesture or immediate
       setTimeout(retypePoem, 600);
+      // Start silent 120s game countdown
+      startSilentTimer();
     });
   </script>
 </body>

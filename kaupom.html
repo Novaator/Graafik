@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Palju Õnne Sünnipäevaks! - Level 51 Quest</title>
+  <title>Palju õnne sünnipäevaks! - Level 51 Quest</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Google Fonts: Press Start 2P & Hexen Gothic Pirata One -->
@@ -1107,36 +1107,55 @@ kuni mäger haua lõpuni kaevab."
       const rageBubble = document.getElementById('badgerRageBubble');
 
       if (badgerRageLevel > 0) {
-        if (badgerWrapper) badgerWrapper.classList.add('badger-enraged');
+        const mult = Math.pow(2, badgerRageLevel);
+        if (badgerWrapper) {
+          badgerWrapper.classList.add('badger-enraged');
+          // Mida suurem kordisti, seda meeletumalt kiiremini mäger labidaga raiub
+          badgerWrapper.style.animationDuration = `${Math.max(0.06, 0.75 / Math.pow(1.35, badgerRageLevel))}s`;
+        }
         if (rageBubble) {
           rageBubble.classList.remove('hidden');
           if (badgerRageLevel === 1) {
-            rageBubble.textContent = "💢 #!%?";
+            rageBubble.textContent = "💢 2x KIIREM! #!%?";
           } else if (badgerRageLevel === 2) {
-            rageBubble.textContent = "💢 #!%*?! ⚡";
+            rageBubble.textContent = "💢 4x KIIREM! #!%*?! ⚡";
           } else if (badgerRageLevel === 3) {
-            rageBubble.textContent = "🤬 #!%@&$!! ⚡💥";
+            rageBubble.textContent = "🤬 8x KIIREM! #!%@&$!! ⚡💥";
           } else {
-            rageBubble.textContent = `🤬 RAEV x${badgerRageLevel}! ⚡💥🔥`;
+            rageBubble.textContent = `🤬 ${mult}x KIIREM!! ⚡💥🔥`;
           }
         }
       } else {
-        if (badgerWrapper) badgerWrapper.classList.remove('badger-enraged');
+        if (badgerWrapper) {
+          badgerWrapper.classList.remove('badger-enraged');
+          badgerWrapper.style.animationDuration = '0.75s';
+        }
         if (rageBubble) rageBubble.classList.add('hidden');
+      }
+    }
+
+    function badgerAutoDig() {
+      if (isGameOver) return;
+      playDigSound();
+      spawnDirtParticles();
+      digClicks++;
+      updateGraveVisuals();
+
+      if (digClicks >= MAX_DIG_CLICKS) {
+        setTimeout(() => {
+          triggerGameOver("Mäger kaevas haua valmis!");
+        }, 300);
       }
     }
 
     function resetBadgerInterval() {
       if (badgerAutoDigTimer) clearInterval(badgerAutoDigTimer);
       if (isGameOver) return;
-      const interval = Math.max(550, 3200 - (badgerRageLevel * 450));
-      badgerAutoDigTimer = setInterval(() => {
-        if (!isGameOver) {
-          spawnDirtParticles();
-          currentScore += 2;
-          updateScoreDisplay();
-        }
-      }, interval);
+      
+      // Eksponentsiaalne kaevamiskiirus: 2 -> 4 -> 8 -> 16 -> 32 -> 64x
+      const mult = Math.pow(2, badgerRageLevel);
+      const interval = Math.max(60, Math.round(3600 / mult));
+      badgerAutoDigTimer = setInterval(badgerAutoDig, interval);
     }
 
     function manualDig(e) {
@@ -1175,14 +1194,17 @@ kuni mäger haua lõpuni kaevab."
 
       currentScore -= 200;
       updateScoreDisplay();
-      showScoreFloater('-200 PRÄÄNIKUT', source, '#34d399');
 
       if (digClicks > 0) {
         digClicks = Math.max(0, digClicks - 1);
         updateGraveVisuals();
       }
 
+      // Tõstame raevutaset ja arvutame uue eksponentsiaalse kordisti
       badgerRageLevel++;
+      const mult = Math.pow(2, badgerRageLevel);
+      showScoreFloater(`-200 (MÄGER ${mult}x KIIREM!)`, source, '#f87171');
+
       updateBadgerRageVisuals();
       playTone(70, 'sawtooth', 0.2, 0.2);
       resetBadgerInterval();

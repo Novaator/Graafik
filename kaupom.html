@@ -356,7 +356,7 @@ kuni mäger haua lõpuni kaevab."
 
             <!-- Hobbit 1: Frodo-like (Green jacket, mug of beer) -->
             <div class="flex flex-col items-center jump-hobbit-1 cursor-pointer" onclick="playHobbitCheer(1)">
-              <span class="text-[9px] sm:text-[10px] text-yellow-300 mb-1 font-bold opacity-100 drop-shadow-[0_2px_0_#000] select-none pointer-events-none">JOPP!</span>
+              <span id="hobbitText1" class="text-[9px] sm:text-[10px] text-yellow-300 mb-1 font-bold opacity-100 drop-shadow-[0_2px_0_#000] select-none pointer-events-none whitespace-nowrap">JOPP!</span>
               <svg class="w-14 h-20" viewBox="0 0 60 80">
                 <!-- Hair (Brown curly) -->
                 <circle cx="30" cy="20" r="14" fill="#582f0e" />
@@ -382,7 +382,7 @@ kuni mäger haua lõpuni kaevab."
 
             <!-- Hobbit 2: Samwise-like (Party Hat & Red Vest) -->
             <div class="flex flex-col items-center jump-hobbit-2 cursor-pointer" onclick="playHobbitCheer(2)">
-              <span class="text-[9px] sm:text-[10px] text-pink-300 mb-1 font-bold opacity-100 drop-shadow-[0_2px_0_#000] select-none pointer-events-none">PALJU ÕNNE!</span>
+              <span id="hobbitText2" class="text-[9px] sm:text-[10px] text-pink-300 mb-1 font-bold opacity-100 drop-shadow-[0_2px_0_#000] select-none pointer-events-none whitespace-nowrap">PALJU ÕNNE!</span>
               <svg class="w-14 h-22" viewBox="0 0 60 84">
                 <!-- Birthday Party Cone Hat -->
                 <polygon points="30,2 20,18 40,18" fill="#e63946" stroke="#f1faee" stroke-width="1.5" />
@@ -410,7 +410,7 @@ kuni mäger haua lõpuni kaevab."
 
             <!-- Hobbit 3: Pippin-like (Jumping Acrobat) -->
             <div class="flex flex-col items-center jump-hobbit-3 cursor-pointer" onclick="playHobbitCheer(3)">
-              <span class="text-[9px] sm:text-[10px] text-cyan-300 mb-1 font-bold opacity-100 drop-shadow-[0_2px_0_#000] select-none pointer-events-none">HOP-HOP!</span>
+              <span id="hobbitText3" class="text-[8px] sm:text-[9.5px] text-cyan-300 mb-1 font-bold opacity-100 drop-shadow-[0_2px_0_#000] select-none pointer-events-none whitespace-nowrap text-center">HOP-HOP!</span>
               <svg class="w-14 h-20" viewBox="0 0 60 80">
                 <!-- Hair -->
                 <circle cx="30" cy="20" r="14" fill="#6f1d1b" />
@@ -434,7 +434,7 @@ kuni mäger haua lõpuni kaevab."
 
             <!-- Hobbit 4: Merry-like (Carrying Birthday Flag) -->
             <div class="hidden sm:flex flex-col items-center jump-hobbit-4 cursor-pointer" onclick="playHobbitCheer(4)">
-              <span class="text-[9px] sm:text-[10px] text-orange-300 mb-1 font-bold opacity-100 drop-shadow-[0_2px_0_#000] select-none pointer-events-none">PIDU!</span>
+              <span id="hobbitText4" class="text-[9px] sm:text-[10px] text-orange-300 mb-1 font-bold opacity-100 drop-shadow-[0_2px_0_#000] select-none pointer-events-none whitespace-nowrap">PIDU!</span>
               <svg class="w-16 h-22" viewBox="0 0 70 85">
                 <!-- Party Flag Pole -->
                 <line x1="12" y1="8" x2="12" y2="70" stroke="#ffd166" stroke-width="3" />
@@ -1141,6 +1141,16 @@ kuni mäger haua lõpuni kaevab."
         fartBtnTop.textContent = '💨 PEERETA!';
       }
 
+      // Reset hobbit cheers back to festive defaults
+      const h1 = document.getElementById('hobbitText1');
+      const h2 = document.getElementById('hobbitText2');
+      const h3 = document.getElementById('hobbitText3');
+      const h4 = document.getElementById('hobbitText4');
+      if (h1) h1.textContent = 'JOPP!';
+      if (h2) h2.textContent = 'PALJU ÕNNE!';
+      if (h3) h3.textContent = 'HOP-HOP!';
+      if (h4) h4.textContent = 'PIDU!';
+
       // Reset grave graphics
       const pitRect = document.getElementById('gravePitRect');
       const holeOpening = document.getElementById('graveHoleOpening');
@@ -1190,6 +1200,29 @@ kuni mäger haua lõpuni kaevab."
       const unicornRemains = document.getElementById('unicornRemains');
       if (unicornInner) unicornInner.classList.add('hidden');
       if (unicornRemains) unicornRemains.classList.remove('hidden');
+
+      // Deduct 666 points as consequence of unicorn exploding
+      currentScore = Math.max(0, currentScore - 666);
+      updateScoreDisplay();
+
+      // Flash the score red
+      const scoreEl = document.getElementById('scoreDisplay');
+      if (scoreEl) {
+        scoreEl.classList.add('text-red-500', 'scale-125');
+        setTimeout(() => {
+          scoreEl.classList.remove('text-red-500', 'scale-125');
+        }, 400);
+      }
+
+      // Change hobbit speeches to grief and South Park quote
+      const h1 = document.getElementById('hobbitText1');
+      const h2 = document.getElementById('hobbitText2');
+      const h3 = document.getElementById('hobbitText3');
+      const h4 = document.getElementById('hobbitText4');
+      if (h1) h1.textContent = 'Nuuks-nuuks!';
+      if (h2) h2.textContent = 'Kurb!';
+      if (h3) h3.textContent = 'Need värdjad tapsid Kenny!';
+      if (h4) h4.textContent = 'Nuuks-nuuks!';
 
       // Spawn bloody debris particles
       const wrapper = document.getElementById('unicornWrapper');
@@ -1246,7 +1279,7 @@ kuni mäger haua lõpuni kaevab."
       }
 
       const burstSource = (e && e.currentTarget) ? e.currentTarget : boostBtn;
-      showScoreFloater('💥 BUMM! PLAHVATUS! (-0)', burstSource, '#ef4444');
+      showScoreFloater('💥 -666! PLAHVATUS!', burstSource, '#ef4444');
     }
 
     // Trigger rainbow fart boost with 7% explosion risk

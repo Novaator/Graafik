@@ -145,14 +145,14 @@
       <span class="text-sm">★</span>
       <span>LEVEL: 51</span>
     </div>
-    <div class="text-center font-bold tracking-widest text-emerald-400">
-      PUNKTID: <span id="scoreDisplay">999999</span>
+    <div class="text-center font-bold tracking-widest text-emerald-400 flex items-center justify-center gap-1.5 relative">
+      PUNKTID: <span id="scoreDisplay" class="inline-block transition-transform duration-100">000000</span>
     </div>
     <div class="flex items-center gap-3">
       <button id="soundToggleBtn" onclick="toggleAudio()" class="pixel-btn bg-purple-700 hover:bg-purple-600 text-yellow-300 px-3 py-1 text-[10px] rounded-none flex items-center gap-1">
         <span id="soundIcon">🔊</span> <span id="soundStatusText">MUUSIKA: SEES</span>
       </button>
-      <button onclick="triggerFartBurst()" class="pixel-btn bg-pink-600 hover:bg-pink-500 text-white px-2 py-1 text-[10px]">
+      <button onclick="triggerFartBurst(event)" class="pixel-btn bg-pink-600 hover:bg-pink-500 text-white px-2 py-1 text-[10px]">
         💨 PEERETA!
       </button>
     </div>
@@ -171,14 +171,13 @@
     <!-- Sky Realm: Unicorn with Rainbow Fart Jet & Speech Bubble -->
     <div class="relative w-full min-h-[220px] sm:min-h-[250px] flex flex-col md:flex-row items-center justify-between gap-6 md:gap-12 mt-2">
 
-      <!-- Speech Bubble with requested Birthday Poem -->
-      <div class="w-full md:w-7/12 max-w-lg pixel-box p-5 rounded-none border-4 border-white relative pixel-bubble mb-6 md:mb-0 z-20">
-        <!-- Typewriter styled verse text -->
-        <p id="poemText" class="text-xs sm:text-sm leading-relaxed text-yellow-200 font-medium whitespace-pre-line tracking-wide drop-shadow-[0_2px_0_#000]">
-          "Oh, õndsat võlu, valu ja vaeva,
-          närvilõpmeid, mis raputaks karmilt,
-          uutesse kõrgustesse kannaks sarmi,
-          kuni mäger haua lõpuni kaevab."
+      <!-- Speech Bubble with requested Birthday Poem (Stacked lines, large enough so no mid-line wrapping occurs) -->
+      <div class="w-full md:flex-1 md:max-w-2xl pixel-box p-4 sm:p-5 rounded-none border-4 border-white relative pixel-bubble mb-6 md:mb-0 z-20">
+        <p id="poemText" class="text-[9.5px] min-[420px]:text-[10.5px] sm:text-xs md:text-[13px] leading-relaxed sm:leading-loose text-yellow-200 font-medium tracking-wide drop-shadow-[0_2px_0_#000]" style="white-space: pre-line; word-break: keep-all;">
+"Oh, õndsat võlu, valu ja vaeva,
+närvilõpmeid, mis raputaks karmilt,
+uutesse kõrgustesse kannaks sarmi,
+kuni mäger haua lõpuni kaevab."
         </p>
       </div>
 
@@ -268,14 +267,14 @@
       <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
 
         <!-- LEFT: KAMP KÄÄBIKUID HÜPPAMAS (Party of Jumping Hobbits) -->
-        <div class="md:col-span-7 flex flex-col items-center sm:items-start pt-4">
+        <div class="md:col-span-7 flex flex-col items-center sm:items-start pt-2">
 
-          <!-- Hobbits Sprites Container -->
-          <div class="flex justify-center sm:justify-start items-end space-x-3 sm:space-x-5 py-4 w-full overflow-hidden">
+          <!-- Hobbits Sprites Container with ample top padding and overflow-visible so text is visible during entire jump -->
+          <div class="flex justify-center sm:justify-start items-end space-x-3 sm:space-x-5 pt-16 pb-2 w-full overflow-visible">
 
             <!-- Hobbit 1: Frodo-like (Green jacket, mug of beer) -->
             <div class="flex flex-col items-center jump-hobbit-1 cursor-pointer" onclick="playHobbitCheer(1)">
-              <span class="text-[9px] text-yellow-300 mb-1 opacity-80">JOPP!</span>
+              <span class="text-[9px] sm:text-[10px] text-yellow-300 mb-1 font-bold opacity-100 drop-shadow-[0_2px_0_#000] select-none pointer-events-none">JOPP!</span>
               <svg class="w-14 h-20" viewBox="0 0 60 80">
                 <!-- Hair (Brown curly) -->
                 <circle cx="30" cy="20" r="14" fill="#582f0e" />
@@ -301,7 +300,7 @@
 
             <!-- Hobbit 2: Samwise-like (Party Hat & Red Vest) -->
             <div class="flex flex-col items-center jump-hobbit-2 cursor-pointer" onclick="playHobbitCheer(2)">
-              <span class="text-[9px] text-pink-300 mb-1 opacity-80">PALJU ÕNNE!</span>
+              <span class="text-[9px] sm:text-[10px] text-pink-300 mb-1 font-bold opacity-100 drop-shadow-[0_2px_0_#000] select-none pointer-events-none">PALJU ÕNNE!</span>
               <svg class="w-14 h-22" viewBox="0 0 60 84">
                 <!-- Birthday Party Cone Hat -->
                 <polygon points="30,2 20,18 40,18" fill="#e63946" stroke="#f1faee" stroke-width="1.5" />
@@ -329,7 +328,7 @@
 
             <!-- Hobbit 3: Pippin-like (Jumping Acrobat) -->
             <div class="flex flex-col items-center jump-hobbit-3 cursor-pointer" onclick="playHobbitCheer(3)">
-              <span class="text-[9px] text-cyan-300 mb-1 opacity-80">HOP-HOP!</span>
+              <span class="text-[9px] sm:text-[10px] text-cyan-300 mb-1 font-bold opacity-100 drop-shadow-[0_2px_0_#000] select-none pointer-events-none">HOP-HOP!</span>
               <svg class="w-14 h-20" viewBox="0 0 60 80">
                 <!-- Hair -->
                 <circle cx="30" cy="20" r="14" fill="#6f1d1b" />
@@ -353,7 +352,7 @@
 
             <!-- Hobbit 4: Merry-like (Carrying Birthday Flag) -->
             <div class="hidden sm:flex flex-col items-center jump-hobbit-4 cursor-pointer" onclick="playHobbitCheer(4)">
-              <span class="text-[9px] text-orange-300 mb-1 opacity-80">PIDU!</span>
+              <span class="text-[9px] sm:text-[10px] text-orange-300 mb-1 font-bold opacity-100 drop-shadow-[0_2px_0_#000] select-none pointer-events-none">PIDU!</span>
               <svg class="w-16 h-22" viewBox="0 0 70 85">
                 <!-- Party Flag Pole -->
                 <line x1="12" y1="8" x2="12" y2="70" stroke="#ffd166" stroke-width="3" />
@@ -442,7 +441,7 @@
 
             <!-- The Badger with Shovel -->
             <div class="absolute left-4 bottom-2 z-20 flex flex-col items-center">
-              <div class="badger-digging cursor-pointer" onclick="manualDig()">
+              <div class="badger-digging cursor-pointer" onclick="manualDig(event)">
                 <svg class="w-32 h-28" viewBox="0 0 120 100">
                   <!-- Badger Body (Chubby Grey & Black) -->
                   <ellipse cx="50" cy="60" rx="30" ry="20" fill="#374151" stroke="#111827" stroke-width="2" />
@@ -490,14 +489,14 @@
 
     <!-- Interactive Game Control Panel -->
     <div class="mt-4 flex flex-wrap justify-center items-center gap-3 z-20">
-      <button onclick="hobbitJumpSurge()" class="pixel-btn bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 text-xs">
+      <button id="hobbitBtn" onclick="hobbitJumpSurge(event)" class="pixel-btn bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 text-xs">
         🦘 PANE KÄÄBIKUD HÜPPAMA!
       </button>
-      <button onclick="manualDig()" class="pixel-btn bg-amber-700 hover:bg-amber-600 text-yellow-200 px-4 py-2 text-xs">
+      <button id="digBtn" onclick="manualDig(event)" class="pixel-btn bg-amber-700 hover:bg-amber-600 text-yellow-200 px-4 py-2 text-xs relative">
         ⛏️ KAEVA KIIREMINI!
       </button>
-      <button onclick="triggerFartBurst()" class="pixel-btn bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-4 py-2 text-xs">
-        🌈 VIKERKAARE PUHV!
+      <button id="boostBtn" onclick="triggerFartBurst(event)" class="pixel-btn bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-4 py-2 text-xs">
+        🌈 VIKERKAARE BOOST!
       </button>
     </div>
 
@@ -733,25 +732,95 @@
       }
     }
 
-    // Badger automatic digging cadence with dirt and sound
-    setInterval(() => {
-      spawnDirtParticles();
-      // Incremental score update
-      const score = document.getElementById('scoreDisplay');
-      if (score) {
-        score.textContent = (parseInt(score.textContent) + 10).toString().padStart(6, '0');
-      }
-    }, 800);
-
+    // Score tracking: starts at 0 and grows slowly over time
+    let currentScore = 0;
     let digClicks = 0;
 
-    function manualDig() {
+    function updateScoreDisplay() {
+      const score = document.getElementById('scoreDisplay');
+      if (score) {
+        score.textContent = currentScore.toString().padStart(6, '0');
+      }
+    }
+
+    // Floating score notification for instant visual feedback (+666, +250, etc.)
+    function showScoreFloater(text, sourceEl, color = '#facc15') {
+      const floater = document.createElement('div');
+      floater.textContent = text;
+      floater.className = 'fixed font-black text-xs sm:text-sm pointer-events-none z-50 select-none drop-shadow-[0_3px_0_#000]';
+      floater.style.fontFamily = "'Press Start 2P', monospace";
+      floater.style.color = color;
+
+      let rect = { left: window.innerWidth / 2, top: window.innerHeight / 2, width: 0, height: 0 };
+      if (sourceEl && sourceEl.getBoundingClientRect) {
+        rect = sourceEl.getBoundingClientRect();
+      }
+
+      const startX = rect.left + rect.width / 2 + (Math.random() * 24 - 12);
+      const startY = rect.top - 8;
+
+      floater.style.left = `${startX}px`;
+      floater.style.top = `${startY}px`;
+      floater.style.transform = 'translate(-50%, 0) scale(1.1)';
+      document.body.appendChild(floater);
+
+      let progress = 0;
+      const anim = setInterval(() => {
+        progress += 0.045;
+        floater.style.transform = `translate(-50%, -${progress * 55}px) scale(${1.1 + progress * 0.25})`;
+        floater.style.opacity = `${1 - progress}`;
+
+        if (progress >= 1) {
+          clearInterval(anim);
+          floater.remove();
+        }
+      }, 25);
+    }
+
+    function addScore(points, sourceEl = null, color = '#34d399') {
+      currentScore += points;
+      updateScoreDisplay();
+
+      const scoreEl = document.getElementById('scoreDisplay');
+      if (scoreEl) {
+        scoreEl.classList.add('text-yellow-300', 'scale-125');
+        setTimeout(() => {
+          scoreEl.classList.remove('text-yellow-300', 'scale-125');
+        }, 180);
+      }
+
+      if (sourceEl) {
+        showScoreFloater(`+${points}`, sourceEl, color);
+      }
+    }
+
+    // Natural slow passive score accumulation (arcade simulation)
+    setInterval(() => {
+      currentScore += 1;
+      updateScoreDisplay();
+    }, 450);
+
+    // Badger automatic background digging cadence
+    setInterval(() => {
+      spawnDirtParticles();
+      currentScore += 2;
+      updateScoreDisplay();
+    }, 850);
+
+    function manualDig(e) {
       playDigSound();
       spawnDirtParticles();
       spawnDirtParticles();
       spawnDirtParticles();
 
       digClicks++;
+
+      // Award exactly 666 points and render a prominent floating visual banner
+      const digSource = (e && e.currentTarget) ? e.currentTarget : document.getElementById('digBtn');
+      addScore(666, digSource, '#f87171');
+
+      // Extra special chime for the +666 milestone
+      playTone(666, 'sawtooth', 0.12, 0.2);
 
       // Real-time expansion of the grave pit and dirt mound
       const pitRect = document.getElementById('gravePitRect');
@@ -788,17 +857,14 @@
         const wobble = (digClicks % 2 === 0 ? 1 : -1) * Math.min(digClicks * 0.5, 6);
         crossEl.style.transform = `rotate(${wobble}deg)`;
       }
-
-      // Increase score
-      const score = document.getElementById('scoreDisplay');
-      if (score) {
-        score.textContent = (parseInt(score.textContent) + 250).toString().padStart(6, '0');
-      }
     }
 
     // Trigger explosive rainbow fart boost
-    function triggerFartBurst() {
+    function triggerFartBurst(e) {
       playFartSound();
+
+      const boostSource = (e && e.currentTarget) ? e.currentTarget : document.getElementById('boostBtn');
+      addScore(333, boostSource, '#f472b6');
 
       // Create floating rainbow sparkle text
       const burstTag = document.createElement('div');
@@ -814,8 +880,14 @@
     }
 
     // Hobbits jump boost
-    function hobbitJumpSurge() {
+    function hobbitJumpSurge(e) {
       playHobbitJumpSound();
+
+      const hobbitSource = (e && e.currentTarget) ? e.currentTarget : document.getElementById('hobbitBtn');
+      if (e) {
+        addScore(150, hobbitSource, '#34d399');
+      }
+
       const hobbits = document.querySelectorAll('[class*="jump-hobbit-"]');
       hobbits.forEach(h => {
         h.style.animationDuration = '0.35s';
@@ -828,10 +900,12 @@
     function playHobbitCheer(index) {
       playHobbitJumpSound();
       playTone(440 + index * 60, 'square', 0.12, 0.2);
+      addScore(50);
     }
 
     function tapCross() {
       playTone(180, 'triangle', 0.4, 0.3);
+      addScore(51);
       alertModal("Ristil seisab kiri: 'Puhka rahus'. Aeg on tähistada uut taset 51! 👑");
     }
 
@@ -842,6 +916,7 @@ kuni mäger haua lõpuni kaevab."`;
 
     function retypePoem() {
       const poemEl = document.getElementById('poemText');
+      if (!poemEl) return;
       poemEl.textContent = '';
       let i = 0;
       const interval = setInterval(() => {
@@ -854,7 +929,7 @@ kuni mäger haua lõpuni kaevab."`;
         } else {
           clearInterval(interval);
         }
-      }, 40);
+      }, 35);
     }
 
     // Keyboard support: Spacebar triggers rainbow fart, Enter toggles music

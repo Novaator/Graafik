@@ -594,16 +594,6 @@ kuni mäger haua lõpuni kaevab."
       <svg class="w-72 sm:w-[420px] h-10 mx-auto mt-1 text-red-600 fill-current" viewBox="0 0 300 28">
         <path d="M 10 0 C 15 15, 20 22, 22 26 C 24 22, 28 15, 32 0 M 60 0 C 65 20, 70 26, 73 26 C 76 24, 82 16, 88 0 M 130 0 C 135 22, 142 28, 146 28 C 150 24, 156 18, 160 0 M 210 0 C 215 18, 220 26, 224 26 C 228 24, 234 16, 238 0 M 270 0 C 274 14, 278 20, 281 20 C 284 18, 288 12, 292 0" stroke="#dc2626" stroke-width="4" stroke-linecap="round" fill="#b91c1c"/>
       </svg>
-
-      <!-- Font Style Switcher: Hexen Gothic vs Pure Dripping Gore -->
-      <div class="flex justify-center items-center gap-2 mt-2">
-        <button onclick="setHexenFont('pirata')" id="btnGothicPirata" class="pixel-btn bg-red-950 text-red-300 border border-red-700 hover:bg-red-900 px-2 py-1 text-[9px]">
-          ⚔️ HEXEN GOOTI
-        </button>
-        <button onclick="setHexenFont('nosifer')" id="btnGothicNosifer" class="pixel-btn bg-black text-gray-400 border border-red-900 hover:bg-red-950 px-2 py-1 text-[9px]">
-          🩸 TILKUV VERI
-        </button>
-      </div>
     </div>
 
     <!-- Reason text for Game Over -->
@@ -1130,38 +1120,6 @@ kuni mäger haua lõpuni kaevab."
       playHobbitJumpSound();
       playTone(440 + index * 60, 'square', 0.12, 0.2);
       addScore(50);
-    }
-
-    // Toggle between Hexen Gothic (Pirata One) and Dripping Blood (Nosifer)
-    function setHexenFont(style) {
-      const title = document.getElementById('gameOverTitle');
-      const btnPirata = document.getElementById('btnGothicPirata');
-      const btnNosifer = document.getElementById('btnGothicNosifer');
-      if (!title) return;
-
-      if (style === 'nosifer') {
-        title.classList.remove('hexen-font-pirata');
-        title.classList.add('hexen-font-nosifer');
-        if (btnNosifer) {
-          btnNosifer.classList.add('bg-red-950', 'text-red-300');
-          btnNosifer.classList.remove('bg-black', 'text-gray-400');
-        }
-        if (btnPirata) {
-          btnPirata.classList.add('bg-black', 'text-gray-400');
-          btnPirata.classList.remove('bg-red-950', 'text-red-300');
-        }
-      } else {
-        title.classList.remove('hexen-font-nosifer');
-        title.classList.add('hexen-font-pirata');
-        if (btnPirata) {
-          btnPirata.classList.add('bg-red-950', 'text-red-300');
-          btnPirata.classList.remove('bg-black', 'text-gray-400');
-        }
-        if (btnNosifer) {
-          btnNosifer.classList.add('bg-black', 'text-gray-400');
-          btnNosifer.classList.remove('bg-red-950', 'text-red-300');
-        }
-      }
     }
 
     function tapCross() {

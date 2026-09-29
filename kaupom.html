@@ -6,10 +6,10 @@
   <title>Palju Õnne Sünnipäevaks! - Level 51 Quest</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google Fonts: Press Start 2P, Pirata One (Hexen), VT323 -->
+  <!-- Google Fonts: Press Start 2P & Hexen Gothic Pirata One -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Pirata+One&family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Pirata+One&family=Press+Start+2P&display=swap" rel="stylesheet">
   <style>
     * {
       box-sizing: border-box;
@@ -17,14 +17,14 @@
       -webkit-user-select: none;
     }
     body {
-      background-color: #0b071c;
+      background-color: #080512;
       font-family: 'Press Start 2P', monospace;
       overflow-x: hidden;
       margin: 0;
       padding: 0;
     }
 
-    /* CRT scanline ja vignette kiht */
+    /* CRT scanline and vignette overlay */
     .crt-overlay {
       position: fixed;
       top: 0;
@@ -32,14 +32,14 @@
       width: 100vw;
       height: 100vh;
       pointer-events: none;
-      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.35) 50%),
-                  radial-gradient(circle at center, transparent 60%, rgba(0, 0, 0, 0.75) 100%);
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.4) 50%),
+                  radial-gradient(circle at center, transparent 65%, rgba(0, 0, 0, 0.8) 100%);
       background-size: 100% 4px, 100% 100%;
       z-index: 50;
       opacity: 0.85;
     }
 
-    /* Piksliraamid */
+    /* Pixelated borders & boxes */
     .pixel-box {
       border: 4px solid #fff;
       box-shadow: 
@@ -48,7 +48,7 @@
         -4px 0 #fff,
         4px 0 #fff,
         0 0 0 4px #000,
-        0 8px 0 rgba(0, 0, 0, 0.5);
+        0 8px 0 rgba(0, 0, 0, 0.6);
       background-color: #111a47;
       image-rendering: pixelated;
     }
@@ -56,55 +56,50 @@
     .pixel-btn {
       font-family: 'Press Start 2P', monospace;
       border: 3px solid #000;
-      box-shadow: -3px -3px 0px 0px #fff inset, 3px 3px 0px 0px #333 inset, 0 4px 0 #000;
-      transition: all 0.1s ease;
+      box-shadow: -3px -3px 0px 0px rgba(255,255,255,0.7) inset, 3px 3px 0px 0px rgba(0,0,0,0.5) inset, 0 4px 0 #000;
+      transition: all 0.08s ease;
       cursor: pointer;
     }
     .pixel-btn:active {
       transform: translateY(3px);
-      box-shadow: -1px -1px 0px 0px #fff inset, 1px 1px 0px 0px #333 inset, 0 1px 0 #000;
+      box-shadow: -1px -1px 0px 0px rgba(255,255,255,0.7) inset, 1px 1px 0px 0px rgba(0,0,0,0.5) inset, 0 1px 0 #000;
     }
 
-    /* Kääbikute hüppeanimatsioonid */
+    /* Hobbits jump cycles */
     @keyframes hobbitBounce1 {
-      0%, 100% { transform: translateY(0) scale(1, 1); }
-      30% { transform: translateY(-38px) scale(0.9, 1.12); }
-      50% { transform: translateY(-46px) scale(1.05, 0.95); }
-      80% { transform: translateY(0) scale(1.15, 0.85); }
+      0%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-38px); }
     }
     @keyframes hobbitBounce2 {
-      0%, 100% { transform: translateY(0) scale(1, 1); }
-      35% { transform: translateY(-52px) scale(0.88, 1.15); }
-      55% { transform: translateY(-60px) scale(1.08, 0.92); }
-      85% { transform: translateY(0) scale(1.2, 0.8); }
+      0%, 100% { transform: translateY(0); }
+      45% { transform: translateY(-48px); }
     }
     @keyframes hobbitBounce3 {
-      0%, 100% { transform: translateY(0) scale(1.1, 0.9); }
-      25% { transform: translateY(-30px) scale(0.95, 1.05); }
-      50% { transform: translateY(-40px) scale(1, 1); }
-      75% { transform: translateY(0) scale(1.15, 0.85); }
+      0%, 100% { transform: translateY(0); }
+      35% { transform: translateY(-34px); }
+    }
+    @keyframes hobbitBounce4 {
+      0%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-42px); }
     }
 
     .jump-hobbit-1 { animation: hobbitBounce1 0.75s infinite ease-in-out; }
-    .jump-hobbit-2 { animation: hobbitBounce2 0.92s infinite ease-in-out 0.15s; }
-    .jump-hobbit-3 { animation: hobbitBounce3 0.8s infinite ease-in-out 0.3s; }
-    .jump-hobbit-4 { animation: hobbitBounce1 0.85s infinite ease-in-out 0.45s; }
+    .jump-hobbit-2 { animation: hobbitBounce2 0.9s infinite ease-in-out 0.12s; }
+    .jump-hobbit-3 { animation: hobbitBounce3 0.8s infinite ease-in-out 0.25s; }
+    .jump-hobbit-4 { animation: hobbitBounce4 0.85s infinite ease-in-out 0.38s; }
 
-    /* Väsinud kääbikute lohisev animatsioon */
-    @keyframes tiredSway {
-      0%, 100% { transform: translateY(4px) rotate(-2deg) scale(0.95, 0.9); }
-      50% { transform: translateY(8px) rotate(2deg) scale(1, 0.85); }
-    }
+    /* Fatigued hobbits slumping */
     .hobbits-tired .jump-hobbit-1,
     .hobbits-tired .jump-hobbit-2,
     .hobbits-tired .jump-hobbit-3,
     .hobbits-tired .jump-hobbit-4 {
-      animation: tiredSway 2s infinite ease-in-out !important;
-      filter: saturate(0.6) brightness(0.85);
-      transition: filter 0.5s ease;
+      animation: none !important;
+      transform: translateY(8px) scaleY(0.85);
+      filter: saturate(0.55) brightness(0.85);
+      transition: all 0.4s ease;
     }
 
-    /* Mäger kaevamas */
+    /* Badger digging cycle */
     @keyframes badgerDig {
       0%, 100% { transform: rotate(0deg) translate(0, 0); }
       25% { transform: rotate(-18deg) translate(-4px, -3px); }
@@ -112,60 +107,59 @@
       70% { transform: rotate(-8deg) translate(0, 2px); }
     }
     .badger-digging {
-      animation: badgerDig 0.8s infinite ease-in-out;
+      animation: badgerDig 0.75s infinite ease-in-out;
       transform-origin: 30% 80%;
     }
 
-    /* Raevus mägra värisemine */
-    @keyframes rageVibrate {
-      0% { transform: translate(0, 0) rotate(0deg); }
-      20% { transform: translate(-2px, 1px) rotate(-2deg); }
-      40% { transform: translate(2px, -2px) rotate(2deg); }
-      60% { transform: translate(-2px, -1px) rotate(-1deg); }
-      80% { transform: translate(2px, 2px) rotate(2deg); }
-      100% { transform: translate(0, 0) rotate(0deg); }
+    /* Enraged Badger Shaking */
+    @keyframes badgerRageAnim {
+      0% { transform: translate(1px, 1px) rotate(0deg); }
+      25% { transform: translate(-2px, -1px) rotate(-2deg); }
+      50% { transform: translate(2px, 0px) rotate(1deg); }
+      75% { transform: translate(-1px, 2px) rotate(0deg); }
+      100% { transform: translate(1px, 1px) rotate(0deg); }
     }
     .badger-enraged {
-      animation: rageVibrate 0.12s infinite linear;
+      animation: badgerRageAnim 0.12s infinite;
       filter: drop-shadow(0 0 8px #ef4444);
     }
 
-    /* Ükssarviku hõljumine */
+    /* Unicorn floating hover */
     @keyframes unicornFloat {
       0%, 100% { transform: translateY(0px) rotate(-1deg); }
-      50% { transform: translateY(-16px) rotate(2deg); }
+      50% { transform: translateY(-14px) rotate(2deg); }
     }
     .unicorn-floating {
       animation: unicornFloat 2.2s infinite ease-in-out;
     }
 
-    /* Vikerkaarejoa voog */
+    /* Rainbow pulse stream */
     @keyframes rainbowStream {
-      0% { filter: hue-rotate(0deg); opacity: 0.9; }
+      0% { filter: hue-rotate(0deg); opacity: 0.95; }
       50% { filter: hue-rotate(180deg); opacity: 1; }
-      100% { filter: hue-rotate(360deg); opacity: 0.9; }
+      100% { filter: hue-rotate(360deg); opacity: 0.95; }
     }
     .rainbow-flow {
       animation: rainbowStream 2.5s infinite linear;
     }
 
-    /* Hexen (1995) verine gooti pealkiri */
+    /* Hexen (1995) Gothic Blood Title */
     @keyframes hexenBloodPulse {
       0%, 100% {
         transform: scale(1);
-        filter: drop-shadow(0 0 16px rgba(220, 20, 60, 0.9))
+        filter: drop-shadow(0 0 18px rgba(220, 20, 60, 0.95))
                 drop-shadow(2px 3px 0px #300000)
                 drop-shadow(-2px 3px 0px #300000)
                 drop-shadow(0 6px 1px #1a0000)
-                drop-shadow(0 14px 22px rgba(0, 0, 0, 0.98));
+                drop-shadow(0 14px 24px rgba(0, 0, 0, 0.98));
       }
       50% {
         transform: scale(1.02);
-        filter: drop-shadow(0 0 34px rgba(255, 0, 0, 1))
+        filter: drop-shadow(0 0 36px rgba(255, 0, 0, 1))
                 drop-shadow(3px 4px 0px #550000)
                 drop-shadow(-3px 4px 0px #550000)
                 drop-shadow(0 8px 2px #200000)
-                drop-shadow(0 18px 28px rgba(0, 0, 0, 1));
+                drop-shadow(0 18px 30px rgba(0, 0, 0, 1));
       }
     }
 
@@ -175,10 +169,10 @@
       text-transform: uppercase;
       background: linear-gradient(180deg, 
         #ffffff 0%, 
-        #ff7373 12%, 
-        #dc2626 34%, 
-        #880808 60%, 
-        #3b0000 84%,
+        #ff7373 14%, 
+        #dc2626 36%, 
+        #880808 62%, 
+        #3b0000 85%,
         #120000 100%
       );
       -webkit-background-clip: text;
@@ -198,17 +192,32 @@
       animation: bloodDripAnim 2.8s infinite ease-in-out;
     }
 
-    /* Piksliline jutumulli osuti */
+    /* Pixel speech bubble pointer */
     .pixel-bubble::after {
       content: "";
       position: absolute;
-      bottom: -16px;
-      left: 70px;
-      border-width: 16px 16px 0 0;
-      border-style: solid;
-      border-color: #111a47 transparent transparent transparent;
       display: block;
       width: 0;
+      height: 0;
+    }
+    @media (max-width: 767px) {
+      .pixel-bubble::after {
+        bottom: -16px;
+        right: 48px;
+        border-width: 16px 0 0 16px;
+        border-style: solid;
+        border-color: #111a47 transparent transparent transparent;
+      }
+    }
+    @media (min-width: 768px) {
+      .pixel-bubble::after {
+        top: 50%;
+        right: -16px;
+        transform: translateY(-50%);
+        border-width: 12px 0 12px 16px;
+        border-style: solid;
+        border-color: transparent transparent transparent #111a47;
+      }
     }
   </style>
 </head>
@@ -216,428 +225,434 @@
 
   <div class="crt-overlay"></div>
 
-  <!-- Üleval: Arkaad HUD riba (suurendatud ja hästiloetav font) -->
-  <header class="w-full max-w-5xl px-3 pt-2 pb-2 flex flex-wrap justify-between items-center z-20 text-xs sm:text-sm gap-2 border-b-4 border-yellow-400 bg-black/75 backdrop-blur-sm">
-    <div class="flex items-center space-x-2 text-yellow-300 animate-pulse">
-      <span class="text-base sm:text-lg">★</span>
-      <span class="font-bold">LEVEL: 51</span>
-    </div>
-    <div class="text-center font-bold tracking-widest text-emerald-400 flex items-center justify-center gap-1.5 relative">
-      PUNKTID: <span id="scoreDisplay" class="inline-block transition-transform duration-100 text-yellow-300 text-sm sm:text-base">000000</span>
-    </div>
-    <div class="flex items-center gap-3">
-      <button id="soundToggleBtn" onclick="toggleAudio()" class="pixel-btn bg-purple-700 hover:bg-purple-600 text-yellow-300 px-3 py-1.5 text-xs rounded-none flex items-center gap-1 font-bold">
-        <span id="soundIcon">🔊</span> <span id="soundStatusText">MUUSIKA: SEES</span>
-      </button>
-      <button id="fartBtnTop" onclick="triggerFartBurst(event)" class="pixel-btn bg-pink-600 hover:bg-pink-500 text-white px-2.5 py-1.5 text-xs font-bold">
-        💨 PEERETA!
-      </button>
-    </div>
-  </header>
+  <!-- FIXED ARCADE FRAME: Keeps whole layout rock-solid on 4K/wide monitors -->
+  <div class="w-full max-w-5xl mx-auto flex flex-col flex-1 justify-between p-2 sm:p-4 z-10">
 
-  <!-- Pealava ja mänguväli (kompaktne ruumikasutus) -->
-  <main class="w-full max-w-5xl flex-1 flex flex-col justify-between p-2 sm:p-3 z-10 relative">
+    <!-- Top Arcade HUD Bar -->
+    <header class="w-full px-4 pt-3 pb-2.5 flex flex-wrap justify-between items-center text-xs gap-2 border-b-4 border-yellow-400 bg-black/70 backdrop-blur-sm shadow-md">
+      <div class="flex items-center space-x-2 text-yellow-300 font-bold text-xs sm:text-sm animate-pulse">
+        <span>★</span>
+        <span>LEVEL: 51</span>
+      </div>
+      <div class="text-center font-bold tracking-widest text-emerald-400 text-xs sm:text-sm flex items-center justify-center gap-1.5">
+        PUNKTID: <span id="scoreDisplay" class="inline-block transition-transform duration-100 text-white font-black">000000</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="soundToggleBtn" onclick="toggleAudio()" class="pixel-btn bg-purple-700 hover:bg-purple-600 text-yellow-300 px-3 py-1.5 text-[10px] sm:text-xs flex items-center gap-1">
+          <span id="soundIcon">🔊</span> <span id="soundStatusText">MUUSIKA: SEES</span>
+        </button>
+        <button id="fartBtnTop" onclick="triggerFartBurst(event)" class="pixel-btn bg-pink-600 hover:bg-pink-500 text-white px-3 py-1.5 text-[10px] sm:text-xs">
+          💨 PEERETA!
+        </button>
+      </div>
+    </header>
 
-    <!-- Pealkiri (suurem ja silmatorkav) -->
-    <div class="text-center my-1.5">
-      <h1 class="text-xl sm:text-2xl md:text-3xl text-yellow-400 font-extrabold tracking-wider drop-shadow-[0_3px_0_#92400e] animate-bounce">
-        ✨ PALJU ÕNNE SÜNNIPÄEVAKS! ✨
-      </h1>
-    </div>
+    <!-- Main Game Stage Canvas -->
+    <main class="w-full flex-1 flex flex-col justify-between my-2">
 
-    <!-- Taeva kuningriik: Jutumull luuletusega ja Ükssarvik paremal -->
-    <div class="relative w-full min-h-[160px] sm:min-h-[180px] flex flex-col md:flex-row items-center justify-between gap-3 md:gap-8 mt-1">
+      <!-- Title Section -->
+      <div class="text-center my-1">
+        <h1 class="text-lg sm:text-2xl md:text-3xl text-yellow-400 font-extrabold tracking-wider drop-shadow-[0_4px_0_#92400e] animate-bounce">
+          ✨ PALJU ÕNNE SÜNNIPÄEVAKS! ✨
+        </h1>
+      </div>
 
-      <!-- Jutumull luuletusega (suurendatud kirjasuurus ja avar reavahe) -->
-      <div class="w-full md:flex-1 md:max-w-2xl pixel-box p-4 sm:p-5 rounded-none border-4 border-white relative pixel-bubble mb-3 md:mb-0 z-20">
-        <p id="poemText" class="text-xs sm:text-sm md:text-[15px] leading-relaxed sm:leading-loose text-yellow-200 font-semibold tracking-wide drop-shadow-[0_2px_0_#000]" style="white-space: pre-line; word-break: keep-all;">
+      <!-- Upper Realm: Speech Bubble (Left) and Unicorn (Right) -->
+      <div class="relative w-full flex flex-col md:flex-row items-center justify-between gap-3 md:gap-6 my-2">
+
+        <!-- Speech Bubble with Birthday Poem -->
+        <div class="w-full md:flex-1 pixel-box p-3 sm:p-4 md:p-5 rounded-none border-4 border-white relative pixel-bubble z-20 flex items-center justify-center sm:justify-start">
+          <p id="poemText" class="text-yellow-200 font-medium tracking-wide drop-shadow-[0_2px_0_#000]" style="white-space: pre; font-size: clamp(8px, 1.25vw, 13px); line-height: 1.85;">
 "Oh, õndsat võlu, valu ja vaeva,
 närvilõpmeid, mis raputaks karmilt,
 uutesse kõrgustesse kannaks sarmi,
 kuni mäger haua lõpuni kaevab."
-        </p>
-      </div>
-
-      <!-- Ükssarvik paremal koos vikerkaarejoaga (sujuv ja kompaktne) -->
-      <div id="unicornWrapper" class="w-full md:w-auto md:ml-auto flex flex-col items-center md:items-end justify-center relative unicorn-floating py-1 pr-1 sm:pr-6">
-        <div id="unicornInner" class="relative w-64 h-28 flex items-center justify-center">
-
-          <!-- Vikerkaarejoa SVG -->
-          <svg id="rainbowStream" class="absolute -left-10 top-4 w-36 h-20 rainbow-flow overflow-visible" viewBox="0 0 160 80">
-            <defs>
-              <linearGradient id="rainbowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stop-color="#ff0000" />
-                <stop offset="20%" stop-color="#ff8800" />
-                <stop offset="40%" stop-color="#ffff00" />
-                <stop offset="60%" stop-color="#00ff55" />
-                <stop offset="80%" stop-color="#00d5ff" />
-                <stop offset="100%" stop-color="#aa00ff" />
-              </linearGradient>
-            </defs>
-            <path d="M 15 45 Q 60 10 145 42 Q 60 70 15 45 Z" fill="url(#rainbowGrad)" opacity="0.95" />
-            <circle cx="20" cy="46" r="14" fill="#ffffff" opacity="0.8" />
-            <circle cx="42" cy="40" r="11" fill="#ffbbee" opacity="0.85" />
-            <circle cx="10" cy="52" r="8" fill="#ffff88" opacity="0.9" />
-            <circle cx="70" cy="34" r="7" fill="#88ffff" opacity="0.95" />
-            <polygon points="5,30 8,36 14,37 9,42 11,48 5,44 0,48 2,42 -3,37 3,36" fill="#fff" />
-            <polygon points="32,20 34,24 38,25 35,28 36,32 32,29 28,32 29,28 26,25 30,24" fill="#ffff00" />
-          </svg>
-
-          <!-- 8-Bit Pixel Ükssarvik SVG -->
-          <svg id="unicornSvg" class="w-40 h-28 z-10 drop-shadow-[0_6px_0_rgba(0,0,0,0.6)] cursor-pointer hover:scale-105 transition-transform" 
-               onclick="triggerFartBurst(event)" viewBox="0 0 120 90" fill="none">
-            <!-- Sarv -->
-            <polygon points="98,14 116,0 104,18" fill="#ffd700" stroke="#b38600" stroke-width="2"/>
-            <circle cx="116" cy="1" r="3" fill="#ffffff" class="animate-ping" />
-            <!-- Kõrvad -->
-            <polygon points="86,16 92,6 96,16" fill="#fbcfe8" stroke="#000" stroke-width="2"/>
-            <!-- Lakk -->
-            <rect x="74" y="16" width="10" height="8" fill="#ff3366"/>
-            <rect x="68" y="24" width="10" height="8" fill="#ff9900"/>
-            <rect x="64" y="32" width="10" height="8" fill="#33cc33"/>
-            <rect x="62" y="40" width="8" height="8" fill="#3399ff"/>
-            <rect x="60" y="48" width="8" height="8" fill="#9933ff"/>
-            <!-- Pea ja koon -->
-            <rect x="80" y="14" width="24" height="22" fill="#ffffff" stroke="#000" stroke-width="2"/>
-            <rect x="98" y="22" width="14" height="14" fill="#ffffff" stroke="#000" stroke-width="2"/>
-            <circle cx="106" cy="27" r="1.5" fill="#f43f5e"/>
-            <rect x="88" y="20" width="4" height="6" fill="#1e1b4b"/>
-            <rect x="89" y="21" width="2" height="2" fill="#ffffff"/>
-            <rect x="86" y="28" width="5" height="3" fill="#fda4af"/>
-            <!-- Keha & tiivad -->
-            <rect x="70" y="30" width="16" height="20" fill="#ffffff" stroke="#000" stroke-width="2"/>
-            <rect x="36" y="40" width="44" height="26" fill="#ffffff" stroke="#000" stroke-width="2"/>
-            <path d="M 50 40 C 40 20, 68 18, 62 40 Z" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
-            <path d="M 36 46 Q 22 46 26 62 Q 33 60 36 54 Z" fill="#ec4899" stroke="#000" stroke-width="2"/>
-            <!-- Jalad -->
-            <rect x="68" y="66" width="6" height="16" fill="#ffffff" stroke="#000" stroke-width="2"/>
-            <rect x="68" y="80" width="6" height="4" fill="#fbbf24"/>
-            <rect x="60" y="66" width="6" height="14" fill="#e2e8f0" stroke="#000" stroke-width="2"/>
-            <rect x="60" y="78" width="6" height="4" fill="#d97706"/>
-            <rect x="44" y="66" width="6" height="16" fill="#ffffff" stroke="#000" stroke-width="2"/>
-            <rect x="44" y="80" width="6" height="4" fill="#fbbf24"/>
-            <rect x="36" y="66" width="6" height="14" fill="#e2e8f0" stroke="#000" stroke-width="2"/>
-            <rect x="36" y="78" width="6" height="4" fill="#d97706"/>
-          </svg>
+          </p>
         </div>
 
-        <!-- Söestunud jäänused plahvatuse korral -->
-        <div id="unicornRemains" class="hidden relative w-64 h-28 flex flex-col items-center justify-center pointer-events-none">
-          <svg class="w-38 h-26 overflow-visible" viewBox="0 0 140 100">
-            <ellipse cx="70" cy="72" rx="48" ry="12" fill="#1f1111" stroke="#450a0a" stroke-width="2" />
-            <circle cx="48" cy="70" r="3" fill="#000" />
-            <circle cx="82" cy="74" r="4" fill="#000" />
-            <rect x="52" y="66" width="16" height="6" fill="#e5e5e5" transform="rotate(-15 52 66)" />
-            <rect x="74" y="68" width="14" height="5" fill="#d4d4d4" transform="rotate(25 74 68)" />
-            <polygon points="66,50 74,40 70,68" fill="#eab308" stroke="#713f12" stroke-width="1.5" transform="rotate(35 70 55)" />
-            <circle cx="68" cy="38" r="6" fill="#3f3f46" opacity="0.7" class="animate-pulse" />
-            <circle cx="74" cy="24" r="8" fill="#52525b" opacity="0.5" class="animate-pulse" />
-            <circle cx="64" cy="12" r="5" fill="#71717a" opacity="0.3" class="animate-pulse" />
-          </svg>
-          <span class="text-[8px] text-red-500 font-bold bg-black/80 px-2 py-0.5 border border-red-800 -mt-1">
-            💥 Ülerõhk! Plahvatas, rsk!
-          </span>
+        <!-- Unicorn container pushed comfortably to the right -->
+        <div id="unicornWrapper" class="w-full md:w-72 shrink-0 flex flex-col items-center md:items-end justify-center relative unicorn-floating py-1 pr-2">
+          <div id="unicornInner" class="relative w-72 h-36 flex items-center justify-center">
+
+            <!-- Rainbow Fart Stream SVG trailing from rear -->
+            <svg id="rainbowStream" class="absolute -left-12 top-6 w-44 h-24 rainbow-flow overflow-visible" viewBox="0 0 160 80">
+              <defs>
+                <linearGradient id="rainbowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#ff0000" />
+                  <stop offset="20%" stop-color="#ff8800" />
+                  <stop offset="40%" stop-color="#ffff00" />
+                  <stop offset="60%" stop-color="#00ff55" />
+                  <stop offset="80%" stop-color="#00d5ff" />
+                  <stop offset="100%" stop-color="#aa00ff" />
+                </linearGradient>
+              </defs>
+              <path d="M 15 45 Q 60 10 145 42 Q 60 70 15 45 Z" fill="url(#rainbowGrad)" opacity="0.95" />
+              <circle cx="20" cy="46" r="14" fill="#ffffff" opacity="0.8" />
+              <circle cx="42" cy="40" r="11" fill="#ffbbee" opacity="0.85" />
+              <circle cx="10" cy="52" r="8" fill="#ffff88" opacity="0.9" />
+              <circle cx="70" cy="34" r="7" fill="#88ffff" opacity="0.95" />
+              <polygon points="5,30 8,36 14,37 9,42 11,48 5,44 0,48 2,42 -3,37 3,36" fill="#fff" />
+              <polygon points="32,20 34,24 38,25 35,28 36,32 32,29 28,32 29,28 26,25 30,24" fill="#ffff00" />
+            </svg>
+
+            <!-- 8-Bit Pixel Unicorn Graphic -->
+            <svg id="unicornSvg" class="w-48 h-36 z-10 drop-shadow-[0_8px_0_rgba(0,0,0,0.6)] cursor-pointer hover:scale-105 transition-transform" 
+                 onclick="triggerFartBurst(event)" viewBox="0 0 120 90" fill="none">
+              <!-- Horn: Golden magical spike -->
+              <polygon points="98,14 116,0 104,18" fill="#ffd700" stroke="#b38600" stroke-width="2"/>
+              <circle cx="116" cy="1" r="3" fill="#ffffff" class="animate-ping" />
+              <!-- Ears -->
+              <polygon points="86,16 92,6 96,16" fill="#fbcfe8" stroke="#000" stroke-width="2"/>
+              <!-- Mane (Rainbow Pixel style) -->
+              <rect x="74" y="16" width="10" height="8" fill="#ff3366"/>
+              <rect x="68" y="24" width="10" height="8" fill="#ff9900"/>
+              <rect x="64" y="32" width="10" height="8" fill="#33cc33"/>
+              <rect x="62" y="40" width="8" height="8" fill="#3399ff"/>
+              <rect x="60" y="48" width="8" height="8" fill="#9933ff"/>
+              <!-- Head -->
+              <rect x="80" y="14" width="24" height="22" fill="#ffffff" stroke="#000" stroke-width="2"/>
+              <!-- Snout -->
+              <rect x="98" y="22" width="14" height="14" fill="#ffffff" stroke="#000" stroke-width="2"/>
+              <circle cx="106" cy="27" r="1.5" fill="#f43f5e"/>
+              <!-- Eye -->
+              <rect x="88" y="20" width="4" height="6" fill="#1e1b4b"/>
+              <rect x="89" y="21" width="2" height="2" fill="#ffffff"/>
+              <!-- Cheerful Cheek -->
+              <rect x="86" y="28" width="5" height="3" fill="#fda4af"/>
+              <!-- Neck & Body -->
+              <rect x="70" y="30" width="16" height="20" fill="#ffffff" stroke="#000" stroke-width="2"/>
+              <rect x="36" y="40" width="44" height="26" fill="#ffffff" stroke="#000" stroke-width="2"/>
+              <path d="M 50 40 C 40 20, 68 18, 62 40 Z" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+              <path d="M 36 46 Q 22 46 26 62 Q 33 60 36 54 Z" fill="#ec4899" stroke="#000" stroke-width="2"/>
+              <!-- Front Legs -->
+              <rect x="68" y="66" width="6" height="16" fill="#ffffff" stroke="#000" stroke-width="2"/>
+              <rect x="68" y="80" width="6" height="4" fill="#fbbf24"/>
+              <rect x="60" y="66" width="6" height="14" fill="#e2e8f0" stroke="#000" stroke-width="2"/>
+              <rect x="60" y="78" width="6" height="4" fill="#d97706"/>
+              <!-- Back Legs -->
+              <rect x="44" y="66" width="6" height="16" fill="#ffffff" stroke="#000" stroke-width="2"/>
+              <rect x="44" y="80" width="6" height="4" fill="#fbbf24"/>
+              <rect x="36" y="66" width="6" height="14" fill="#e2e8f0" stroke="#000" stroke-width="2"/>
+              <rect x="36" y="78" width="6" height="4" fill="#d97706"/>
+            </svg>
+          </div>
+
+          <!-- Scorched Pixel Remains after explosion (hidden by default) -->
+          <div id="unicornRemains" class="hidden relative w-72 h-36 flex flex-col items-center justify-center pointer-events-none">
+            <svg class="w-44 h-32 overflow-visible" viewBox="0 0 140 100">
+              <ellipse cx="70" cy="72" rx="48" ry="12" fill="#1f1111" stroke="#450a0a" stroke-width="2" />
+              <circle cx="48" cy="70" r="3" fill="#000" />
+              <circle cx="82" cy="74" r="4" fill="#000" />
+              <rect x="52" y="66" width="16" height="6" fill="#e5e5e5" transform="rotate(-15 52 66)" />
+              <rect x="74" y="68" width="14" height="5" fill="#d4d4d4" transform="rotate(25 74 68)" />
+              <polygon points="66,50 74,40 70,68" fill="#eab308" stroke="#713f12" stroke-width="1.5" transform="rotate(35 70 55)" />
+              <circle cx="68" cy="38" r="6" fill="#3f3f46" opacity="0.7" class="animate-pulse" />
+              <circle cx="74" cy="24" r="8" fill="#52525b" opacity="0.5" class="animate-pulse" />
+              <circle cx="64" cy="12" r="5" fill="#71717a" opacity="0.3" class="animate-pulse" />
+            </svg>
+            <span class="text-[9px] text-red-500 font-bold bg-black/90 px-2 py-0.5 border border-red-800 -mt-2">
+              💥 Ülerõhk! Plahvatas, rsk!
+            </span>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Keskmaa ja maa-alune maailm (tihedam ja sidusam paigutus) -->
-    <div class="relative w-full mt-3 pt-3 border-t-4 border-emerald-500 bg-gradient-to-b from-[#193313] via-[#2d1b0c] to-[#150a04] px-2 sm:px-3 pb-3 rounded-b">
-      
-      <!-- Dekoratsioonid -->
-      <div class="absolute -top-3 left-10 text-xs">🍄</div>
-      <div class="absolute -top-3 left-1/3 text-xs">🌻</div>
-      <div class="absolute -top-3 right-1/4 text-xs">🍄</div>
-      <div class="absolute -top-3 right-12 text-xs">🌷</div>
+      <!-- Middle & Lower Earth World -->
+      <div class="relative w-full mt-3 pt-3 border-t-4 border-emerald-500 bg-gradient-to-b from-[#193313] via-[#2d1b0c] to-[#150a04] px-3 pb-3 rounded-b-lg">
+        
+        <!-- Scenery decoration -->
+        <div class="absolute -top-3 left-8 text-xs">🍄</div>
+        <div class="absolute -top-3 left-1/3 text-xs">🌻</div>
+        <div class="absolute -top-3 right-1/3 text-xs">🍄</div>
+        <div class="absolute -top-3 right-12 text-xs">🌷</div>
 
-      <!-- Tegevusväli: Kääbikud vasakul, Juhtnupud + Mäger & Haud paremal -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 items-end">
+        <!-- Action Area: Flex container with 2 solid halves -->
+        <div class="flex flex-col lg:flex-row items-end justify-between gap-4">
 
-        <!-- VASAKUL: KÄÄBIKUD KOOS ÕLLEVAADI JA VÄSIMUSSÜSTEEMIGA -->
-        <div class="lg:col-span-6 flex flex-col items-center sm:items-start pt-1">
+          <!-- LEFT HALF: KÄÄBIKUD + ÕLLEVAAT -->
+          <div class="flex items-end justify-center sm:justify-start space-x-2 sm:space-x-3 w-full lg:w-auto">
 
-          <div class="flex flex-col sm:flex-row items-end gap-2 sm:gap-3 w-full">
-            
-            <!-- Kääbikute animatsioonikonteiner -->
-            <div id="hobbitsContainer" class="flex justify-center sm:justify-start items-end space-x-2 sm:space-x-3.5 pt-12 pb-1 overflow-visible shrink-0">
+            <!-- Hobbits Sprites Container -->
+            <div id="hobbitsContainer" class="flex justify-center items-end space-x-2 sm:space-x-4 pt-14 pb-1 overflow-visible">
 
-              <!-- Kääbik 1: Frodo (õllekannuga) -->
-              <div class="relative w-12 sm:w-14 shrink-0 flex flex-col items-center jump-hobbit-1 cursor-pointer" onclick="playHobbitCheer(1)">
-                <span id="hobbitText1" class="absolute -top-5 left-1/2 -translate-x-1/2 text-[9px] sm:text-[10px] text-yellow-300 font-bold drop-shadow-[0_2px_0_#000] whitespace-nowrap pointer-events-none z-20">JOPP!</span>
-                <svg class="w-11 h-16 sm:w-13 sm:h-18" viewBox="0 0 60 80">
-                  <circle cx="30" cy="20" r="14" fill="#582f0e" />
-                  <rect x="18" y="16" width="24" height="10" fill="#7f4f24" />
-                  <rect x="22" y="20" width="16" height="14" fill="#ffd1b3" />
-                  <rect x="25" y="24" width="3" height="3" fill="#000" />
-                  <rect x="33" y="24" width="3" height="3" fill="#000" />
-                  <rect x="28" y="30" width="5" height="2" fill="#c1121f" />
-                  <rect x="20" y="34" width="20" height="18" fill="#2d6a4f" stroke="#000" stroke-width="1.5" />
-                  <rect x="28" y="34" width="4" height="18" fill="#d8f3dc" />
-                  <rect x="42" y="36" width="8" height="10" fill="#e9c46a" stroke="#000" stroke-width="1" />
-                  <rect x="42" y="34" width="8" height="3" fill="#ffffff" />
-                  <rect x="22" y="52" width="16" height="10" fill="#7f4f24" />
-                  <ellipse cx="19" cy="68" rx="8" ry="4" fill="#ffd1b3" stroke="#582f0e" stroke-width="1.5" />
-                  <ellipse cx="39" cy="68" rx="8" ry="4" fill="#ffd1b3" stroke="#582f0e" stroke-width="1.5" />
-                </svg>
+              <!-- Hobbit 1 -->
+              <div class="relative w-14 sm:w-16 flex flex-col items-center shrink-0 cursor-pointer" onclick="playHobbitCheer(1)">
+                <div class="jump-hobbit-1 relative flex flex-col items-center">
+                  <!-- Speech Tag: Positioned inside the jump container so it bounces synchronously with the hobbit! -->
+                  <span id="hobbitText1" class="absolute -top-6 left-1/2 -translate-x-1/2 text-[9px] sm:text-[10px] text-yellow-300 font-bold bg-black/85 px-1 py-0.5 border border-yellow-500 select-none pointer-events-none whitespace-nowrap z-20">JOPP!</span>
+                  <svg class="w-14 h-20" viewBox="0 0 60 80">
+                    <circle cx="30" cy="20" r="14" fill="#582f0e" />
+                    <rect x="18" y="16" width="24" height="10" fill="#7f4f24" />
+                    <rect x="22" y="20" width="16" height="14" fill="#ffd1b3" />
+                    <rect x="25" y="24" width="3" height="3" fill="#000" />
+                    <rect x="33" y="24" width="3" height="3" fill="#000" />
+                    <rect x="28" y="30" width="5" height="2" fill="#c1121f" />
+                    <rect x="20" y="34" width="20" height="18" fill="#2d6a4f" stroke="#000" stroke-width="1.5" />
+                    <rect x="28" y="34" width="4" height="18" fill="#d8f3dc" />
+                    <rect x="42" y="36" width="8" height="10" fill="#e9c46a" stroke="#000" stroke-width="1" />
+                    <rect x="42" y="34" width="8" height="3" fill="#ffffff" />
+                    <rect x="22" y="52" width="16" height="10" fill="#7f4f24" />
+                    <ellipse cx="19" cy="68" rx="8" ry="4" fill="#ffd1b3" stroke="#582f0e" stroke-width="1.5" />
+                    <ellipse cx="39" cy="68" rx="8" ry="4" fill="#ffd1b3" stroke="#582f0e" stroke-width="1.5" />
+                  </svg>
+                </div>
               </div>
 
-              <!-- Kääbik 2: Samwise (peomütsiga) -->
-              <div class="relative w-12 sm:w-14 shrink-0 flex flex-col items-center jump-hobbit-2 cursor-pointer" onclick="playHobbitCheer(2)">
-                <span id="hobbitText2" class="absolute -top-5 left-1/2 -translate-x-1/2 text-[9px] sm:text-[10px] text-pink-300 font-bold drop-shadow-[0_2px_0_#000] whitespace-nowrap pointer-events-none z-20">PALJU ÕNNE!</span>
-                <svg class="w-11 h-18 sm:w-13 sm:h-20" viewBox="0 0 60 84">
-                  <polygon points="30,2 20,18 40,18" fill="#e63946" stroke="#f1faee" stroke-width="1.5" />
-                  <circle cx="30" cy="2" r="3" fill="#ffd166" />
-                  <circle cx="30" cy="26" r="13" fill="#936639" />
-                  <rect x="22" y="24" width="16" height="13" fill="#ffd1b3" />
-                  <circle cx="26" cy="28" r="1.5" fill="#000" />
-                  <circle cx="34" cy="28" r="1.5" fill="#000" />
-                  <path d="M 26 33 Q 30 36 34 33" stroke="#000" stroke-width="1.5" fill="none" />
-                  <rect x="18" y="37" width="24" height="18" fill="#b91c1c" stroke="#000" stroke-width="1.5" />
-                  <rect x="27" y="37" width="6" height="18" fill="#fef08a" />
-                  <rect x="10" y="30" width="6" height="10" fill="#ffd1b3" />
-                  <rect x="44" y="30" width="6" height="10" fill="#ffd1b3" />
-                  <rect x="21" y="55" width="18" height="9" fill="#582f0e" />
-                  <ellipse cx="18" cy="70" rx="9" ry="4" fill="#ffd1b3" stroke="#7f4f24" stroke-width="1.5" />
-                  <ellipse cx="40" cy="70" rx="9" ry="4" fill="#ffd1b3" stroke="#7f4f24" stroke-width="1.5" />
-                </svg>
+              <!-- Hobbit 2 -->
+              <div class="relative w-14 sm:w-16 flex flex-col items-center shrink-0 cursor-pointer" onclick="playHobbitCheer(2)">
+                <div class="jump-hobbit-2 relative flex flex-col items-center">
+                  <span id="hobbitText2" class="absolute -top-6 left-1/2 -translate-x-1/2 text-[9px] sm:text-[10px] text-pink-300 font-bold bg-black/85 px-1 py-0.5 border border-pink-500 select-none pointer-events-none whitespace-nowrap z-20">PALJU ÕNNE!</span>
+                  <svg class="w-14 h-22" viewBox="0 0 60 84">
+                    <polygon points="30,2 20,18 40,18" fill="#e63946" stroke="#f1faee" stroke-width="1.5" />
+                    <circle cx="30" cy="2" r="3" fill="#ffd166" />
+                    <circle cx="30" cy="26" r="13" fill="#936639" />
+                    <rect x="22" y="24" width="16" height="13" fill="#ffd1b3" />
+                    <circle cx="26" cy="28" r="1.5" fill="#000" />
+                    <circle cx="34" cy="28" r="1.5" fill="#000" />
+                    <path d="M 26 33 Q 30 36 34 33" stroke="#000" stroke-width="1.5" fill="none" />
+                    <rect x="18" y="37" width="24" height="18" fill="#b91c1c" stroke="#000" stroke-width="1.5" />
+                    <rect x="27" y="37" width="6" height="18" fill="#fef08a" />
+                    <rect x="10" y="30" width="6" height="10" fill="#ffd1b3" />
+                    <rect x="44" y="30" width="6" height="10" fill="#ffd1b3" />
+                    <rect x="21" y="55" width="18" height="9" fill="#582f0e" />
+                    <ellipse cx="18" cy="70" rx="9" ry="4" fill="#ffd1b3" stroke="#7f4f24" stroke-width="1.5" />
+                    <ellipse cx="40" cy="70" rx="9" ry="4" fill="#ffd1b3" stroke="#7f4f24" stroke-width="1.5" />
+                  </svg>
+                </div>
               </div>
 
-              <!-- Kääbik 3: Pippin (akrobaat) -->
-              <div class="relative w-12 sm:w-14 shrink-0 flex flex-col items-center jump-hobbit-3 cursor-pointer" onclick="playHobbitCheer(3)">
-                <span id="hobbitText3" class="absolute -top-5 left-1/2 -translate-x-1/2 text-[9px] sm:text-[10px] text-cyan-300 font-bold drop-shadow-[0_2px_0_#000] whitespace-nowrap pointer-events-none z-20">HOP-HOP!</span>
-                <svg class="w-11 h-16 sm:w-13 sm:h-18" viewBox="0 0 60 80">
-                  <circle cx="30" cy="20" r="14" fill="#6f1d1b" />
-                  <rect x="22" y="20" width="16" height="14" fill="#ffe5d9" />
-                  <rect x="25" y="24" width="3" height="3" fill="#000" />
-                  <rect x="33" y="24" width="3" height="3" fill="#000" />
-                  <rect x="27" y="29" width="6" height="3" fill="#9d0208" />
-                  <rect x="19" y="34" width="22" height="18" fill="#1d3557" stroke="#000" stroke-width="1.5" />
-                  <rect x="23" y="34" width="3" height="18" fill="#e76f51" />
-                  <rect x="34" y="34" width="3" height="18" fill="#e76f51" />
-                  <rect x="21" y="52" width="18" height="10" fill="#4a5568" />
-                  <ellipse cx="18" cy="68" rx="8" ry="4" fill="#ffe5d9" stroke="#6f1d1b" stroke-width="1.5" />
-                  <ellipse cx="40" cy="68" rx="8" ry="4" fill="#ffe5d9" stroke="#6f1d1b" stroke-width="1.5" />
-                </svg>
+              <!-- Hobbit 3 -->
+              <div class="relative w-14 sm:w-16 flex flex-col items-center shrink-0 cursor-pointer" onclick="playHobbitCheer(3)">
+                <div class="jump-hobbit-3 relative flex flex-col items-center">
+                  <span id="hobbitText3" class="absolute -top-6 left-1/2 -translate-x-1/2 text-[9px] sm:text-[10px] text-cyan-300 font-bold bg-black/85 px-1 py-0.5 border border-cyan-500 select-none pointer-events-none whitespace-nowrap z-20">HOP-HOP!</span>
+                  <svg class="w-14 h-20" viewBox="0 0 60 80">
+                    <circle cx="30" cy="20" r="14" fill="#6f1d1b" />
+                    <rect x="22" y="20" width="16" height="14" fill="#ffe5d9" />
+                    <rect x="25" y="24" width="3" height="3" fill="#000" />
+                    <rect x="33" y="24" width="3" height="3" fill="#000" />
+                    <rect x="27" y="29" width="6" height="3" fill="#9d0208" />
+                    <rect x="19" y="34" width="22" height="18" fill="#1d3557" stroke="#000" stroke-width="1.5" />
+                    <rect x="23" y="34" width="3" height="18" fill="#e76f51" />
+                    <rect x="34" y="34" width="3" height="18" fill="#e76f51" />
+                    <rect x="21" y="52" width="18" height="10" fill="#4a5568" />
+                    <ellipse cx="18" cy="68" rx="8" ry="4" fill="#ffe5d9" stroke="#6f1d1b" stroke-width="1.5" />
+                    <ellipse cx="40" cy="68" rx="8" ry="4" fill="#ffe5d9" stroke="#6f1d1b" stroke-width="1.5" />
+                  </svg>
+                </div>
               </div>
 
-              <!-- Kääbik 4: Merry (lipuga) -->
-              <div class="relative w-14 sm:w-16 shrink-0 hidden sm:flex flex-col items-center jump-hobbit-4 cursor-pointer" onclick="playHobbitCheer(4)">
-                <span id="hobbitText4" class="absolute -top-5 left-1/2 -translate-x-1/2 text-[9px] sm:text-[10px] text-orange-300 font-bold drop-shadow-[0_2px_0_#000] whitespace-nowrap pointer-events-none z-20">PIDU!</span>
-                <svg class="w-13 h-18 sm:w-15 sm:h-20" viewBox="0 0 70 85">
-                  <line x1="12" y1="8" x2="12" y2="70" stroke="#ffd166" stroke-width="3" />
-                  <polygon points="13,10 40,16 13,24" fill="#f72585" stroke="#000" stroke-width="1" />
-                  <circle cx="42" cy="26" r="12" fill="#582f0e" />
-                  <rect x="36" y="24" width="14" height="12" fill="#ffd1b3" />
-                  <rect x="39" y="27" width="2" height="2" fill="#000" />
-                  <rect x="45" y="27" width="2" height="2" fill="#000" />
-                  <rect x="32" y="36" width="20" height="18" fill="#e09f3e" stroke="#000" stroke-width="1.5" />
-                  <rect x="34" y="54" width="16" height="9" fill="#335c67" />
-                  <ellipse cx="32" cy="68" rx="8" ry="4" fill="#ffd1b3" stroke="#582f0e" stroke-width="1.5" />
-                  <ellipse cx="50" cy="68" rx="8" ry="4" fill="#ffd1b3" stroke="#582f0e" stroke-width="1.5" />
-                </svg>
+              <!-- Hobbit 4 -->
+              <div class="relative w-14 sm:w-16 flex flex-col items-center shrink-0 cursor-pointer" onclick="playHobbitCheer(4)">
+                <div class="jump-hobbit-4 relative flex flex-col items-center">
+                  <span id="hobbitText4" class="absolute -top-6 left-1/2 -translate-x-1/2 text-[9px] sm:text-[10px] text-orange-300 font-bold bg-black/85 px-1 py-0.5 border border-orange-500 select-none pointer-events-none whitespace-nowrap z-20">PIDU!</span>
+                  <svg class="w-16 h-22" viewBox="0 0 70 85">
+                    <line x1="12" y1="8" x2="12" y2="70" stroke="#ffd166" stroke-width="3" />
+                    <polygon points="13,10 40,16 13,24" fill="#f72585" stroke="#000" stroke-width="1" />
+                    <circle cx="42" cy="26" r="12" fill="#582f0e" />
+                    <rect x="36" y="24" width="14" height="12" fill="#ffd1b3" />
+                    <rect x="39" y="27" width="2" height="2" fill="#000" />
+                    <rect x="45" y="27" width="2" height="2" fill="#000" />
+                    <rect x="32" y="36" width="20" height="18" fill="#e09f3e" stroke="#000" stroke-width="1.5" />
+                    <rect x="34" y="54" width="16" height="9" fill="#335c67" />
+                    <ellipse cx="32" cy="68" rx="8" ry="4" fill="#ffd1b3" stroke="#582f0e" stroke-width="1.5" />
+                    <ellipse cx="50" cy="68" rx="8" ry="4" fill="#ffd1b3" stroke="#582f0e" stroke-width="1.5" />
+                  </svg>
+                </div>
               </div>
 
             </div>
 
-            <!-- RETRO PIKSEL ÕLLEVAAT -->
-            <div class="flex flex-col items-center justify-end pb-1 self-end shrink-0">
-              <button id="beerBtn" onclick="drinkBeer(event)" class="pixel-btn bg-amber-600 hover:bg-amber-500 text-yellow-100 px-3 py-1.5 text-xs sm:text-[13px] mb-1.5 font-bold whitespace-nowrap shadow-[0_2px_0_#000]">
+            <!-- ÕLLEVAAT JA JOOTMISE TSOON -->
+            <div class="flex flex-col items-center justify-end shrink-0 pl-2 sm:pl-3 pb-1 border-l-2 border-amber-900/60">
+              <button id="beerBtn" onclick="drinkBeer(event)" class="pixel-btn bg-amber-600 hover:bg-amber-500 text-yellow-100 font-bold px-3 py-2 text-[10px] sm:text-xs whitespace-nowrap mb-1.5 shadow-[0_3px_0_#000]">
                 🍺 JOODA KÄÄBAKAID
               </button>
 
-              <div class="relative cursor-pointer hover:scale-105 transition-transform" onclick="drinkBeer(event)">
-                <svg class="w-16 h-18 sm:w-18 sm:h-20" viewBox="0 0 64 74">
-                  <rect x="10" y="8" width="44" height="58" rx="8" fill="#78350f" stroke="#291104" stroke-width="2.5" />
-                  <line x1="22" y1="8" x2="22" y2="66" stroke="#451a03" stroke-width="1.5" />
-                  <line x1="34" y1="8" x2="34" y2="66" stroke="#451a03" stroke-width="1.5" />
-                  <line x1="44" y1="8" x2="44" y2="66" stroke="#451a03" stroke-width="1.5" />
-                  <rect x="8" y="14" width="48" height="6" fill="#9ca3af" stroke="#1f2937" stroke-width="1.5" />
-                  <rect x="8" y="32" width="48" height="5" fill="#6b7280" stroke="#1f2937" stroke-width="1.5" />
-                  <rect x="8" y="52" width="48" height="6" fill="#9ca3af" stroke="#1f2937" stroke-width="1.5" />
-                  <rect x="46" y="38" width="10" height="4" fill="#fbbf24" stroke="#78350f" stroke-width="1" />
-                  <rect x="52" y="34" width="4" height="6" fill="#f59e0b" />
-                  <circle cx="54" cy="45" r="2.5" fill="#fef08a" class="animate-bounce" />
-                </svg>
-              </div>
+              <!-- Detailed SVG Beer Barrel -->
+              <svg class="w-16 h-20 drop-shadow-[0_4px_0_rgba(0,0,0,0.6)] cursor-pointer" onclick="drinkBeer(event)" viewBox="0 0 50 60">
+                <ellipse cx="25" cy="30" rx="22" ry="26" fill="#854d0e" stroke="#451a03" stroke-width="2"/>
+                <!-- Iron Bands -->
+                <rect x="4" y="10" width="42" height="4" fill="#52525b" stroke="#18181b" stroke-width="1"/>
+                <rect x="3" y="46" width="44" height="4" fill="#52525b" stroke="#18181b" stroke-width="1"/>
+                <!-- Staves -->
+                <line x1="16" y1="4" x2="16" y2="56" stroke="#451a03" stroke-width="1.5"/>
+                <line x1="25" y1="4" x2="25" y2="56" stroke="#451a03" stroke-width="1.5"/>
+                <line x1="34" y1="4" x2="34" y2="56" stroke="#451a03" stroke-width="1.5"/>
+                <!-- Tap & Foam -->
+                <rect x="22" y="32" width="6" height="5" fill="#facc15" stroke="#713f12" stroke-width="1"/>
+                <rect x="24" y="37" width="2" height="4" fill="#facc15"/>
+                <circle cx="25" cy="42" r="2.5" fill="#fef08a"/>
+              </svg>
 
-              <!-- Kääbikute energia indikaator -->
-              <div class="w-20 bg-black/80 border border-zinc-700 h-2 mt-1 rounded-none overflow-hidden">
+              <!-- Stamina bar -->
+              <div class="w-20 bg-zinc-900 h-2 mt-1.5 border border-zinc-700 overflow-hidden">
                 <div id="staminaFill" class="bg-yellow-400 h-full w-full transition-all duration-300"></div>
               </div>
-              <span id="staminaLabel" class="text-[9px] sm:text-[10px] text-yellow-300 mt-1 tracking-tight font-bold">VORMIS!</span>
+              <span id="staminaLabel" class="text-[8px] sm:text-[9px] text-yellow-300 font-bold mt-1">VORMIS! 🍺</span>
             </div>
 
           </div>
 
-        </div>
+          <!-- RIGHT HALF: 2x2 ACTION GRID + BADGER & GRAVE -->
+          <div class="flex flex-col sm:flex-row items-center sm:items-end justify-center sm:justify-end gap-3 w-full lg:w-auto">
 
-        <!-- PAREMAL: JUHTNUPUD 2X2 GRIDIS KÕRVUTI MÄGRA, RISTI JA HAUAGA -->
-        <div class="lg:col-span-6 flex flex-col sm:flex-row items-center sm:items-end justify-center lg:justify-end gap-3 sm:gap-4 mt-3 lg:mt-0">
-
-          <!-- 2X2 GRIDIS MÄNGUNUPUD MÄGRA KÕRVAL (HÄSTI LOETAVATE TEKSTIDEGA) -->
-          <div class="flex flex-col z-20 w-full sm:w-auto mb-2 sm:mb-1">
-            <div class="grid grid-cols-2 gap-2 w-full sm:w-80">
-              <button id="digBtn" onclick="manualDig(event)" class="pixel-btn bg-amber-700 hover:bg-amber-600 text-yellow-200 px-2.5 py-2.5 text-[11px] sm:text-xs font-bold text-center leading-tight">
-                ⛏️ KAEVA KIIREMINI!
+            <!-- 2x2 Action Buttons Grid -->
+            <div class="grid grid-cols-2 gap-2 w-full sm:w-72 shrink-0">
+              <button id="digBtn" onclick="manualDig(event)" class="pixel-btn bg-amber-700 hover:bg-amber-600 text-yellow-200 p-2 sm:p-2.5 text-[9.5px] sm:text-[11px] leading-tight text-center">
+                ⛏️ KAEVA<br>KIIREMINI!
               </button>
-              <button id="refillBtn" onclick="refillGrave(event)" class="pixel-btn bg-stone-700 hover:bg-stone-600 text-emerald-300 px-2.5 py-2.5 text-[11px] sm:text-xs font-bold text-center leading-tight">
-                🌱 VISKA MULDA! (-200)
+              <button id="refillBtn" onclick="refillGrave(event)" class="pixel-btn bg-emerald-800 hover:bg-emerald-700 text-yellow-200 p-2 sm:p-2.5 text-[9.5px] sm:text-[11px] leading-tight text-center">
+                🌱 VISKA<br>MULDA! (-200)
               </button>
-              <button id="hobbitBtn" onclick="hobbitJumpSurge(event)" class="pixel-btn bg-emerald-600 hover:bg-emerald-500 text-white px-2.5 py-2.5 text-[11px] sm:text-xs font-bold text-center leading-tight">
-                🦘 HÜPITA KÄÄBAKAID!
+              <button id="hobbitBtn" onclick="hobbitJumpSurge(event)" class="pixel-btn bg-teal-700 hover:bg-teal-600 text-white p-2 sm:p-2.5 text-[9.5px] sm:text-[11px] leading-tight text-center">
+                🦘 HÜPITA<br>KÄÄBAKAID!
               </button>
-              <button id="boostBtn" onclick="triggerFartBurst(event)" class="pixel-btn bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-2.5 py-2.5 text-[11px] sm:text-xs font-bold text-center leading-tight">
-                🌈 VIKERKAARE BOOST!
+              <button id="boostBtn" onclick="triggerFartBurst(event)" class="pixel-btn bg-fuchsia-600 hover:bg-fuchsia-500 text-white p-2 sm:p-2.5 text-[9.5px] sm:text-[11px] leading-tight text-center">
+                🌈 VIKERKAARE<br>BOOST!
               </button>
             </div>
-          </div>
 
-          <!-- MÄGER JA HAUD -->
-          <div class="relative w-72 sm:w-76 h-44 flex items-end justify-center">
+            <!-- Badger with Shovel and Expanding Grave -->
+            <div class="relative w-72 h-48 shrink-0 flex items-end justify-center">
 
-            <!-- Mulla osakeste konteiner -->
-            <div id="dirtParticles" class="absolute left-20 bottom-12 pointer-events-none w-16 h-16"></div>
+              <!-- Dirt fly particles generator container -->
+              <div id="dirtParticles" class="absolute left-20 bottom-14 pointer-events-none w-20 h-20 z-30"></div>
 
-            <!-- Mägra Raevusümbolite Mull -->
-            <div id="badgerRageBubble" class="absolute left-2 top-2 z-30 hidden bg-black/90 border-2 border-red-600 px-2.5 py-1 text-xs sm:text-sm text-red-400 font-bold select-none drop-shadow-[0_0_8px_rgba(239,68,68,0.8)]">
-              🤬 #!%@&$!!
-            </div>
+              <!-- Dynamic Grave Mound & Deepening Hole SVG -->
+              <div class="absolute right-0 bottom-0 w-48 overflow-visible">
+                <svg id="graveSvg" class="w-48 h-40 overflow-visible" viewBox="0 0 200 160">
+                  <defs>
+                    <linearGradient id="pitDepthGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                      <stop offset="0%" stop-color="#140803" />
+                      <stop offset="40%" stop-color="#0a0402" />
+                      <stop offset="100%" stop-color="#000000" />
+                    </linearGradient>
+                  </defs>
 
-            <!-- Dünaamiline Haua SVG -->
-            <div class="absolute right-0 bottom-0 w-48 overflow-visible">
-              <svg id="graveSvg" class="w-48 h-40 overflow-visible" viewBox="0 0 200 160">
-                <defs>
-                  <linearGradient id="pitDepthGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stop-color="#140803" />
-                    <stop offset="40%" stop-color="#0a0402" />
-                    <stop offset="100%" stop-color="#000000" />
-                  </linearGradient>
-                </defs>
+                  <path id="graveDirtMound" d="M 5 60 Q 95 32 195 60 Z" fill="#3d2314" stroke="#1d1008" stroke-width="2" />
+                  <circle cx="50" cy="55" r="3" fill="#663c22" />
+                  <circle cx="95" cy="48" r="4" fill="#7a4929" />
+                  <circle cx="150" cy="55" r="3" fill="#54301a" />
 
-                <!-- Kasvav Mullaküngas -->
-                <path id="graveDirtMound" d="M 5 60 Q 95 32 195 60 Z" fill="#3d2314" stroke="#1d1008" stroke-width="2" />
-                <circle cx="50" cy="55" r="3" fill="#663c22" />
-                <circle cx="95" cy="48" r="4" fill="#7a4929" />
-                <circle cx="150" cy="55" r="3" fill="#54301a" />
+                  <rect id="gravePitRect" x="45" y="60" width="105" height="24" fill="url(#pitDepthGradient)" stroke="#1a0c06" stroke-width="1" />
+                  <ellipse id="graveHoleOpening" cx="98" cy="60" rx="52" ry="14" fill="#050302" stroke="#261309" stroke-width="3" />
 
-                <!-- Süvenev Hauapõhi -->
-                <rect id="gravePitRect" x="45" y="60" width="105" height="24" fill="url(#pitDepthGradient)" stroke="#1a0c06" stroke-width="1" />
-                <ellipse id="graveHoleOpening" cx="98" cy="60" rx="52" ry="14" fill="#050302" stroke="#261309" stroke-width="3" />
-
-                <!-- Skeleti Easter Egg -->
-                <g id="graveBones" opacity="0" class="transition-opacity duration-300">
-                  <circle cx="98" cy="74" r="5" fill="#e5e5e5" />
-                  <rect x="96" cy="77" width="4" height="3" fill="#e5e5e5" />
-                  <circle cx="96" cy="73" r="1" fill="#000" />
-                  <circle cx="100" cy="73" r="1" fill="#000" />
-                  <line x1="88" y1="83" x2="108" y2="83" stroke="#e5e5e5" stroke-width="2" />
-                </g>
-              </svg>
-            </div>
-
-            <!-- Puust Rist kirjaga "PUHKA RAHUS" -->
-            <div id="graveCrossEl" class="absolute right-10 bottom-12 z-10 flex flex-col items-center cursor-pointer group transition-transform duration-200" onclick="tapCross()">
-              <span class="text-[9px] sm:text-[10px] bg-red-950 text-red-200 px-1.5 py-0.5 border border-red-700 mb-0.5 group-hover:scale-110 transition-transform tracking-wider font-bold">
-                PUHKA RAHUS
-              </span>
-              <svg class="w-13 h-20 sm:w-14 sm:h-22 drop-shadow-[0_4px_0_rgba(0,0,0,0.8)]" viewBox="0 0 60 90">
-                <rect x="25" y="4" width="10" height="74" fill="#78350f" stroke="#291104" stroke-width="2"/>
-                <rect x="10" y="24" width="40" height="10" fill="#78350f" stroke="#291104" stroke-width="2"/>
-                <line x1="28" y1="8" x2="28" y2="70" stroke="#451a03" stroke-width="1" />
-                <line x1="14" y1="28" x2="46" y2="28" stroke="#451a03" stroke-width="1" />
-                <rect x="26" y="5" width="2" height="70" fill="#92400e" />
-              </svg>
-            </div>
-
-            <!-- Mäger Labidaga -->
-            <div class="absolute left-2 bottom-1 z-20 flex flex-col items-center">
-              <div id="badgerWrapper" class="badger-digging cursor-pointer" onclick="manualDig(event)">
-                <svg id="badgerSvg" class="w-28 h-24 sm:w-30 sm:h-26" viewBox="0 0 120 100">
-                  <ellipse cx="50" cy="60" rx="30" ry="20" fill="#374151" stroke="#111827" stroke-width="2" />
-                  <polygon points="70,50 106,62 82,74" fill="#ffffff" stroke="#111827" stroke-width="2" />
-                  <polygon points="76,52 102,62 84,65 74,56" fill="#111827" />
-                  <circle cx="104" cy="63" r="3" fill="#000000" />
-                  <circle cx="75" cy="48" r="4" fill="#ffffff" stroke="#111827" stroke-width="1" />
-                  <circle cx="75" cy="48" r="2" fill="#111827" />
-                  <circle id="badgerEye" cx="88" cy="58" r="2" fill="#ffffff" />
-                  <circle id="badgerPupil" cx="89" cy="58" r="1" fill="#ef4444" />
-                  <rect x="30" y="74" width="8" height="12" fill="#1f2937" stroke="#000" stroke-width="1.5" />
-                  <rect x="52" y="74" width="8" height="12" fill="#1f2937" stroke="#000" stroke-width="1.5" />
-                  <polygon points="30,86 33,90 35,86 38,90" fill="#e5e7eb" />
-                  <polygon points="52,86 55,90 57,86 60,90" fill="#e5e7eb" />
-                  <!-- Labidas -->
-                  <g id="shovelGraphic" transform="rotate(-15 70 70)">
-                    <rect x="75" y="24" width="5" height="54" fill="#b45309" stroke="#451a03" stroke-width="1.5" />
-                    <rect x="72" y="20" width="11" height="5" fill="#d97706" stroke="#451a03" stroke-width="1.5" />
-                    <path d="M 72 74 L 83 74 L 80 94 L 75 94 Z" fill="#9ca3af" stroke="#374151" stroke-width="2" />
-                    <line x1="77" y1="74" x2="77" y2="92" stroke="#4b5563" stroke-width="1" />
+                  <g id="graveBones" opacity="0" class="transition-opacity duration-300">
+                    <circle cx="98" cy="74" r="5" fill="#e5e5e5" />
+                    <rect x="96" cy="77" width="4" height="3" fill="#e5e5e5" />
+                    <circle cx="96" cy="73" r="1" fill="#000" />
+                    <circle cx="100" cy="73" r="1" fill="#000" />
+                    <line x1="88" y1="83" x2="108" y2="83" stroke="#e5e5e5" stroke-width="2" />
                   </g>
                 </svg>
               </div>
+
+              <!-- Wooden Cross with "PUHKA RAHUS" text -->
+              <div id="graveCrossEl" class="absolute right-10 bottom-12 z-10 flex flex-col items-center cursor-pointer group transition-transform duration-200" onclick="tapCross()">
+                <span class="text-[8px] bg-red-950 text-red-200 px-1.5 py-0.5 border border-red-700 mb-0.5 group-hover:scale-110 transition-transform tracking-wider whitespace-nowrap shadow-sm">
+                  PUHKA RAHUS
+                </span>
+                <svg class="w-14 h-22 drop-shadow-[0_4px_0_rgba(0,0,0,0.8)]" viewBox="0 0 60 90">
+                  <rect x="25" y="4" width="10" height="74" fill="#78350f" stroke="#291104" stroke-width="2"/>
+                  <rect x="10" y="24" width="40" height="10" fill="#78350f" stroke="#291104" stroke-width="2"/>
+                  <line x1="28" y1="8" x2="28" y2="70" stroke="#451a03" stroke-width="1" />
+                  <line x1="14" y1="28" x2="46" y2="28" stroke="#451a03" stroke-width="1" />
+                  <rect x="26" y="5" width="2" height="70" fill="#92400e" />
+                </svg>
+              </div>
+
+              <!-- The Badger with Shovel & Swear Bubble -->
+              <div class="absolute left-2 bottom-1 z-20 flex flex-col items-center">
+                
+                <!-- Swear / Rage bubble -->
+                <div id="badgerRageBubble" class="hidden text-[9px] font-bold text-red-400 bg-black/95 px-2 py-0.5 border border-red-600 mb-1 select-none animate-pulse whitespace-nowrap z-30">
+                  💢 #!%?
+                </div>
+
+                <div id="badgerSpriteWrapper" class="badger-digging cursor-pointer" onclick="manualDig(event)">
+                  <svg class="w-28 h-24" viewBox="0 0 120 100">
+                    <ellipse cx="50" cy="60" rx="30" ry="20" fill="#374151" stroke="#111827" stroke-width="2" />
+                    <polygon points="70,50 106,62 82,74" fill="#ffffff" stroke="#111827" stroke-width="2" />
+                    <polygon points="76,52 102,62 84,65 74,56" fill="#111827" />
+                    <circle cx="104" cy="63" r="3" fill="#000000" />
+                    <circle cx="75" cy="48" r="4" fill="#ffffff" stroke="#111827" stroke-width="1" />
+                    <circle cx="75" cy="48" r="2" fill="#111827" />
+                    <circle cx="88" cy="58" r="2" fill="#ffffff" />
+                    <circle cx="89" cy="58" r="1" fill="#ef4444" />
+                    <rect x="30" y="74" width="8" height="12" fill="#1f2937" stroke="#000" stroke-width="1.5" />
+                    <rect x="52" y="74" width="8" height="12" fill="#1f2937" stroke="#000" stroke-width="1.5" />
+                    <polygon points="30,86 33,90 35,86 38,90" fill="#e5e7eb" />
+                    <polygon points="52,86 55,90 57,86 60,90" fill="#e5e7eb" />
+                    <g id="shovelGraphic" transform="rotate(-15 70 70)">
+                      <rect x="75" y="24" width="5" height="54" fill="#b45309" stroke="#451a03" stroke-width="1.5" />
+                      <rect x="72" y="20" width="11" height="5" fill="#d97706" stroke="#451a03" stroke-width="1.5" />
+                      <path d="M 72 74 L 83 74 L 80 94 L 75 94 Z" fill="#9ca3af" stroke="#374151" stroke-width="2" />
+                      <line x1="77" y1="74" x2="77" y2="92" stroke="#4b5563" stroke-width="1" />
+                    </g>
+                  </svg>
+                </div>
+              </div>
+
             </div>
 
           </div>
+
         </div>
 
       </div>
 
-    </div>
+    </main>
 
-    <!-- Jalus -->
-    <footer class="mt-2 text-center text-[7.5px] text-gray-500 z-20">
+    <!-- Bottom Footer Status -->
+    <footer class="text-center text-[8px] text-zinc-500 py-1">
       HTML5 / Web Audio Chiptune Synthesizer / Pure Retro CSS Animations
     </footer>
 
-  </main>
+  </div>
 
-  <!-- Täisekraani verine HEXEN GOOTI stiilis "MÄNG LÄBI" kiht -->
+  <!-- Fullscreen Bloody "MÄNG LÄBI" Overlay (Hexen: Beyond Heretic 1995 Gothic style) -->
   <div id="gameOverScreen" class="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md hidden flex flex-col items-center justify-center p-4 text-center select-none">
     
-    <!-- Ülaserva veretilgad -->
     <div class="absolute top-0 left-0 w-full overflow-hidden leading-none pointer-events-none opacity-80">
       <svg class="w-full h-16 sm:h-24 text-red-900 fill-current blood-drip" preserveAspectRatio="none" viewBox="0 0 1200 120">
         <path d="M0,0 L1200,0 L1200,30 Q1150,90 1120,40 Q1060,110 1020,30 Q940,120 900,45 Q820,95 780,25 Q710,130 660,35 Q600,105 550,20 Q480,125 430,30 Q360,95 320,40 Q250,115 200,25 Q120,95 70,30 L0,45 Z"></path>
       </svg>
     </div>
 
-    <!-- Hexen: Beyond Heretic (1995) Gooti Pealkiri -->
     <div class="relative mb-3 sm:mb-5">
       <div class="flex items-center justify-center gap-2 text-red-600 text-xs sm:text-sm tracking-[0.3em] font-serif mb-1 opacity-80">
         <span>⚔️ 𝕳𝕰𝖃𝕰𝕹 ⚔️</span>
       </div>
 
       <div class="inline-block relative px-3 py-1">
-        <h2 id="gameOverTitle" class="hexen-title text-5xl sm:text-7xl md:text-9xl uppercase drop-shadow-[0_10px_20px_rgba(0,0,0,0.9)]">
+        <h2 id="gameOverTitle" class="hexen-title text-6xl sm:text-8xl md:text-9xl uppercase drop-shadow-[0_10px_20px_rgba(0,0,0,0.9)]">
           MÄNG LÄBI
         </h2>
       </div>
 
-      <!-- Veretilga aktsent -->
       <svg class="w-72 sm:w-[420px] h-10 mx-auto mt-1 text-red-600 fill-current" viewBox="0 0 300 28">
         <path d="M 10 0 C 15 15, 20 22, 22 26 C 24 22, 28 15, 32 0 M 60 0 C 65 20, 70 26, 73 26 C 76 24, 82 16, 88 0 M 130 0 C 135 22, 142 28, 146 28 C 150 24, 156 18, 160 0 M 210 0 C 215 18, 220 26, 224 26 C 228 24, 234 16, 238 0 M 270 0 C 274 14, 278 20, 281 20 C 284 18, 288 12, 292 0" stroke="#dc2626" stroke-width="4" stroke-linecap="round" fill="#b91c1c"/>
       </svg>
     </div>
 
-    <!-- Põhjus -->
     <p id="gameOverReason" class="text-xs sm:text-sm text-red-400 mb-6 font-medium tracking-wide">
       Mäger kaevas haua valmis!
     </p>
 
-    <!-- Nõutud formaat: "Kogusid XXX präänikut" -->
     <div class="pixel-box border-4 border-red-600 bg-red-950/70 py-4 px-6 sm:px-10 mb-8 max-w-lg shadow-[0_0_30px_rgba(220,38,38,0.5)]">
       <p id="gameOverCookiesText" class="text-xs sm:text-sm md:text-base text-yellow-300 font-bold tracking-wider leading-relaxed">
         Kogusid 0 präänikut
       </p>
     </div>
 
-    <!-- Taaskäivitusnupp -->
     <button onclick="restartGame()" class="pixel-btn bg-red-700 hover:bg-red-600 text-yellow-200 px-6 py-3 text-xs sm:text-sm border-2 border-yellow-400 shadow-[0_6px_0_#450a0a]">
       🔄 ALUSTA UUESTI
     </button>
   </div>
+
   <script>
     /* ==========================================================================
-       CHIPTUNE SÜNTESAATOR & HELIEFEKTID (Pure Web Audio API)
+       CHIPTUNE SYNTHESIZER & SOUND EFFECTS (Pure Web Audio API)
        ========================================================================== */
     let audioCtx = null;
     let isMusicPlaying = false;
@@ -646,7 +661,13 @@ kuni mäger haua lõpuni kaevab."
     let isGameOver = false;
     let isUnicornExploded = false;
     let silentTimerId = null;
-    const MAX_DIG_CLICKS = 15; // Haua lõplik valmimine
+    const MAX_DIG_CLICKS = 15;
+
+    // Stamina & Badger Rage State
+    let hobbitEnergy = 100;
+    let isFatigued = false;
+    let badgerRageLevel = 0;
+    let badgerAutoDigTimer = null;
 
     function getAudioContext() {
       if (!audioCtx) {
@@ -800,24 +821,8 @@ kuni mäger haua lõpuni kaevab."
       } catch (e) {}
     }
 
-    function playDrinkSound() {
-      try {
-        playTone(320, 'sine', 0.1, 0.2);
-        setTimeout(() => playTone(440, 'triangle', 0.12, 0.2), 90);
-        setTimeout(() => playTone(660, 'sine', 0.18, 0.25), 180);
-      } catch (e) {}
-    }
-
-    function playBadgerGrowl() {
-      try {
-        playTone(75, 'sawtooth', 0.25, 0.3);
-        setTimeout(() => playTone(60, 'sawtooth', 0.3, 0.3), 120);
-      } catch (e) {}
-    }
-
     function playGameOverJingle() {
       try {
-        const ctx = getAudioContext();
         const doomNotes = [
           { freq: 220, dur: 0.45 },
           { freq: 220, dur: 0.45 },
@@ -837,8 +842,9 @@ kuni mäger haua lõpuni kaevab."
         });
       } catch (e) {}
     }
+
     const C4 = 261.63, D4 = 293.66, E4 = 329.63, F4 = 349.23, G4 = 392.00,
-          A4 = 440.00, B4 = 493.88, C5 = 523.25, D5 = 587.33, Bb4 = 466.16;
+          A4 = 440.00, Bb4 = 466.16, C5 = 523.25;
 
     const birthdayMelody = [
       [C4, 180, 80], [C4, 180, 80], [D4, 380, 80], [C4, 380, 80], [F4, 380, 80], [E4, 760, 160],
@@ -884,15 +890,12 @@ kuni mäger haua lõpuni kaevab."
         btn.classList.add('bg-gray-700');
       }
     }
-    /* Mängu olek */
+
+    /* ==========================================================================
+       SCORE & FLOATING NOTIFICATIONS
+       ========================================================================== */
     let currentScore = 0;
     let digClicks = 0;
-    let badgerRageLevel = 0;
-    let badgerAutoIntervalId = null;
-
-    // Kääbikute väsimussüsteem
-    let hobbitStamina = 100;
-    let isHobbitsFatigued = false;
 
     function updateScoreDisplay() {
       const score = document.getElementById('scoreDisplay');
@@ -913,7 +916,7 @@ kuni mäger haua lõpuni kaevab."
         rect = sourceEl.getBoundingClientRect();
       }
 
-      const startX = rect.left + rect.width / 2 + (Math.random() * 24 - 12);
+      const startX = rect.left + rect.width / 2 + (Math.random() * 20 - 10);
       const startY = rect.top - 8;
 
       floater.style.left = `${startX}px`;
@@ -935,7 +938,7 @@ kuni mäger haua lõpuni kaevab."
     }
 
     function addScore(points, sourceEl = null, color = '#34d399') {
-      currentScore = Math.max(0, currentScore + points);
+      currentScore += points;
       updateScoreDisplay();
 
       const scoreEl = document.getElementById('scoreDisplay');
@@ -947,11 +950,92 @@ kuni mäger haua lõpuni kaevab."
       }
 
       if (sourceEl) {
-        const sign = points >= 0 ? '+' : '';
-        showScoreFloater(`${sign}${points}`, sourceEl, color);
+        showScoreFloater(`+${points}`, sourceEl, color);
       }
     }
 
+    // Natural slow passive score accumulation (slows down when hobbits are tired)
+    setInterval(() => {
+      if (!isGameOver && !isFatigued) {
+        currentScore += 1;
+        updateScoreDisplay();
+      }
+    }, 450);
+
+    // Slower ticking when hobbits are tired
+    setInterval(() => {
+      if (!isGameOver && isFatigued) {
+        currentScore += 1;
+        updateScoreDisplay();
+      }
+    }, 1800);
+
+    /* ==========================================================================
+       HOBBITS STAMINA & BEER STATION
+       ========================================================================== */
+    function updateHobbitFatigue() {
+      if (isGameOver) return;
+
+      hobbitEnergy = Math.max(0, hobbitEnergy - 2.5);
+      const staminaFill = document.getElementById('staminaFill');
+      const staminaLabel = document.getElementById('staminaLabel');
+      const hobbitsContainer = document.getElementById('hobbitsContainer');
+
+      if (staminaFill) staminaFill.style.width = `${hobbitEnergy}%`;
+
+      if (hobbitEnergy <= 25) {
+        if (!isFatigued) {
+          isFatigued = true;
+          if (hobbitsContainer) hobbitsContainer.classList.add('hobbits-tired');
+          if (staminaFill) staminaFill.classList.replace('bg-yellow-400', 'bg-red-500');
+          if (staminaLabel) {
+            staminaLabel.textContent = "VÄSINUD! 🥱";
+            staminaLabel.className = "text-[8px] sm:text-[9px] text-red-400 font-bold mt-1";
+          }
+        }
+      } else {
+        if (isFatigued) {
+          isFatigued = false;
+          if (hobbitsContainer) hobbitsContainer.classList.remove('hobbits-tired');
+          if (staminaFill) staminaFill.classList.replace('bg-red-500', 'bg-yellow-400');
+          if (staminaLabel) {
+            staminaLabel.textContent = "VORMIS! 🍺";
+            staminaLabel.className = "text-[8px] sm:text-[9px] text-yellow-300 font-bold mt-1";
+          }
+        }
+      }
+    }
+    setInterval(updateHobbitFatigue, 800);
+
+    function drinkBeer(e) {
+      if (isGameOver) return;
+
+      playTone(320, 'sine', 0.1, 0.15);
+      setTimeout(() => playTone(440, 'sine', 0.15, 0.15), 90);
+
+      hobbitEnergy = 100;
+      isFatigued = false;
+      const hobbitsContainer = document.getElementById('hobbitsContainer');
+      const staminaFill = document.getElementById('staminaFill');
+      const staminaLabel = document.getElementById('staminaLabel');
+
+      if (hobbitsContainer) hobbitsContainer.classList.remove('hobbits-tired');
+      if (staminaFill) {
+        staminaFill.style.width = '100%';
+        staminaFill.classList.replace('bg-red-500', 'bg-yellow-400');
+      }
+      if (staminaLabel) {
+        staminaLabel.textContent = "VORMIS! 🍺";
+        staminaLabel.className = "text-[8px] sm:text-[9px] text-yellow-300 font-bold mt-1";
+      }
+
+      const beerBtn = document.getElementById('beerBtn');
+      addScore(100, (e && e.currentTarget) ? e.currentTarget : beerBtn, '#fbbf24');
+    }
+
+    /* ==========================================================================
+       BADGER DIGGING, RAGE & GRAVE REFILL
+       ========================================================================== */
     function spawnDirtParticles() {
       const container = document.getElementById('dirtParticles');
       if (!container) return;
@@ -984,14 +1068,13 @@ kuni mäger haua lõpuni kaevab."
 
           if (progress >= 1) {
             clearInterval(animInterval);
-            if (particle.parentNode) {
-              particle.parentNode.removeChild(particle);
-            }
+            particle.remove();
           }
         }, 25);
       }
     }
-    function syncGraveVisuals() {
+
+    function updateGraveVisuals() {
       const pitRect = document.getElementById('gravePitRect');
       const holeOpening = document.getElementById('graveHoleOpening');
       const dirtMound = document.getElementById('graveDirtMound');
@@ -999,43 +1082,34 @@ kuni mäger haua lõpuni kaevab."
       const crossEl = document.getElementById('graveCrossEl');
 
       if (pitRect) {
-        const newDepth = Math.max(24, Math.min(24 + digClicks * 5.2, 102));
+        const newDepth = Math.min(24 + digClicks * 5.2, 102);
         pitRect.setAttribute('height', newDepth);
       }
-
       if (holeOpening) {
-        const newRx = Math.max(52, Math.min(52 + digClicks * 1.4, 74));
+        const newRx = Math.min(52 + digClicks * 1.4, 74);
         holeOpening.setAttribute('rx', newRx);
       }
-
       if (dirtMound) {
-        const pileHeight = Math.max(0, Math.min(digClicks * 2.5, 42));
+        const pileHeight = Math.min(digClicks * 2.5, 42);
         dirtMound.setAttribute('d', `M 5 ${60 + pileHeight * 0.3} Q 95 ${32 - pileHeight} 195 ${60 + pileHeight * 0.3} Z`);
       }
-
       if (secretBones) {
         secretBones.style.opacity = digClicks >= 5 ? '1' : '0';
       }
-
       if (crossEl) {
-        if (digClicks === 0) {
-          crossEl.style.transform = 'none';
-        } else {
-          const wobble = (digClicks % 2 === 0 ? 1 : -1) * Math.min(digClicks * 0.8, 12);
-          crossEl.style.transform = `rotate(${wobble}deg) translateY(${Math.min(digClicks * 1.2, 14)}px)`;
-        }
+        const wobble = (digClicks % 2 === 0 ? 1 : -1) * Math.min(digClicks * 0.8, 12);
+        crossEl.style.transform = `rotate(${wobble}deg) translateY(${Math.min(digClicks * 1.2, 14)}px)`;
       }
     }
 
     function updateBadgerRageVisuals() {
-      const badgerWrapper = document.getElementById('badgerWrapper');
+      const badgerWrapper = document.getElementById('badgerSpriteWrapper');
       const rageBubble = document.getElementById('badgerRageBubble');
 
       if (badgerRageLevel > 0) {
         if (badgerWrapper) badgerWrapper.classList.add('badger-enraged');
         if (rageBubble) {
           rageBubble.classList.remove('hidden');
-          // Sümbolite eskalatsioon vastavalt mulla tagasi viskamise arvule
           if (badgerRageLevel === 1) {
             rageBubble.textContent = "💢 #!%?";
           } else if (badgerRageLevel === 2) {
@@ -1052,23 +1126,17 @@ kuni mäger haua lõpuni kaevab."
       }
     }
 
-    function setupBadgerCadence() {
-      if (badgerAutoIntervalId) clearInterval(badgerAutoIntervalId);
-      // Kiirus tõuseb iga raevutasemega märgatavalt (1200ms -> kuni 350ms)
-      const currentInterval = Math.max(350, 1200 - badgerRageLevel * 160);
-
-      badgerAutoIntervalId = setInterval(() => {
-        if (isGameOver) return;
-        spawnDirtParticles();
-        // Aeg-ajalt kaevab mäger ise natuke edasi kui on raevus
-        if (badgerRageLevel > 0 && Math.random() < 0.45) {
-          digClicks = Math.min(MAX_DIG_CLICKS, digClicks + 1);
-          syncGraveVisuals();
-          if (digClicks >= MAX_DIG_CLICKS) {
-            triggerGameOver("Mäger kaevas haua valmis!");
-          }
+    function resetBadgerInterval() {
+      if (badgerAutoDigTimer) clearInterval(badgerAutoDigTimer);
+      if (isGameOver) return;
+      const interval = Math.max(550, 3200 - (badgerRageLevel * 450));
+      badgerAutoDigTimer = setInterval(() => {
+        if (!isGameOver) {
+          spawnDirtParticles();
+          currentScore += 2;
+          updateScoreDisplay();
         }
-      }, currentInterval);
+      }, interval);
     }
 
     function manualDig(e) {
@@ -1084,7 +1152,7 @@ kuni mäger haua lõpuni kaevab."
       addScore(666, digSource, '#f87171');
       playTone(666, 'sawtooth', 0.12, 0.2);
 
-      syncGraveVisuals();
+      updateGraveVisuals();
 
       if (digClicks >= MAX_DIG_CLICKS) {
         setTimeout(() => {
@@ -1093,229 +1161,36 @@ kuni mäger haua lõpuni kaevab."
       }
     }
 
-    // 1. ETTEPANEK: HAUA KINNIAJAMINE (-200 präänikut, lükkab surma edasi, ajab mägra marru)
     function refillGrave(e) {
       if (isGameOver) return;
 
-      const refillBtn = (e && e.currentTarget) ? e.currentTarget : document.getElementById('refillBtn');
+      const refillBtn = document.getElementById('refillBtn');
+      const source = (e && e.currentTarget) ? e.currentTarget : refillBtn;
 
-      // Kontrolli, kas kasutajal on vähemalt 200 präänikut
       if (currentScore < 200) {
         playTone(110, 'sawtooth', 0.2, 0.2);
-        showScoreFloater('EI JATKU PRÄÄNIKUID!', refillBtn, '#ef4444');
+        showScoreFloater('EI JATKU PRÄÄNIKUID!', source, '#ef4444');
         return;
       }
 
-      // Lahuta 200 punkti
       currentScore -= 200;
       updateScoreDisplay();
-      showScoreFloater('-200 PRÄÄNIKUT', refillBtn, '#34d399');
+      showScoreFloater('-200 PRÄÄNIKUT', source, '#34d399');
 
-      // Vähenda haua sügavust (lükka surma edasi)
       if (digClicks > 0) {
         digClicks = Math.max(0, digClicks - 1);
-        syncGraveVisuals();
+        updateGraveVisuals();
       }
 
-      // Mäger saab vihaseks
       badgerRageLevel++;
-      playBadgerGrowl();
       updateBadgerRageVisuals();
-      setupBadgerCadence();
-
-      // Labida vilkuma panek
-      const badgerWrapper = document.getElementById('badgerWrapper');
-      if (badgerWrapper) {
-        badgerWrapper.style.animationDuration = '0.35s';
-      }
-    }
-    // 3. ETTEPANEK: KÄÄBIKUTE VÄSIMUS & ÕLLEVAAT
-    function updateHobbitStamina() {
-      if (isGameOver) return;
-
-      hobbitStamina = Math.max(0, hobbitStamina - 2.8);
-      const staminaFill = document.getElementById('staminaFill');
-      const staminaLabel = document.getElementById('staminaLabel');
-      const hobbitsContainer = document.getElementById('hobbitsContainer');
-
-      if (staminaFill) staminaFill.style.width = `${hobbitStamina}%`;
-
-      if (hobbitStamina <= 20) {
-        if (!isHobbitsFatigued) {
-          isHobbitsFatigued = true;
-          if (hobbitsContainer) hobbitsContainer.classList.add('hobbits-tired');
-          if (staminaFill) staminaFill.classList.replace('bg-yellow-400', 'bg-red-500');
-          if (staminaLabel) {
-            staminaLabel.textContent = 'VÄSINUD! 🥱';
-            staminaLabel.className = 'text-[9px] sm:text-[10px] text-red-400 mt-1 tracking-tight font-bold';
-          }
-        }
-      } else {
-        if (isHobbitsFatigued) {
-          isHobbitsFatigued = false;
-          if (hobbitsContainer) hobbitsContainer.classList.remove('hobbits-tired');
-          if (staminaFill) staminaFill.classList.replace('bg-red-500', 'bg-yellow-400');
-          if (staminaLabel) {
-            staminaLabel.textContent = 'VORMIS!';
-            staminaLabel.className = 'text-[9px] sm:text-[10px] text-yellow-300 mt-1 tracking-tight font-bold';
-          }
-        }
-      }
+      playTone(70, 'sawtooth', 0.2, 0.2);
+      resetBadgerInterval();
     }
 
-    function drinkBeer(e) {
-      if (isGameOver) return;
-
-      playDrinkSound();
-      hobbitStamina = 100;
-      isHobbitsFatigued = false;
-
-      const hobbitsContainer = document.getElementById('hobbitsContainer');
-      const staminaFill = document.getElementById('staminaFill');
-      const staminaLabel = document.getElementById('staminaLabel');
-      const beerBtn = document.getElementById('beerBtn');
-
-      if (hobbitsContainer) hobbitsContainer.classList.remove('hobbits-tired');
-      if (staminaFill) {
-        staminaFill.style.width = '100%';
-        staminaFill.classList.replace('bg-red-500', 'bg-yellow-400');
-      }
-      if (staminaLabel) {
-        staminaLabel.textContent = 'VORMIS!';
-        staminaLabel.className = 'text-[9px] sm:text-[10px] text-yellow-300 mt-1 tracking-tight font-bold';
-      }
-
-      addScore(100, beerBtn, '#fbbf24');
-      showScoreFloater('🍺 ÕLU LAEB MÖLLU! +100', beerBtn, '#fbbf24');
-      hobbitJumpSurge();
-    }
-
-    // Passiivne punktide tiksumine: kui kääbikud on väsinud, tiksub aeglasemalt, aga EI peatu täielikult
-    setInterval(() => {
-      if (!isGameOver) {
-        if (!isHobbitsFatigued) {
-          addScore(1); // Normaalne tempo
-        }
-      }
-    }, 450);
-
-    setInterval(() => {
-      if (!isGameOver) {
-        if (isHobbitsFatigued) {
-          addScore(1); // Aeglustunud tempo väsinud kääbikutega
-        }
-      }
-    }, 1800);
-
-    // Kääbikute väsimise tsükkel
-    setInterval(updateHobbitStamina, 800);
-    function triggerGameOver(reasonText = "Mäger kaevas haua valmis!") {
-      if (isGameOver) return;
-      isGameOver = true;
-
-      if (isMusicPlaying) {
-        toggleAudio();
-      }
-      if (silentTimerId) {
-        clearTimeout(silentTimerId);
-      }
-      if (badgerAutoIntervalId) {
-        clearInterval(badgerAutoIntervalId);
-      }
-
-      playGameOverJingle();
-
-      const cookiesEl = document.getElementById('gameOverCookiesText');
-      if (cookiesEl) {
-        cookiesEl.textContent = `Kogusid ${currentScore} präänikut`;
-      }
-
-      const reasonEl = document.getElementById('gameOverReason');
-      if (reasonEl) {
-        reasonEl.textContent = reasonText;
-      }
-
-      const screen = document.getElementById('gameOverScreen');
-      if (screen) {
-        screen.classList.remove('hidden');
-      }
-    }
-
-    function restartGame() {
-      isGameOver = false;
-      digClicks = 0;
-      badgerRageLevel = 0;
-      currentScore = 0;
-      updateScoreDisplay();
-      syncGraveVisuals();
-      updateBadgerRageVisuals();
-      setupBadgerCadence();
-
-      // Taasta kääbikute vastupidavus
-      hobbitStamina = 100;
-      isHobbitsFatigued = false;
-      const hobbitsContainer = document.getElementById('hobbitsContainer');
-      const staminaFill = document.getElementById('staminaFill');
-      const staminaLabel = document.getElementById('staminaLabel');
-      if (hobbitsContainer) hobbitsContainer.classList.remove('hobbits-tired');
-      if (staminaFill) {
-        staminaFill.style.width = '100%';
-        staminaFill.classList.replace('bg-red-500', 'bg-yellow-400');
-      }
-      if (staminaLabel) {
-        staminaLabel.textContent = 'VORMIS!';
-        staminaLabel.className = 'text-[9px] sm:text-[10px] text-yellow-300 mt-1 tracking-tight font-bold';
-      }
-
-      // Taasta ükssarvik
-      isUnicornExploded = false;
-      const unicornInner = document.getElementById('unicornInner');
-      const unicornRemains = document.getElementById('unicornRemains');
-      const boostBtn = document.getElementById('boostBtn');
-      const fartBtnTop = document.getElementById('fartBtnTop');
-
-      if (unicornInner) unicornInner.classList.remove('hidden');
-      if (unicornRemains) unicornRemains.classList.add('hidden');
-
-      if (boostBtn) {
-        boostBtn.disabled = false;
-        boostBtn.className = 'pixel-btn bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-2.5 py-2.5 text-[11px] sm:text-xs font-bold text-center leading-tight';
-        boostBtn.textContent = '🌈 VIKERKAARE BOOST!';
-      }
-
-      if (fartBtnTop) {
-        fartBtnTop.disabled = false;
-        fartBtnTop.className = 'pixel-btn bg-pink-600 hover:bg-pink-500 text-white px-2.5 py-1.5 text-xs font-bold';
-        fartBtnTop.textContent = '💨 PEERETA!';
-      }
-
-      // Taasta kääbikute tekstid
-      const h1 = document.getElementById('hobbitText1');
-      const h2 = document.getElementById('hobbitText2');
-      const h3 = document.getElementById('hobbitText3');
-      const h4 = document.getElementById('hobbitText4');
-      if (h1) h1.textContent = 'JOPP!';
-      if (h2) h2.textContent = 'PALJU ÕNNE!';
-      if (h3) h3.textContent = 'HOP-HOP!';
-      if (h4) h4.textContent = 'PIDU!';
-
-      const screen = document.getElementById('gameOverScreen');
-      if (screen) {
-        screen.classList.add('hidden');
-      }
-
-      startSilentTimer();
-    }
-
-    function startSilentTimer() {
-      if (silentTimerId) clearTimeout(silentTimerId);
-      silentTimerId = setTimeout(() => {
-        if (!isGameOver) {
-          triggerGameOver("120 sekundit sai täis - aeg sai otsa!");
-        }
-      }, 120000);
-    }
-
+    /* ==========================================================================
+       UNICORN & 7% EXPLOSION (-5000 POINTS)
+       ========================================================================== */
     function explodeUnicorn(e) {
       isUnicornExploded = true;
       playExplosionSound();
@@ -1330,7 +1205,7 @@ kuni mäger haua lõpuni kaevab."
       if (unicornInner) unicornInner.classList.add('hidden');
       if (unicornRemains) unicornRemains.classList.remove('hidden');
 
-      // 5000 punkti trahv
+      // Deduct exactly 5000 points
       currentScore = Math.max(0, currentScore - 5000);
       updateScoreDisplay();
 
@@ -1342,7 +1217,7 @@ kuni mäger haua lõpuni kaevab."
         }, 400);
       }
 
-      // Kääbikute hüüatused leinaks
+      // Change hobbits text to grief (anchored absolutely so beer barrel NEVER shifts!)
       const h1 = document.getElementById('hobbitText1');
       const h2 = document.getElementById('hobbitText2');
       const h3 = document.getElementById('hobbitText3');
@@ -1352,20 +1227,21 @@ kuni mäger haua lõpuni kaevab."
       if (h3) h3.textContent = 'Need värdjad tapsid Kenny!';
       if (h4) h4.textContent = 'Nuuks-nuuks!';
 
-      // Nupud lukku ja veripunaseks
+      // Lock buttons and color them blood red
       const boostBtn = document.getElementById('boostBtn');
       const fartBtnTop = document.getElementById('fartBtnTop');
+
       const deadBtnClass = 'pixel-btn bg-[#450a0a] text-red-400 border-2 border-red-800 opacity-80 cursor-not-allowed line-through shadow-none hover:bg-[#450a0a]';
 
       if (boostBtn) {
         boostBtn.disabled = true;
-        boostBtn.className = `${deadBtnClass} px-2.5 py-2.5 text-[11px] sm:text-xs font-bold text-center leading-tight`;
-        boostBtn.textContent = '💀 PLAHVATAS!';
+        boostBtn.className = `${deadBtnClass} p-2 sm:p-2.5 text-[9.5px] sm:text-[11px] leading-tight text-center`;
+        boostBtn.innerHTML = '💀 ÜKSSARVIK<br>PLAHVATAS!';
       }
 
       if (fartBtnTop) {
         fartBtnTop.disabled = true;
-        fartBtnTop.className = `${deadBtnClass} px-2.5 py-1.5 text-xs font-bold`;
+        fartBtnTop.className = `${deadBtnClass} px-3 py-1.5 text-[10px] sm:text-xs`;
         fartBtnTop.textContent = '💥 PLAHVATAS!';
       }
 
@@ -1376,13 +1252,14 @@ kuni mäger haua lõpuni kaevab."
     function triggerFartBurst(e) {
       if (isGameOver || isUnicornExploded) return;
 
-      // 7% plahvatustõenäosus
+      // 7% chance that unicorn explodes
       if (Math.random() < 0.07) {
         explodeUnicorn(e);
         return;
       }
 
       playFartSound();
+
       const boostSource = (e && e.currentTarget) ? e.currentTarget : document.getElementById('boostBtn');
       addScore(333, boostSource, '#f472b6');
 
@@ -1399,6 +1276,7 @@ kuni mäger haua lõpuni kaevab."
 
     function hobbitJumpSurge(e) {
       playHobbitJumpSound();
+
       const hobbitSource = (e && e.currentTarget) ? e.currentTarget : document.getElementById('hobbitBtn');
       if (e) {
         addScore(150, hobbitSource, '#34d399');
@@ -1425,6 +1303,135 @@ kuni mäger haua lõpuni kaevab."
       alertModal("Ristil seisab kiri: 'Puhka rahus'. Aeg on tähistada uut taset 51! 👑");
     }
 
+    /* ==========================================================================
+       GAME OVER & RESTART
+       ========================================================================== */
+    function triggerGameOver(reasonText = "Mäger kaevas haua valmis!") {
+      if (isGameOver) return;
+      isGameOver = true;
+
+      if (isMusicPlaying) toggleAudio();
+      if (silentTimerId) clearTimeout(silentTimerId);
+      if (badgerAutoDigTimer) clearInterval(badgerAutoDigTimer);
+
+      playGameOverJingle();
+
+      const cookiesEl = document.getElementById('gameOverCookiesText');
+      if (cookiesEl) cookiesEl.textContent = `Kogusid ${currentScore} präänikut`;
+
+      const reasonEl = document.getElementById('gameOverReason');
+      if (reasonEl) reasonEl.textContent = reasonText;
+
+      const screen = document.getElementById('gameOverScreen');
+      if (screen) screen.classList.remove('hidden');
+    }
+
+    function restartGame() {
+      isGameOver = false;
+      digClicks = 0;
+      currentScore = 0;
+      badgerRageLevel = 0;
+      hobbitEnergy = 100;
+      isFatigued = false;
+      updateScoreDisplay();
+
+      // Reset Unicorn
+      isUnicornExploded = false;
+      const unicornInner = document.getElementById('unicornInner');
+      const unicornRemains = document.getElementById('unicornRemains');
+      const boostBtn = document.getElementById('boostBtn');
+      const fartBtnTop = document.getElementById('fartBtnTop');
+
+      if (unicornInner) unicornInner.classList.remove('hidden');
+      if (unicornRemains) unicornRemains.classList.add('hidden');
+
+      if (boostBtn) {
+        boostBtn.disabled = false;
+        boostBtn.className = 'pixel-btn bg-fuchsia-600 hover:bg-fuchsia-500 text-white p-2 sm:p-2.5 text-[9.5px] sm:text-[11px] leading-tight text-center';
+        boostBtn.innerHTML = '🌈 VIKERKAARE<br>BOOST!';
+      }
+
+      if (fartBtnTop) {
+        fartBtnTop.disabled = false;
+        fartBtnTop.className = 'pixel-btn bg-pink-600 hover:bg-pink-500 text-white px-3 py-1.5 text-[10px] sm:text-xs';
+        fartBtnTop.textContent = '💨 PEERETA!';
+      }
+
+      // Reset Hobbits & Stamina
+      const hobbitsContainer = document.getElementById('hobbitsContainer');
+      const staminaFill = document.getElementById('staminaFill');
+      const staminaLabel = document.getElementById('staminaLabel');
+      if (hobbitsContainer) hobbitsContainer.classList.remove('hobbits-tired');
+      if (staminaFill) {
+        staminaFill.style.width = '100%';
+        staminaFill.classList.replace('bg-red-500', 'bg-yellow-400');
+      }
+      if (staminaLabel) {
+        staminaLabel.textContent = "VORMIS! 🍺";
+        staminaLabel.className = "text-[8px] sm:text-[9px] text-yellow-300 font-bold mt-1";
+      }
+
+      const h1 = document.getElementById('hobbitText1');
+      const h2 = document.getElementById('hobbitText2');
+      const h3 = document.getElementById('hobbitText3');
+      const h4 = document.getElementById('hobbitText4');
+      if (h1) h1.textContent = 'JOPP!';
+      if (h2) h2.textContent = 'PALJU ÕNNE!';
+      if (h3) h3.textContent = 'HOP-HOP!';
+      if (h4) h4.textContent = 'PIDU!';
+
+      // Reset Grave & Badger
+      updateGraveVisuals();
+      updateBadgerRageVisuals();
+      resetBadgerInterval();
+
+      const screen = document.getElementById('gameOverScreen');
+      if (screen) screen.classList.add('hidden');
+
+      startSilentTimer();
+    }
+
+    function startSilentTimer() {
+      if (silentTimerId) clearTimeout(silentTimerId);
+      silentTimerId = setTimeout(() => {
+        if (!isGameOver) {
+          triggerGameOver("120 sekundit sai täis - aeg sai otsa!");
+        }
+      }, 120000);
+    }
+
+    const poemContent = `"Oh, õndsat võlu, valu ja vaeva,
+närvilõpmeid, mis raputaks karmilt,
+uutesse kõrgustesse kannaks sarmi,
+kuni mäger haua lõpuni kaevab."`;
+
+    function retypePoem() {
+      const poemEl = document.getElementById('poemText');
+      if (!poemEl) return;
+      poemEl.textContent = '';
+      let i = 0;
+      const interval = setInterval(() => {
+        if (i < poemContent.length) {
+          poemEl.textContent += poemContent[i];
+          if (poemContent[i] !== ' ' && poemContent[i] !== '\n') {
+            playTone(800 + (i % 5) * 80, 'sine', 0.02, 0.03);
+          }
+          i++;
+        } else {
+          clearInterval(interval);
+        }
+      }, 35);
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        triggerFartBurst();
+      } else if (e.code === 'KeyM') {
+        toggleAudio();
+      }
+    });
+
     function alertModal(msg) {
       const modal = document.createElement('div');
       modal.className = 'fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4';
@@ -1439,18 +1446,10 @@ kuni mäger haua lõpuni kaevab."
       document.body.appendChild(modal);
     }
 
-    window.addEventListener('keydown', (e) => {
-      if (e.code === 'Space') {
-        e.preventDefault();
-        triggerFartBurst();
-      } else if (e.code === 'KeyM') {
-        toggleAudio();
-      }
-    });
-
     window.addEventListener('DOMContentLoaded', () => {
-      setupBadgerCadence();
+      setTimeout(retypePoem, 600);
       startSilentTimer();
+      resetBadgerInterval();
     });
   </script>
 </body>

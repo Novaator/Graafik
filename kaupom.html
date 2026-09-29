@@ -212,7 +212,7 @@
       <button id="soundToggleBtn" onclick="toggleAudio()" class="pixel-btn bg-purple-700 hover:bg-purple-600 text-yellow-300 px-3 py-1 text-[10px] rounded-none flex items-center gap-1">
         <span id="soundIcon">🔊</span> <span id="soundStatusText">MUUSIKA: SEES</span>
       </button>
-      <button onclick="triggerFartBurst(event)" class="pixel-btn bg-pink-600 hover:bg-pink-500 text-white px-2 py-1 text-[10px]">
+      <button id="fartBtnTop" onclick="triggerFartBurst(event)" class="pixel-btn bg-pink-600 hover:bg-pink-500 text-white px-2 py-1 text-[10px]">
         💨 PEERETA!
       </button>
     </div>
@@ -242,11 +242,11 @@ kuni mäger haua lõpuni kaevab."
       </div>
 
       <!-- Unicorn container pushed comfortably to the right -->
-      <div class="w-full md:w-auto md:ml-auto flex flex-col items-center md:items-end justify-center relative unicorn-floating py-2 pr-2 sm:pr-8">
-        <div class="relative w-72 h-36 flex items-center justify-center">
+      <div id="unicornWrapper" class="w-full md:w-auto md:ml-auto flex flex-col items-center md:items-end justify-center relative unicorn-floating py-2 pr-2 sm:pr-8">
+        <div id="unicornInner" class="relative w-72 h-36 flex items-center justify-center">
 
           <!-- Rainbow Fart Stream SVG (trailing from the unicorn's rear) -->
-          <svg class="absolute -left-12 top-6 w-44 h-24 rainbow-flow overflow-visible" viewBox="0 0 160 80">
+          <svg id="rainbowStream" class="absolute -left-12 top-6 w-44 h-24 rainbow-flow overflow-visible" viewBox="0 0 160 80">
             <defs>
               <linearGradient id="rainbowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
                 <stop offset="0%" stop-color="#ff0000" />
@@ -269,8 +269,8 @@ kuni mäger haua lõpuni kaevab."
           </svg>
 
           <!-- 8-Bit Pixel Unicorn Graphic -->
-          <svg class="w-48 h-36 z-10 drop-shadow-[0_8px_0_rgba(0,0,0,0.6)] cursor-pointer hover:scale-105 transition-transform" 
-               onclick="triggerFartBurst()" viewBox="0 0 120 90" fill="none">
+          <svg id="unicornSvg" class="w-48 h-36 z-10 drop-shadow-[0_8px_0_rgba(0,0,0,0.6)] cursor-pointer hover:scale-105 transition-transform" 
+               onclick="triggerFartBurst(event)" viewBox="0 0 120 90" fill="none">
             <!-- Horn: Golden magical spike -->
             <polygon points="98,14 116,0 104,18" fill="#ffd700" stroke="#b38600" stroke-width="2"/>
             <circle cx="116" cy="1" r="3" fill="#ffffff" class="animate-ping" />
@@ -310,6 +310,28 @@ kuni mäger haua lõpuni kaevab."
             <rect x="36" y="66" width="6" height="14" fill="#e2e8f0" stroke="#000" stroke-width="2"/>
             <rect x="36" y="78" width="6" height="4" fill="#d97706"/>
           </svg>
+        </div>
+
+        <!-- Scorched Pixel Remains after explosion (hidden by default) -->
+        <div id="unicornRemains" class="hidden relative w-72 h-36 flex flex-col items-center justify-center pointer-events-none">
+          <svg class="w-44 h-32 overflow-visible" viewBox="0 0 140 100">
+            <!-- Scorched ground / crater -->
+            <ellipse cx="70" cy="72" rx="48" ry="12" fill="#1f1111" stroke="#450a0a" stroke-width="2" />
+            <circle cx="48" cy="70" r="3" fill="#000" />
+            <circle cx="82" cy="74" r="4" fill="#000" />
+            <!-- Charred bones and skull fragments -->
+            <rect x="52" y="66" width="16" height="6" fill="#e5e5e5" transform="rotate(-15 52 66)" />
+            <rect x="74" y="68" width="14" height="5" fill="#d4d4d4" transform="rotate(25 74 68)" />
+            <!-- Broken golden horn stuck in ash -->
+            <polygon points="66,50 74,40 70,68" fill="#eab308" stroke="#713f12" stroke-width="1.5" transform="rotate(35 70 55)" />
+            <!-- Burnt pixel smoke wafts -->
+            <circle cx="68" cy="38" r="6" fill="#3f3f46" opacity="0.7" class="animate-pulse" />
+            <circle cx="74" cy="24" r="8" fill="#52525b" opacity="0.5" class="animate-pulse" />
+            <circle cx="64" cy="12" r="5" fill="#71717a" opacity="0.3" class="animate-pulse" />
+          </svg>
+          <span class="text-[9px] text-red-500 font-bold bg-black/80 px-2 py-0.5 border border-red-800 -mt-2">
+            💥 Ülerõhk! Plahvatas, rsk!
+          </span>
         </div>
       </div>
     </div>
@@ -623,6 +645,7 @@ kuni mäger haua lõpuni kaevab."
     let melodyTimeoutId = null;
     let noteStep = 0;
     let isGameOver = false;
+    let isUnicornExploded = false;
     let silentTimerId = null;
     const MAX_DIG_CLICKS = 15; // Number of digs to fully finish the grave
 
@@ -721,6 +744,57 @@ kuni mäger haua lõpuni kaevab."
 
         // Little low thud
         playTone(90, 'triangle', 0.1, 0.2);
+      } catch (e) {
+        console.warn(e);
+      }
+    }
+
+    // Dramatic 8-bit Explosion Sound FX
+    function playExplosionSound() {
+      try {
+        const ctx = getAudioContext();
+        
+        // Deep noise burst
+        const bufferSize = ctx.sampleRate * 0.45;
+        const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.4));
+        }
+
+        const noise = ctx.createBufferSource();
+        noise.buffer = buffer;
+
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(800, ctx.currentTime);
+        filter.frequency.exponentialRampToValueAtTime(60, ctx.currentTime + 0.4);
+
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0.5, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.45);
+
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+
+        noise.start();
+
+        // Heavy sub-bass drop
+        const subOsc = ctx.createOscillator();
+        const subGain = ctx.createGain();
+        subOsc.type = 'sawtooth';
+        subOsc.frequency.setValueAtTime(180, ctx.currentTime);
+        subOsc.frequency.exponentialRampToValueAtTime(25, ctx.currentTime + 0.4);
+
+        subGain.gain.setValueAtTime(0.4, ctx.currentTime);
+        subGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+
+        subOsc.connect(subGain);
+        subGain.connect(ctx.destination);
+
+        subOsc.start();
+        subOsc.stop(ctx.currentTime + 0.4);
       } catch (e) {
         console.warn(e);
       }
@@ -1045,6 +1119,28 @@ kuni mäger haua lõpuni kaevab."
       currentScore = 0;
       updateScoreDisplay();
 
+      // Reset unicorn explosion state & visual appearance
+      isUnicornExploded = false;
+      const unicornInner = document.getElementById('unicornInner');
+      const unicornRemains = document.getElementById('unicornRemains');
+      const boostBtn = document.getElementById('boostBtn');
+      const fartBtnTop = document.getElementById('fartBtnTop');
+
+      if (unicornInner) unicornInner.classList.remove('hidden');
+      if (unicornRemains) unicornRemains.classList.add('hidden');
+
+      if (boostBtn) {
+        boostBtn.disabled = false;
+        boostBtn.className = 'pixel-btn bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-4 py-2 text-xs';
+        boostBtn.textContent = '🌈 VIKERKAARE BOOST!';
+      }
+
+      if (fartBtnTop) {
+        fartBtnTop.disabled = false;
+        fartBtnTop.className = 'pixel-btn bg-pink-600 hover:bg-pink-500 text-white px-2 py-1 text-[10px]';
+        fartBtnTop.textContent = '💨 PEERETA!';
+      }
+
       // Reset grave graphics
       const pitRect = document.getElementById('gravePitRect');
       const holeOpening = document.getElementById('graveHoleOpening');
@@ -1078,8 +1174,91 @@ kuni mäger haua lõpuni kaevab."
       }, 120000); // exactly 120 seconds
     }
 
-    // Trigger explosive rainbow fart boost
+    // Explosive unicorn detonation handling
+    function explodeUnicorn(e) {
+      isUnicornExploded = true;
+      playExplosionSound();
+
+      // Screen shake animation
+      document.body.classList.add('translate-x-1');
+      setTimeout(() => document.body.classList.remove('translate-x-1'), 70);
+      setTimeout(() => document.body.classList.add('-translate-x-1'), 140);
+      setTimeout(() => document.body.classList.remove('-translate-x-1'), 210);
+
+      // Hide unicorn & show charred remains
+      const unicornInner = document.getElementById('unicornInner');
+      const unicornRemains = document.getElementById('unicornRemains');
+      if (unicornInner) unicornInner.classList.add('hidden');
+      if (unicornRemains) unicornRemains.classList.remove('hidden');
+
+      // Spawn bloody debris particles
+      const wrapper = document.getElementById('unicornWrapper');
+      if (wrapper) {
+        for (let i = 0; i < 20; i++) {
+          const piece = document.createElement('div');
+          const size = Math.floor(Math.random() * 8) + 4;
+          const colors = ['#dc2626', '#991b1b', '#450a0a', '#fbbf24', '#000000'];
+          piece.style.position = 'fixed';
+          piece.style.width = `${size}px`;
+          piece.style.height = `${size}px`;
+          piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+          piece.style.pointerEvents = 'none';
+          piece.style.zIndex = '60';
+
+          const rect = wrapper.getBoundingClientRect();
+          const originX = rect.left + rect.width / 2;
+          const originY = rect.top + rect.height / 2;
+          piece.style.left = `${originX}px`;
+          piece.style.top = `${originY}px`;
+          document.body.appendChild(piece);
+
+          const angle = Math.random() * Math.PI * 2;
+          const velocity = Math.random() * 90 + 30;
+          let p = 0;
+          const blastInt = setInterval(() => {
+            p += 0.05;
+            piece.style.transform = `translate(${Math.cos(angle) * velocity * p}px, ${Math.sin(angle) * velocity * p + (p * p * 60)}px) rotate(${p * 360}deg)`;
+            piece.style.opacity = `${1 - p}`;
+            if (p >= 1) {
+              clearInterval(blastInt);
+              piece.remove();
+            }
+          }, 20);
+        }
+      }
+
+      // Lock buttons and color them blood-red
+      const boostBtn = document.getElementById('boostBtn');
+      const fartBtnTop = document.getElementById('fartBtnTop');
+
+      const deadBtnClass = 'pixel-btn bg-[#450a0a] text-red-400 border-2 border-red-800 opacity-80 cursor-not-allowed line-through shadow-none hover:bg-[#450a0a]';
+
+      if (boostBtn) {
+        boostBtn.disabled = true;
+        boostBtn.className = `${deadBtnClass} px-4 py-2 text-xs`;
+        boostBtn.textContent = '💀 ÜKSSARVIK PLAHVATAS!';
+      }
+
+      if (fartBtnTop) {
+        fartBtnTop.disabled = true;
+        fartBtnTop.className = `${deadBtnClass} px-2 py-1 text-[10px]`;
+        fartBtnTop.textContent = '💥 PLAHVATAS!';
+      }
+
+      const burstSource = (e && e.currentTarget) ? e.currentTarget : boostBtn;
+      showScoreFloater('💥 BUMM! PLAHVATUS! (-0)', burstSource, '#ef4444');
+    }
+
+    // Trigger rainbow fart boost with 7% explosion risk
     function triggerFartBurst(e) {
+      if (isGameOver || isUnicornExploded) return;
+
+      // 7% chance that the unicorn explodes from internal pressure
+      if (Math.random() < 0.07) {
+        explodeUnicorn(e);
+        return;
+      }
+
       playFartSound();
 
       const boostSource = (e && e.currentTarget) ? e.currentTarget : document.getElementById('boostBtn');

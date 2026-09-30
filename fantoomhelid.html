@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+<meta charset="UTF-8">
+<title>Shepardi Tooni ja Akustilise Tuiklemise Generaator</title>
+<style>
+  :root {
+    --bg: #111318;
+    --panel: #1b1e26;
+    --accent: #3b82f6;
+    --accent-warn: #e05a47;
+    --text: #e4e6eb;
+    --muted: #8b92a5;
+  }
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    max-width: 800px;
+    margin: 28px auto;
+    padding: 0 20px;
+    line-height: 1.5;
+  }
+  h1 { font-size: 1.4rem; margin-bottom: 4px; }
+  p.sub { color: var(--muted); font-size: 0.9rem; margin-top: 0; }
+  .card {
+    background: var(--panel);
+    border-radius: 8px;
+    padding: 18px 20px;
+    margin-bottom: 16px;
+    border: 1px solid #282c37;
+  }
+  .preset-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+    gap: 10px;
+    margin-top: 10px;
+  }
+  .preset-btn {
+    background: #232733;
+    border: 1px solid #343a4d;
+    color: var(--text);
+    padding: 12px;
+    border-radius: 6px;
+    text-align: left;
+    cursor: pointer;
+    transition: 0.15s;
+  }
+  .preset-btn:hover { border-color: var(--accent); background: #292e3d; }
+  .preset-btn.active { border-color: var(--accent); background: rgba(59, 130, 246, 0.15); }
+  .preset-btn strong { display: block; font-size: 0.9rem; margin-bottom: 4px; color: #fff; }
+  .preset-btn span { font-size: 0.78rem; color: var(--muted); display: block; line-height: 1.3; }
+  .row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    gap: 15px;
+  }
+  label { font-size: 0.9rem; flex: 1.2; }
+  input[type="range"] { flex: 1; accent-color: var(--accent); }
+  .val { width: 95px; text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); font-size: 0.85rem; }
+  button.action {
+    background: #2b3040;
+    color: var(--text);
+    border: 1px solid #3e4559;
+    padding: 10px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+  }
+  button.action:hover { background: #353b4f; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  button.primary:hover { filter: brightness(1.1); }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+  canvas { width: 100%; height: 100px; background: #0b0c10; border-radius: 6px; margin-top: 10px; }
+  .status { font-size: 0.85rem; color: #60a5fa; margin-top: 8px; }
+</style>
+</head>
+<body>
+
+<h1>Shepardi Tooni & Akustilise Tuiklemise Labor</h1>
+<p class="sub">Genereerib sujuvalt luubitavaid (seamless loop) psühhoakustilisi helisid raadioeetri ja helikujunduse jaoks.</p>
+
+<div class="card">
+  <strong>1. Vali psühhoakustiline mudel</strong>
+  <div class="preset-grid">
+    <button class="preset-btn active" data-mode="beating">
+      <strong>18,9 Hz "Trooja hobune"</strong>
+      <span>Kaks siinust tekitavad sisekõrvas 18,9 Hz infraheli tuiklemise.</span>
+    </button>
+    <button class="preset-btn" data-mode="shepard_down">
+      <strong>Shepardi kuristik (Alla)</strong>
+      <span>Lõputult langev glissando. Täpne luup ilma üleminekuta.</span>
+    </button>
+    <button class="preset-btn" data-mode="shepard_up">
+      <strong>Shepardi paanika (Üles)</strong>
+      <span>Lõputult keriv pinge (Dunkirki efekt).</span>
+    </button>
+    <button class="preset-btn" data-mode="blackhole">
+      <strong>"Must auk" (Hübriid)</strong>
+      <span>Lõputu Shepardi langemine + 18,9 Hz tuiklemine igas oktavis.</span>
+    </button>
+    <button class="preset-btn" data-mode="cluster">
+      <strong>Mikrotonaalne klaster</strong>
+      <span>6 ujuvat siinust kitsas ribas – kriipiv akustiline karedus.</span>
+    </button>
+  </div>
+</div>
+
+<div class="card">
+  <strong>2. Parameetrid</strong>
+  <div class="row" style="margin-top:12px;">
+    <label for="duration">Tsükli / faili kestus (täpne luup)</label>
+    <input type="range" id="duration" min="6" max="30" step="2" value="12">
+    <span class="val" id="durationVal">12 s</span>
+  </div>
+  <div class="row">
+    <label for="centerFreq">Kesksagedus (fookusraadio kõlaris)</label>
+    <input type="range" id="centerFreq" min="110" max="800" step="10" value="220">
+    <span class="val" id="centerFreqVal">220 Hz</span>
+  </div>
+  <div class="row">
+    <label for="beatFreq">Tuiklemise sagedus ($\Delta f$)</label>
+    <input type="range" id="beatFreq" min="1" max="35" step="0.1" value="18.9">
+    <span class="val" id="beatFreqVal">18.9 Hz</span>
+  </div>
+  <div class="row">
+    <label for="stereoPhase">Stereolaiendus (90° faasinihe paremas kanalis)</label>
+    <input type="checkbox" id="stereoPhase" checked>
+  </div>
+</div>
+
+<div class="card">
+  <strong>3. Süntees ja eksport (48 kHz Stereo WAV)</strong>
+  <canvas id="scope" width="740" height="100"></canvas>
+  <div class="status" id="status">Valmis. Vajuta "Genereeri ja kuula".</div>
+  <div class="btn-group">
+    <button class="action primary" id="btnGen">Genereeri heli</button>
+    <button class="action" id="btnPlay" disabled>Kuula (Loop sees)</button>
+    <button class="action" id="btnDownload" disabled>Laadi alla WAV</button>
+  </div>
+</div>
+
+<script>
+const SR = 48000;
+let audioCtx = null;
+let currentBuffer = null;
+let activeSource = null;
+let currentMode = 'beating';
+
+const elDur = document.getElementById('duration');
+const elCenter = document.getElementById('centerFreq');
+const elBeat = document.getElementById('beatFreq');
+const elPhase = document.getElementById('stereoPhase');
+const statusEl = document.getElementById('status');
+const btnPlay = document.getElementById('btnPlay');
+const btnDownload = document.getElementById('btnDownload');
+
+// Preset nupud
+document.querySelectorAll('.preset-btn').forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentMode = btn.dataset.mode;
+    if (currentMode === 'cluster') {
+      elCenter.value = 480;
+      elCenter.oninput();
+    } else if (currentMode === 'beating') {
+      elCenter.value = 180;
+      elBeat.value = 18.9;
+      elCenter.oninput();
+      elBeat.oninput();
+    }
+  };
+});
+
+elDur.oninput = () => document.getElementById('durationVal').textContent = elDur.value + ' s';
+elCenter.oninput = () => document.getElementById('centerFreqVal').textContent = elCenter.value + ' Hz';
+elBeat.oninput = () => document.getElementById('beatFreqVal').textContent = (+elBeat.value).toFixed(1) + ' Hz';
+
+function getCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: SR });
+  return audioCtx;
+}
+
+document.getElementById('btnGen').onclick = () => {
+  if (activeSource) {
+    activeSource.stop();
+    activeSource = null;
+    btnPlay.textContent = 'Kuula (Loop sees)';
+  }
+  statusEl.textContent = 'Arvutan sämpleid...';
+  setTimeout(synthesize, 20);
+};
+
+function synthesize() {
+  const dur = +elDur.value;
+  const len = dur * SR;
+  const fCenter = +elCenter.value;
+  const fBeat = +elBeat.value;
+  const useStereo = elPhase.checked;
+
+  const ctx = getCtx();
+  const buf = ctx.createBuffer(2, len, SR);
+  const L = buf.getChannelData(0);
+  const R = buf.getChannelData(1);
+
+  if (currentMode === 'beating') {
+    // Täpne täistsüklite arv, et luup ei naksuks
+    const f1 = Math.round(fCenter * dur) / dur;
+    const f2 = Math.round((fCenter + fBeat) * dur) / dur;
+    const fSub = Math.round((fCenter * 0.5) * dur) / dur;
+
+    for (let i = 0; i < len; i++) {
+      const t = i / SR;
+      const w1 = Math.sin(2 * Math.PI * f1 * t);
+      const w2L = Math.sin(2 * Math.PI * f2 * t);
+      // Kui stereolaiendus on sees, nihutame teise tooni faasi paremas kanalis ~60 kraadi (jääb ka monos alles!)
+      const w2R = Math.sin(2 * Math.PI * f2 * t + (useStereo ? 1.05 : 0));
+      const sub = Math.sin(2 * Math.PI * fSub * t) * 0.25;
+
+      L[i] = (w1 + w2L) * 0.4 + sub;
+      R[i] = (w1 + w2R) * 0.4 + sub;
+    }
+  } 
+  else if (currentMode === 'shepard_down' || currentMode === 'shepard_up' || currentMode === 'blackhole') {
+    const numOctaves = 8;
+    const dir = (currentMode === 'shepard_up') ? 1 : -1;
+    const addBeating = (currentMode === 'blackhole');
+    const fMin = 27.5; // A0
+
+    // Faasiakumulaatorid iga oktavikihi jaoks
+    const phasesMain = new Float64Array(numOctaves);
+    const phasesBeat = new Float64Array(numOctaves);
+    const sigma = 1.45; // Gaussi akna laius oktavites
+    const centerOct = Math.log2(fCenter / fMin);
+
+    for (let i = 0; i < len; i++) {
+      const progress = i / len; // 0..1 ühe tsükli jooksul
+      let sumL = 0, sumR = 0;
+
+      for (let k = 0; k < numOctaves; k++) {
+        // Pidev oktavipositsioon, mis nihkub täpselt 1 oktavi võrra tsükli jooksul
+        let oct = (k + dir * progress) % numOctaves;
+        if (oct < 0) oct += numOctaves;
+
+        const freq = fMin * Math.pow(2, oct);
+        // Gaussi kelluke ümber valitud kesksageduse
+        const dist = oct - centerOct;
+        const env = Math.exp(-(dist * dist) / (2 * sigma * sigma));
+
+        phasesMain[k] += (2 * Math.PI * freq) / SR;
+        const sMain = Math.sin(phasesMain[k]);
+
+        if (addBeating) {
+          phasesBeat[k] += (2 * Math.PI * (freq + fBeat)) / SR;
+          const sBeatL = Math.sin(phasesBeat[k]);
+          const sBeatR = Math.sin(phasesBeat[k] + (useStereo ? 1.2 : 0));
+          sumL += (sMain + sBeatL * 0.75) * env;
+          sumR += (sMain + sBeatR * 0.75) * env;
+        } else {
+          const sMainR = Math.sin(phasesMain[k] + (useStereo ? (k % 2 === 0 ? 0.6 : -0.6) : 0));
+          sumL += sMain * env;
+          sumR += sMainR * env;
+        }
+      }
+      L[i] = sumL;
+      R[i] = sumR;
+    }
+
+    // Lühike rist-hajutus (crossfade) tsükli otstes faasinihke silumiseks
+    const fadeLen = Math.floor(0.08 * SR);
+    for (let i = 0; i < fadeLen; i++) {
+      const alpha = i / fadeLen;
+      L[i] = L[i] * alpha + L[len - fadeLen + i] * (1 - alpha);
+      R[i] = R[i] * alpha + R[len - fadeLen + i] * (1 - alpha);
+    }
+  } 
+  else if (currentMode === 'cluster') {
+    // 6 mikrotonaalset häält, mis ujuvad siinuseliselt ümber kesksageduse
+    const voices = 6;
+    const phases = new Float64Array(voices);
+    for (let i = 0; i < len; i++) {
+      const t = i / SR;
+      let sumL = 0, sumR = 0;
+      for (let v = 0; v < voices; v++) {
+        const spread = (v - (voices - 1) / 2) * (fBeat * 0.45);
+        // Iga hääl hingab aeglaselt oma sagedusel (täistsükkel kestuse jooksul)
+        const drift = Math.sin(2 * Math.PI * ((v + 1) / dur) * t) * (fBeat * 0.35);
+        const instFreq = fCenter + spread + drift;
+        phases[v] += (2 * Math.PI * instFreq) / SR;
+
+        const pan = useStereo ? (v / (voices - 1)) * 0.8 + 0.1 : 0.5;
+        const sig = Math.sin(phases[v]);
+        sumL += sig * (1 - pan);
+        sumR += sig * pan;
+      }
+      L[i] = sumL;
+      R[i] = sumR;
+    }
+  }
+
+  // Normaliseerimine -1.5 dBFS peale
+  let max = 0.001;
+  for (let i = 0; i < len; i++) {
+    if (Math.abs(L[i]) > max) max = Math.abs(L[i]);
+    if (Math.abs(R[i]) > max) max = Math.abs(R[i]);
+  }
+  const gain = 0.84 / max;
+  for (let i = 0; i < len; i++) {
+    L[i] *= gain;
+    R[i] *= gain;
+  }
+
+  currentBuffer = buf;
+  drawWaveform(L);
+  btnPlay.disabled = false;
+  btnDownload.disabled = false;
+  statusEl.textContent = `Heli sünteesitud (${dur} s, 48 kHz Stereo). Valmis kuulamiseks ja allalaadimiseks.`;
+}
+
+btnPlay.onclick = () => {
+  if (!currentBuffer) return;
+  const ctx = getCtx();
+  if (activeSource) {
+    activeSource.stop();
+    activeSource = null;
+    btnPlay.textContent = 'Kuula (Loop sees)';
+    return;
+  }
+  activeSource = ctx.createBufferSource();
+  activeSource.buffer = currentBuffer;
+  activeSource.loop = true;
+  activeSource.connect(ctx.destination);
+  activeSource.start();
+  btnPlay.textContent = 'Peata';
+};
+
+function drawWaveform(data) {
+  const canvas = document.getElementById('scope');
+  const c = canvas.getContext('2d');
+  c.clearRect(0, 0, canvas.width, canvas.height);
+  c.strokeStyle = '#3b82f6';
+  c.lineWidth = 1.2;
+  c.beginPath();
+  // Näitame esimesed 0.5 sekundit, et tuiklemise "vorstid" (amplituudimodulatsioon) oleksid selgelt näha
+  const viewSamples = Math.min(data.length, SR * 0.5);
+  const step = Math.ceil(viewSamples / canvas.width);
+  const amp = canvas.height / 2;
+  for (let i = 0; i < canvas.width; i++) {
+    let min = 1.0, max = -1.0;
+    for (let j = 0; j < step; j++) {
+      const datum = data[(i * step) + j];
+      if (datum < min) min = datum;
+      if (datum > max) max = datum;
+    }
+    c.moveTo(i, (1 + min) * amp);
+    c.lineTo(i, (1 + max) * amp);
+  }
+  c.stroke();
+}
+
+btnDownload.onclick = () => {
+  if (!currentBuffer) return;
+  const numCh = 2;
+  const length = currentBuffer.length * numCh * 2 + 44;
+  const buf = new ArrayBuffer(length);
+  const view = new DataView(buf);
+  const writeStr = (off, s) => { for (let i = 0; i < s.length; i++) view.setUint8(off + i, s.charCodeAt(i)); };
+
+  writeStr(0, 'RIFF');
+  view.setUint32(4, length - 8, true);
+  writeStr(8, 'WAVE');
+  writeStr(12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, numCh, true);
+  view.setUint32(24, SR, true);
+  view.setUint32(28, SR * numCh * 2, true);
+  view.setUint16(32, numCh * 2, true);
+  view.setUint16(34, 16, true);
+  writeStr(36, 'data');
+  view.setUint32(40, length - 44, true);
+
+  const L = currentBuffer.getChannelData(0);
+  const R = currentBuffer.getChannelData(1);
+  let offset = 44;
+  for (let i = 0; i < currentBuffer.length; i++) {
+    let sL = Math.max(-1, Math.min(1, L[i]));
+    let sR = Math.max(-1, Math.min(1, R[i]));
+    view.setInt16(offset, sL < 0 ? sL * 0x8000 : sL * 0x7FFF, true); offset += 2;
+    view.setInt16(offset, sR < 0 ? sR * 0x8000 : sR * 0x7FFF, true); offset += 2;
+  }
+
+  const blob = new Blob([buf], { type: 'audio/wav' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `psychoacoustic_${currentMode}_48kHz.wav`;
+  a.click();
+};
+</script>
+</body>
+</html>

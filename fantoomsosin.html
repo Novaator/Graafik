@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+<meta charset="UTF-8">
+<title>Raadio Pareidoolia Generaator</title>
+<style>
+  :root {
+    --bg: #121316;
+    --panel: #1c1e24;
+    --accent: #e05a47;
+    --text: #e2e4e9;
+    --muted: #8b909a;
+  }
+  body {
+    font-family: system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    max-width: 760px;
+    margin: 30px auto;
+    padding: 0 20px;
+    line-height: 1.5;
+  }
+  h1 { font-size: 1.4rem; margin-bottom: 4px; }
+  p.sub { color: var(--muted); font-size: 0.9rem; margin-top: 0; }
+  .card {
+    background: var(--panel);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 16px;
+    border: 1px solid #2a2d36;
+  }
+  .row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    gap: 15px;
+  }
+  label { font-size: 0.9rem; flex: 1; }
+  input[type="range"] { flex: 1; accent-color: var(--accent); }
+  .val { width: 65px; text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); font-size: 0.85rem; }
+  button {
+    background: #2b2f3a;
+    color: var(--text);
+    border: 1px solid #3d4251;
+    padding: 10px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.15s;
+  }
+  button:hover { background: #363b48; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  button.primary:hover { filter: brightness(1.1); }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+  .status { font-size: 0.85rem; color: #f0a500; margin-top: 10px; min-height: 1.2em; }
+  canvas { width: 100%; height: 90px; background: #0d0e11; border-radius: 6px; margin-top: 10px; }
+</style>
+</head>
+<body>
+
+<h1>Auditiivse pareidoolia generaator (48 kHz Stereo)</h1>
+<p class="sub">Genereerib formant-moduleeritud roosa müra, mida aju tõlgendab varjatud sosinana.</p>
+
+<div class="card">
+  <div class="row">
+    <label for="duration">Kestus (sekundit)</label>
+    <input type="range" id="duration" min="4" max="20" step="1" value="8">
+    <span class="val" id="durationVal">8 s</span>
+  </div>
+  <div class="row">
+    <label for="bedLevel">Ühtlane taustamüra ("ventilatsioon")</label>
+    <input type="range" id="bedLevel" min="0" max="0.5" step="0.02" value="0.14">
+    <span class="val" id="bedLevelVal">14%</span>
+  </div>
+  <div class="row">
+    <label for="whisperClarity">Sosina teravus (formantide Q-faktor)</label>
+    <input type="range" id="whisperClarity" min="3" max="18" step="1" value="8">
+    <span class="val" id="whisperClarityVal">8 (Keskmine)</span>
+  </div>
+  <div class="row">
+    <label for="haas">Ruumiline Haasi nihe (14 ms paremas kanalis – "kukla taga")</label>
+    <input type="checkbox" id="haas" checked>
+  </div>
+</div>
+
+<div class="card">
+  <strong>Režiim A: Algoritmiline fantoomsosin (ilma sõnadeta)</strong>
+  <p class="sub">Loob juhusliku kõnerütmi ja vokaaliformandid. Iga kuulaja aju "kuuleb" erinevaid sõnu.</p>
+  <div class="btn-group">
+    <button class="primary" id="btnSynth">Genereeri fantoomsosin</button>
+  </div>
+</div>
+
+<div class="card">
+  <strong>Režiim B: Mikrofoni <em>Noise-Vocoder</em> (peida päris lause mürasse)</strong>
+  <p class="sub">Sosista mikrofoni. Kood eemaldab su hääletooni ja jätab alles vaid müra sisse peidetud lausekontuuri.</p>
+  <div class="btn-group">
+    <button id="btnRec">Hoia all ja räägi / sosista</button>
+  </div>
+</div>
+
+<div class="card">
+  <strong>Eelkuulamine ja eksport</strong>
+  <canvas id="scope" width="700" height="90"></canvas>
+  <div class="status" id="status">Valmis. Vali ülevalt režiim.</div>
+  <div class="btn-group">
+    <button id="btnPlay" disabled>Kuula</button>
+    <button id="btnDownload" disabled>Laadi alla WAV (48 kHz)</button>
+  </div>
+</div>
+
+<script>
+const SR = 48000;
+let currentBuffer = null;
+let audioCtx = null;
+let activeSource = null;
+
+// UI elemendid
+const elDur = document.getElementById('duration');
+const elBed = document.getElementById('bedLevel');
+const elQ = document.getElementById('whisperClarity');
+const elHaas = document.getElementById('haas');
+const statusEl = document.getElementById('status');
+const btnPlay = document.getElementById('btnPlay');
+const btnDownload = document.getElementById('btnDownload');
+
+elDur.oninput = () => document.getElementById('durationVal').textContent = elDur.value + ' s';
+elBed.oninput = () => document.getElementById('bedLevelVal').textContent = Math.round(elBed.value * 100) + '%';
+elQ.oninput = () => {
+  const v = +elQ.value;
+  const label = v < 6 ? 'Udusem' : v > 12 ? 'Selge sosin' : 'Keskmine';
+  document.getElementById('whisperClarityVal').textContent = `${v} (${label})`;
+};
+
+function getCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: SR });
+  return audioCtx;
+}
+
+// Paul Kelleti roosa müra generaator
+function createPinkNoise(length) {
+  const out = new Float32Array(length);
+  let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+  for (let i = 0; i < length; i++) {
+    const white = Math.random() * 2 - 1;
+    b0 = 0.99886 * b0 + white * 0.0555179;
+    b1 = 0.99332 * b1 + white * 0.0750759;
+    b2 = 0.96900 * b2 + white * 0.1538520;
+    b3 = 0.86650 * b3 + white * 0.3104856;
+    b4 = 0.55000 * b4 + white * 0.5329522;
+    b5 = -0.7616 * b5 - white * 0.0168980;
+    out[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.04;
+    b6 = white * 0.115926;
+  }
+  return out;
+}
+
+// 2. järku ribapääsufilter (Biquad bandpass)
+function applyBandpass(input, freqArray, Q, sr) {
+  const out = new Float32Array(input.length);
+  let x1 = 0, x2 = 0, y1 = 0, y2 = 0;
+  for (let i = 0; i < input.length; i++) {
+    const f = typeof freqArray === 'number' ? freqArray : freqArray[i];
+    const omega = 2 * Math.PI * f / sr;
+    const sn = Math.sin(omega);
+    const cs = Math.cos(omega);
+    const alpha = sn / (2 * Q);
+    const b0 = alpha, b1 = 0, b2 = -alpha;
+    const a0 = 1 + alpha, a1 = -2 * cs, a2 = 1 - alpha;
+
+    const x0 = input[i];
+    const y0 = (b0 * x0 + b1 * x1 + b2 * x2 - a1 * y1 - a2 * y2) / a0;
+    x2 = x1; x1 = x0;
+    y2 = y1; y1 = y0;
+    out[i] = y0;
+  }
+  return out;
+}
+
+// Rakendab Haasi efekti ja normaliseerib
+function finalizeStereo(monoSignal, bedLevel, useHaas) {
+  const len = monoSignal.length;
+  const ctx = getCtx();
+  const buf = ctx.createBuffer(2, len, SR);
+  const L = buf.getChannelData(0);
+  const R = buf.getChannelData(1);
+
+  const bedL = createPinkNoise(len);
+  const bedR = createPinkNoise(len);
+  // Lõikame taustamüralt madala otsa maha (et meenutaks ruumi ventilatsiooni)
+  const cleanBedL = applyBandpass(bedL, 900, 0.7, SR);
+  const cleanBedR = applyBandpass(bedR, 950, 0.7, SR);
+
+  const delaySamples = useHaas ? Math.floor(0.014 * SR) : 0; // 14 ms
+
+  let maxPeak = 0.001;
+  for (let i = 0; i < len; i++) {
+    const sigL = monoSignal[i];
+    const sigR = (i >= delaySamples) ? monoSignal[i - delaySamples] * 0.85 : 0;
+    L[i] = sigL + cleanBedL[i] * bedLevel;
+    R[i] = sigR + cleanBedR[i] * bedLevel;
+    if (Math.abs(L[i]) > maxPeak) maxPeak = Math.abs(L[i]);
+    if (Math.abs(R[i]) > maxPeak) maxPeak = Math.abs(R[i]);
+  }
+
+  const norm = 0.85 / maxPeak;
+  for (let i = 0; i < len; i++) {
+    L[i] *= norm;
+    R[i] *= norm;
+  }
+  return buf;
+}
+
+// REŽIIM A: Algoritmiline süntees
+document.getElementById('btnSynth').onclick = () => {
+  statusEl.textContent = 'Sünteesin formantide liikumist...';
+  setTimeout(() => {
+    const dur = +elDur.value;
+    const len = dur * SR;
+    const Q = +elQ.value;
+    const noise = createPinkNoise(len);
+
+    // Eesti vokaalide tüüpilised formandid [F1, F2, F3]
+    const vowels = [
+      [700, 1100, 2500], // a
+      [450, 1900, 2600], // e
+      [300, 2300, 3000], // i
+      [500, 900, 2400],  // o
+      [350, 750, 2400],  // u
+      [450, 1500, 2500]  // õ/ä
+    ];
+
+    const f1Arr = new Float32Array(len);
+    const f2Arr = new Float32Array(len);
+    const f3Arr = new Float32Array(len);
+    const env = new Float32Array(len);
+    const sibEnv = new Float32Array(len);
+
+    let curV = vowels[0], nextV = vowels[1];
+    let stepSamples = Math.floor(SR * 0.22);
+
+    for (let i = 0; i < len; i++) {
+      if (i % stepSamples === 0) {
+        curV = nextV;
+        nextV = vowels[Math.floor(Math.random() * vowels.length)];
+        stepSamples = Math.floor(SR * (0.14 + Math.random() * 0.25));
+      }
+      const t = (i % stepSamples) / stepSamples;
+      // Sujuv interpolatsioon vokaalide vahel
+      const smooth = t * t * (3 - 2 * t);
+      f1Arr[i] = curV[0] + (nextV[0] - curV[0]) * smooth;
+      f2Arr[i] = curV[1] + (nextV[1] - curV[1]) * smooth;
+      f3Arr[i] = curV[2] + (nextV[2] - curV[2]) * smooth;
+
+      // Silbirütm (u 3.8 Hz + juhuslikud pausid fraaside vahel)
+      const phraseGate = Math.sin(2 * Math.PI * 0.35 * (i / SR) + Math.sin(i / SR)) > -0.2 ? 1 : 0;
+      const syllable = Math.max(0, Math.sin(2 * Math.PI * 3.8 * (i / SR) + 0.5 * Math.sin(2 * Math.PI * 1.7 * (i / SR))));
+      env[i] = Math.pow(syllable, 1.6) * phraseGate;
+
+      // Konsonantide / sibilantide ("s", "š") lühikesed sähvatused silbi alguses/lõpus
+      sibEnv[i] = (syllable > 0.1 && syllable < 0.35 && phraseGate) ? 0.45 : 0;
+    }
+
+    const band1 = applyBandpass(noise, f1Arr, Q * 0.7, SR);
+    const band2 = applyBandpass(noise, f2Arr, Q, SR);
+    const band3 = applyBandpass(noise, f3Arr, Q * 1.1, SR);
+    const sibilance = applyBandpass(noise, 5200, 3.5, SR);
+
+    const mono = new Float32Array(len);
+    for (let i = 0; i < len; i++) {
+      mono[i] = (band1[i] * 0.5 + band2[i] * 1.0 + band3[i] * 0.6) * env[i] * Math.sqrt(Q)
+              + sibilance[i] * sibEnv[i];
+    }
+
+    currentBuffer = finalizeStereo(mono, +elBed.value, elHaas.checked);
+    drawWaveform(currentBuffer.getChannelData(0));
+    btnPlay.disabled = false;
+    btnDownload.disabled = false;
+    statusEl.textContent = 'Fantoomsosin valmis. Kuula või laadi WAV alla.';
+  }, 30);
+};
+
+// REŽIIM B: Mikrofoni Noise-Vocoder
+let mediaRecorder = null;
+let chunks = [];
+const btnRec = document.getElementById('btnRec');
+
+btnRec.onmousedown = btnRec.ontouchstart = async (e) => {
+  e.preventDefault();
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    chunks = [];
+    mediaRecorder = new MediaRecorder(stream);
+    mediaRecorder.ondataavailable = ev => chunks.push(ev.data);
+    mediaRecorder.onstop = async () => {
+      stream.getTracks().forEach(t => t.stop());
+      statusEl.textContent = 'Töötlen kõnet läbi 10-ribalise müra-vokooderi...';
+      const blob = new Blob(chunks);
+      const arrayBuf = await blob.arrayBuffer();
+      const decoded = await getCtx().decodeAudioData(arrayBuf);
+      processVocoder(decoded.getChannelData(0));
+    };
+    mediaRecorder.start();
+    btnRec.textContent = 'Salvestan... (lase nupp lahti, kui valmis)';
+    btnRec.classList.add('primary');
+  } catch (err) {
+    statusEl.textContent = 'Mikrofoni ligipääs puudub: ' + err.message;
+  }
+};
+
+btnRec.onmouseup = btnRec.ontouchend = () => {
+  if (mediaRecorder && mediaRecorder.state === 'recording') {
+    mediaRecorder.stop();
+    btnRec.textContent = 'Hoia all ja räägi / sosista';
+    btnRec.classList.remove('primary');
+  }
+};
+
+function processVocoder(voiceData) {
+  const len = voiceData.length;
+  const Q = +elQ.value;
+  const bands = [350, 550, 800, 1150, 1600, 2200, 3000, 4000, 5200, 6500];
+  const noise = createPinkNoise(len);
+  const outMono = new Float32Array(len);
+
+  bands.forEach(freq => {
+    const vBand = applyBandpass(voiceData, freq, Q * 0.8, SR);
+    const nBand = applyBandpass(noise, freq, Q, SR);
+    // Mähisjoone jälgija (Envelope follower)
+    let env = 0;
+    const attack = 0.01, release = 0.0008;
+    for (let i = 0; i < len; i++) {
+      const absV = Math.abs(vBand[i]);
+      env = absV > env ? env + attack * (absV - env) : env - release * env;
+      outMono[i] += nBand[i] * env * 14;
+    }
+  });
+
+  currentBuffer = finalizeStereo(outMono, +elBed.value, elHaas.checked);
+  drawWaveform(currentBuffer.getChannelData(0));
+  btnPlay.disabled = false;
+  btnDownload.disabled = false;
+  statusEl.textContent = 'Vokooderi sosin valmis! Sinu hääletoon on eemaldatud, alles on vaid mürakontuur.';
+}
+
+// Eelkuulamine
+btnPlay.onclick = () => {
+  if (!currentBuffer) return;
+  const ctx = getCtx();
+  if (activeSource) {
+    activeSource.stop();
+    activeSource = null;
+    btnPlay.textContent = 'Kuula';
+    return;
+  }
+  activeSource = ctx.createBufferSource();
+  activeSource.buffer = currentBuffer;
+  activeSource.connect(ctx.destination);
+  activeSource.onended = () => { activeSource = null; btnPlay.textContent = 'Kuula'; };
+  activeSource.start();
+  btnPlay.textContent = 'Peata';
+};
+
+// Lainekuju joonistamine
+function drawWaveform(data) {
+  const canvas = document.getElementById('scope');
+  const c = canvas.getContext('2d');
+  c.clearRect(0, 0, canvas.width, canvas.height);
+  c.strokeStyle = '#e05a47';
+  c.lineWidth = 1.2;
+  c.beginPath();
+  const step = Math.ceil(data.length / canvas.width);
+  const amp = canvas.height / 2;
+  for (let i = 0; i < canvas.width; i++) {
+    let min = 1.0, max = -1.0;
+    for (let j = 0; j < step; j++) {
+      const datum = data[(i * step) + j];
+      if (datum < min) min = datum;
+      if (datum > max) max = datum;
+    }
+    c.moveTo(i, (1 + min) * amp);
+    c.lineTo(i, (1 + max) * amp);
+  }
+  c.stroke();
+}
+
+// 16-bit PCM WAV eksport
+btnDownload.onclick = () => {
+  if (!currentBuffer) return;
+  const numCh = 2;
+  const length = currentBuffer.length * numCh * 2 + 44;
+  const buf = new ArrayBuffer(length);
+  const view = new DataView(buf);
+  const writeStr = (offset, str) => { for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i)); };
+
+  writeStr(0, 'RIFF');
+  view.setUint32(4, length - 8, true);
+  writeStr(8, 'WAVE');
+  writeStr(12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, numCh, true);
+  view.setUint32(24, SR, true);
+  view.setUint32(28, SR * numCh * 2, true);
+  view.setUint16(32, numCh * 2, true);
+  view.setUint16(34, 16, true);
+  writeStr(36, 'data');
+  view.setUint32(40, length - 44, true);
+
+  const L = currentBuffer.getChannelData(0);
+  const R = currentBuffer.getChannelData(1);
+  let offset = 44;
+  for (let i = 0; i < currentBuffer.length; i++) {
+    let sL = Math.max(-1, Math.min(1, L[i]));
+    let sR = Math.max(-1, Math.min(1, R[i]));
+    view.setInt16(offset, sL < 0 ? sL * 0x8000 : sL * 0x7FFF, true); offset += 2;
+    view.setInt16(offset, sR < 0 ? sR * 0x8000 : sR * 0x7FFF, true); offset += 2;
+  }
+
+  const blob = new Blob([buf], { type: 'audio/wav' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'eetri_pareidoolia_48kHz.wav';
+  a.click();
+};
+</script>
+</body>
+</html>

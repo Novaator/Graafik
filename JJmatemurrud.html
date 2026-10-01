@@ -61,14 +61,16 @@
                 <div class="perspective w-full max-w-md h-80 cursor-pointer flip-card" id="flashcard" onclick="flipCard()">
                     <div class="flip-card-inner relative w-full h-full shadow-lg rounded-2xl">
                         <!-- Esikülg -->
-                        <div class="flip-card-front absolute w-full h-full bg-white border-2 border-slate-100 rounded-2xl p-8 flex flex-col justify-center items-center text-center">
+                        <div class="flip-card-front absolute w-full h-full bg-white border-2 border-slate-100 rounded-2xl p-6 flex flex-col justify-center items-center text-center">
                             <span class="absolute top-4 right-4 text-3xl opacity-20">❓</span>
+                            <div id="card-img-front" class="hidden mb-4 flex justify-center gap-2 items-center flex-wrap"></div>
                             <h3 class="text-xl md:text-2xl font-medium text-slate-800" id="card-question">Küsimus laeb...</h3>
                             <p class="text-slate-400 mt-6 text-sm absolute bottom-4">Vajuta, et pöörata</p>
                         </div>
                         <!-- Tagakülg -->
-                        <div class="flip-card-back absolute w-full h-full bg-blue-50 border-2 border-blue-200 rounded-2xl p-8 flex flex-col justify-center items-center text-center">
+                        <div class="flip-card-back absolute w-full h-full bg-blue-50 border-2 border-blue-200 rounded-2xl p-6 flex flex-col justify-center items-center text-center">
                             <span class="absolute top-4 right-4 text-3xl opacity-20">💡</span>
+                            <div id="card-img-back" class="hidden mb-4 flex justify-center gap-2 items-center flex-wrap"></div>
                             <div class="text-lg md:text-xl text-slate-800 leading-relaxed" id="card-answer">Vastus laeb...</div>
                         </div>
                     </div>
@@ -304,6 +306,71 @@
             }
         ];
 
+        function drawPizza(slices, filled, size = 80) {
+            // Kui on terve kook (1 viil), tagastame lihtsalt ringi
+            if (slices === 1) return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" class="drop-shadow-sm"><circle cx="${size/2}" cy="${size/2}" r="${size/2 - 4}" fill="${filled > 0 ? '#fbbf24' : '#fef3c7'}" stroke="#d97706" stroke-width="2"/></svg>`;
+            
+            let paths = '';
+            const cx = size/2; 
+            const cy = size/2; 
+            const r = size/2 - 4;
+            
+            for(let i=0; i<slices; i++) {
+                // Arvutame iga viilu nurgad radiaanides
+                const startAngle = (i * 360 / slices - 90) * (Math.PI / 180);
+                const endAngle = ((i + 1) * 360 / slices - 90) * (Math.PI / 180);
+                
+                // Koordinaadid
+                const x1 = cx + r * Math.cos(startAngle);
+                const y1 = cy + r * Math.sin(startAngle);
+                const x2 = cx + r * Math.cos(endAngle);
+                const y2 = cy + r * Math.sin(endAngle);
+                
+                const largeArc = 0; // Murdude puhul piisab väikesest kaarest (sektori joonistamiseks)
+                
+                // Värvime täis või tühjaks
+                const fill = i < filled ? '#fbbf24' : '#fef3c7';
+                paths += `<path d="M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} Z" fill="${fill}" stroke="#d97706" stroke-width="1.5"/>`;
+            }
+            return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" class="drop-shadow-sm">${paths}</svg>`;
+        }
+
+        function drawNumberLine(num, den, size = 200) {
+            let svg = `<svg width="${size}" height="60" viewBox="0 0 ${size} 60" class="overflow-visible">`;
+            svg += `<line x1="20" y1="40" x2="${size-20}" y2="40" stroke="#94a3b8" stroke-width="3"/>`;
+            const width = size - 40;
+            const step = width / den;
+            for(let i=0; i<=den; i++) {
+                const x = 20 + i * step;
+                const h = (i === 0 || i === den) ? 12 : 6; // Otsad on pikemad
+                svg += `<line x1="${x}" y1="${40 - h}" x2="${x}" y2="${40 + h}" stroke="#64748b" stroke-width="2"/>`;
+                if (i === 0) svg += `<text x="${x}" y="20" text-anchor="middle" font-size="14" fill="#64748b">0</text>`;
+                if (i === den) svg += `<text x="${x}" y="20" text-anchor="middle" font-size="14" fill="#64748b">1</text>`;
+            }
+            // Märgime vastava murru
+            const dotX = 20 + num * step;
+            svg += `<circle cx="${dotX}" cy="40" r="7" fill="#3b82f6" class="drop-shadow-md"/>`;
+            svg += `<text x="${dotX}" y="20" text-anchor="middle" font-size="16" font-weight="bold" fill="#2563eb">${num}/${den}</text>`;
+            svg += `</svg>`;
+            return svg;
+        }
+
+        // Moodul 1
+        appData[0].cards[0].imgBack = drawPizza(4, 3, 80);
+        appData[0].cards[1].imgBack = drawPizza(5, 5, 80);
+        appData[0].cards[2].imgBack = `<div class="flex gap-1">${drawPizza(5,5,50)}${drawPizza(5,5,50)}${drawPizza(5,3,50)}</div>`;
+        appData[0].cards[3].imgBack = `<div class="flex gap-1">${drawPizza(7,7,45)}${drawPizza(7,7,45)}${drawPizza(7,7,45)}${drawPizza(7,2,45)}</div>`;
+        appData[0].cards[4].imgBack = drawNumberLine(2, 3, 240);
+
+        // Moodul 2
+        appData[1].cards[0].imgBack = `<div class="flex items-center gap-2">${drawPizza(2,1,70)} <span class="font-bold text-2xl text-slate-400">=</span> ${drawPizza(4,2,70)}</div>`;
+        appData[1].cards[1].imgBack = `<div class="flex items-center gap-2">${drawPizza(16,12,70)} <span class="font-bold text-2xl text-slate-400">&rarr;</span> ${drawPizza(4,3,70)}</div>`;
+
+        // Moodul 3
+        appData[2].cards[0].imgBack = `<div class="flex items-center gap-2">${drawPizza(2,1,70)} <span class="font-bold text-2xl text-slate-400">?</span> ${drawPizza(3,1,70)}</div>`;
+        appData[2].cards[1].imgBack = `<div class="flex items-center gap-2 flex-wrap justify-center">${drawPizza(3,2,50)} <span class="text-slate-400">&</span> ${drawPizza(4,3,50)} <span class="font-bold text-xl text-slate-400">&rarr;</span> ${drawPizza(12,8,50)} <span class="text-slate-400">&</span> ${drawPizza(12,9,50)}</div>`;
+        appData[2].cards[3].imgBack = `<div class="flex items-center gap-2">${drawPizza(7,5,70)} <span class="font-bold text-2xl text-blue-500">></span> ${drawPizza(7,4,70)}</div>`;
+
         let currentModuleIndex = 0;
         let currentCardIndex = 0;
         let isFlipped = false;
@@ -366,6 +433,25 @@
             document.getElementById('card-topic').innerText = card.topic;
             document.getElementById('card-question').innerHTML = parseTextToFractions(card.q);
             document.getElementById('card-answer').innerHTML = parseTextToFractions(card.a);
+            
+            const imgFront = document.getElementById('card-img-front');
+            if (card.imgFront) {
+                imgFront.innerHTML = card.imgFront;
+                imgFront.classList.remove('hidden');
+            } else {
+                imgFront.innerHTML = '';
+                imgFront.classList.add('hidden');
+            }
+
+            const imgBack = document.getElementById('card-img-back');
+            if (card.imgBack) {
+                imgBack.innerHTML = card.imgBack;
+                imgBack.classList.remove('hidden');
+            } else {
+                imgBack.innerHTML = '';
+                imgBack.classList.add('hidden');
+            }
+
             document.getElementById('card-counter').innerText = `${currentCardIndex + 1} / ${totalCards}`;
         }
 

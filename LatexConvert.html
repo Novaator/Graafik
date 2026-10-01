@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LaTeX PDF Redaktor</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Marked.js Markdowni parsimiseks tekstist HTML-i -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- html2pdf.js PDF-i genereerimiseks -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true
+            },
+            svg: {
+                fontCache: 'none' /* Muudetud 'global' -> 'none', et SVG tekitaks sümbolid otse eelvaate alasse */
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+
+    <style>
+        /* Kohandatud stiilid eelvaate ja printimise jaoks */
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Parandus: Tühistame Tailwind'i vaikimisi plokisisesed SVG-d, et valemid püsiksid tekstiga samal real */
+        mjx-container svg { display: inline !important; }
+        
+        /* Markdowni sisu stiilimine */
+        .markdown-body h1 { font-size: 2em; font-weight: bold; margin-bottom: 0.5em; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.3em; }
+        .markdown-body h2 { font-size: 1.5em; font-weight: bold; margin-top: 1em; margin-bottom: 0.5em; }
+        .markdown-body p { margin-bottom: 1em; line-height: 1.6; }
+        .markdown-body ul { list-style-type: disc; margin-left: 1.5em; margin-bottom: 1em; }
+        .markdown-body ol { list-style-type: decimal; margin-left: 1.5em; margin-bottom: 1em; }
+        .markdown-body blockquote { border-left: 4px solid #d1d5db; padding-left: 1em; color: #4b5563; font-style: italic; }
+        
+        /* Peidame kerimisribad, et oleks puhtam välimus */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 h-screen flex flex-col overflow-hidden">
+
+    <header class="bg-white border-b border-slate-200 shadow-sm px-6 py-4 flex justify-between items-center z-10 shrink-0">
+        <div class="flex items-center gap-3">
+            <div class="bg-blue-600 text-white p-2 rounded-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M10 13v-1h4v1"/><path d="M10 17v-1h4v1"/></svg>
+            </div>
+            <h1 class="text-xl font-bold text-slate-800 tracking-tight">MathDoc Redaktor</h1>
+        </div>
+        
+        <button id="pdf-btn" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 transition-colors text-white px-5 py-2.5 rounded-md font-medium shadow-sm active:scale-95">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span id="pdf-btn-text">Laadi alla PDF</span>
+        </button>
+    </header>
+
+    <main class="flex-1 flex flex-col md:flex-row gap-6 p-6 h-full overflow-hidden">
+        
+        <!-- Vasak paneel: Sisestus -->
+        <div class="flex-1 flex flex-col h-full bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="bg-slate-100 border-b border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 flex justify-between">
+                <span>Markdown & LaTeX Sisend</span>
+            </div>
+            <textarea id="editor" class="flex-1 w-full p-4 resize-none outline-none text-slate-700 font-mono text-sm leading-relaxed" placeholder="Sisesta siia tekst ja valemid..."></textarea>
+        </div>
+
+        <!-- Parem paneel: Tulemuse eelvaade -->
+        <div class="flex-1 flex flex-col h-full bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden relative">
+            <div class="bg-slate-100 border-b border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600">
+                Eelvaade (A4 leht)
+            </div>
+            <!-- Eelvaate ala, mis mässitakse konteinerisse kerimiseks -->
+            <div class="flex-1 overflow-y-auto bg-slate-50 p-4 sm:p-8 flex justify-center">
+                <!-- See on element, mis läheb otse PDF-iks -->
+                <div id="preview-page" class="bg-white shadow-md w-full max-w-[800px] min-h-[1000px] p-10 sm:p-14 markdown-body">
+                    <!-- Sisu genereeritakse dünaamiliselt siia -->
+                </div>
+            </div>
+        </div>
+        
+    </main>
+
+    <script>
+        const editor = document.getElementById('editor');
+        const previewPage = document.getElementById('preview-page');
+        const pdfBtn = document.getElementById('pdf-btn');
+        const pdfBtnText = document.getElementById('pdf-btn-text');
+        
+        // Vaikimisi sisu, et kasutaja näeks kohe, kuidas süsteem töötab
+        const defaultContent = `# Minu Matemaatika Dokument
+
+See on lühike näide, kuidas süsteem töötab. Võid selle teksti julgelt ära kustutada.
+
+## Murdarvud ja kopeerimine
+
+Kopeeri otse LaTeX koodi. Näiteks reasisene murdarv näeb välja selline: $\\frac{1}{2}$ ja pikem valem eraldi real:
+
+$$ x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a} $$
+
+## Maatriksid ja muud kujundid
+
+$$
+\\begin{pmatrix}
+1 & 2 & 3 \\\\
+a & b & c
+\\end{pmatrix}
+$$
+
+**Kuidas kasutada:**
+1. Kirjuta või kleebi oma tekst vasakpoolsesse kasti.
+2. Kasuta tavasümboleid Markdowniga (näiteks **paks kiri**).
+3. Vaata reaalajas tulemust paremal pool.
+4. Kui oled valmis, vajuta ülal paremal "Laadi alla PDF" nupule.
+`;
+
+        // Funktsioon, mis muudab sisendi HTML-iks ja renderdab matemaatika
+        let renderTimeout;
+        const updatePreview = () => {
+            const rawContent = editor.value;
+            
+            // 1. Samm: Parsime Markdowni HTML-iks
+            const htmlContent = marked.parse(rawContent);
+            previewPage.innerHTML = htmlContent;
+            
+            // 2. Samm: Laseme MathJaxil leida ja renderdada valemid HTML-ist
+            if (window.MathJax && window.MathJax.typesetPromise) {
+                window.MathJax.typesetPromise([previewPage]).catch((err) => {
+                    console.error('MathJax viga:', err);
+                });
+            }
+        };
+
+        // Kuulame sisestust ja värskendame eelvaadet viivitusega (debounce)
+        editor.addEventListener('input', () => {
+            clearTimeout(renderTimeout);
+            renderTimeout = setTimeout(updatePreview, 400); // 400ms viivitus trükkimise ajal
+        });
+
+        // Laeme lehe esmakordselt vaikimisi sisuga
+        window.addEventListener('DOMContentLoaded', () => {
+            editor.value = defaultContent;
+            updatePreview();
+        });
+
+        pdfBtn.addEventListener('click', () => {
+            // Muudame nupu teksti ja välimust laadimise ajaks
+            pdfBtnText.innerText = "Genereerin...";
+            pdfBtn.classList.add('opacity-80', 'cursor-not-allowed');
+            pdfBtn.disabled = true;
+
+            // html2pdf valikud parima kvaliteedi ja A4 formaadi jaoks
+            const opt = {
+                margin:       10, // varu (mm)
+                filename:     'matemaatika-dokument.pdf',
+                image:        { type: 'jpeg', quality: 1.0 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            // Genereerime ja laadime alla
+            html2pdf().set(opt).from(previewPage).save().then(() => {
+                // Taastame nupu oleku pärast allalaadimist
+                pdfBtnText.innerText = "Laadi alla PDF";
+                pdfBtn.classList.remove('opacity-80', 'cursor-not-allowed');
+                pdfBtn.disabled = false;
+            }).catch(err => {
+                console.error("Viga PDF-i genereerimisel:", err);
+                pdfBtnText.innerText = "Viga! Proovi uuesti";
+                setTimeout(() => {
+                    pdfBtnText.innerText = "Laadi alla PDF";
+                    pdfBtn.classList.remove('opacity-80', 'cursor-not-allowed');
+                    pdfBtn.disabled = false;
+                }, 3000);
+            });
+        });
+    </script>
+</body>
+</html>

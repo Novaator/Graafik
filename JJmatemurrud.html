@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Murdude Meistriklass (6. klass)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .perspective {
+            perspective: 1000px;
+        }
+        .flip-card-inner {
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+        .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+        .flip-card-front, .flip-card-back {
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+        .flip-card-back {
+            transform: rotateY(180deg);
+        }
+        .tab-active {
+            border-bottom: 2px solid #3b82f6;
+            color: #3b82f6;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen font-sans text-slate-800">
+
+    <header class="bg-white shadow-sm sticky top-0 z-10">
+        <div class="max-w-4xl mx-auto px-4 py-4">
+            <h1 class="text-2xl md:text-3xl font-bold text-slate-800 text-center flex items-center justify-center gap-2">
+                <span>🍕</span> Murdude Meistriklass <span>🧠</span>
+            </h1>
+            <p class="text-center text-slate-500 text-sm mt-1">6. klassi interaktiivne õpimootor</p>
+            
+            <div class="flex justify-center mt-6 border-b border-slate-200">
+                <button id="tab-cards" class="px-6 py-2 tab-active transition-colors hover:bg-slate-50" onclick="switchTab('cards')">Õpikaardid</button>
+                <button id="tab-exercises" class="px-6 py-2 text-slate-600 transition-colors hover:bg-slate-50" onclick="switchTab('exercises')">Ülesanded</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 py-8">
+        
+        <section id="view-cards" class="block">
+            <!-- Moodulite valik -->
+            <div class="flex flex-wrap gap-2 justify-center mb-8" id="module-filters">
+                <!-- Nupud genereeritakse JS-iga -->
+            </div>
+
+            <!-- Kaardi konteiner -->
+            <div class="flex flex-col items-center">
+                <div class="mb-4 text-sm font-semibold text-slate-500 uppercase tracking-wider" id="card-topic">Teema 1.2</div>
+                
+                <div class="perspective w-full max-w-md h-80 cursor-pointer flip-card" id="flashcard" onclick="flipCard()">
+                    <div class="flip-card-inner relative w-full h-full shadow-lg rounded-2xl">
+                        <!-- Esikülg -->
+                        <div class="flip-card-front absolute w-full h-full bg-white border-2 border-slate-100 rounded-2xl p-8 flex flex-col justify-center items-center text-center">
+                            <span class="absolute top-4 right-4 text-3xl opacity-20">❓</span>
+                            <h3 class="text-xl md:text-2xl font-medium text-slate-800" id="card-question">Küsimus laeb...</h3>
+                            <p class="text-slate-400 mt-6 text-sm absolute bottom-4">Vajuta, et pöörata</p>
+                        </div>
+                        <!-- Tagakülg -->
+                        <div class="flip-card-back absolute w-full h-full bg-blue-50 border-2 border-blue-200 rounded-2xl p-8 flex flex-col justify-center items-center text-center">
+                            <span class="absolute top-4 right-4 text-3xl opacity-20">💡</span>
+                            <div class="text-lg md:text-xl text-slate-800 leading-relaxed" id="card-answer">Vastus laeb...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigeerimine -->
+                <div class="flex items-center gap-4 mt-8">
+                    <button onclick="prevCard()" class="p-3 rounded-full bg-white shadow hover:bg-slate-50 transition active:scale-95 text-slate-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
+                    </button>
+                    <div class="text-slate-500 font-medium" id="card-counter">1 / 10</div>
+                    <button onclick="nextCard()" class="p-3 rounded-full bg-white shadow hover:bg-slate-50 transition active:scale-95 text-slate-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section id="view-exercises" class="hidden">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-slate-800">Harjutusülesanded</h2>
+                <p class="text-slate-500 mt-2">Iga teema kohta 7 näidisülesannet kinnistamiseks. Kliki teemal, et näha ülesandeid.</p>
+            </div>
+            
+            <div id="exercises-container" class="space-y-4">
+                <!-- Ülesanded genereeritakse JS-iga -->
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        const appData = [
+            {
+                module: "I: Anatoomia ja kuju muutmine",
+                id: "mod-1",
+                cards: [
+                    {
+                        topic: "1.2 Põhimõisted",
+                        q: "Mis on murru lugeja ja nimetaja anatoomiline funktsioon? (nt 3/4)",
+                        a: "<strong>Nimetaja</strong> (all) dikteerib, mitmeks võrdseks tükiks tervik raiuti.<br><br><strong>Lugeja</strong> (üleval) nendib fakti, mitu tükki meil reaalselt on.",
+                        exercises: [
+                            "Milline number on murru 5/8 lugeja?",
+                            "Mida näitab nimetaja murrus 2/7?",
+                            "Kirjuta murd, mille lugeja on 4 ja nimetaja on 9.",
+                            "Tervik on jagatud 12 võrdseks osaks ja me võtame neist 5. Kirjuta see murruna.",
+                            "Kumb asub murrujoonest allpool: kas lugeja või nimetaja?",
+                            "Milline osa nädalast (7 päeva) on 3 päeva? Esita murruna.",
+                            "Pitsa lõigati 6 tükiks, Toomas sõi 2. Millise murdosa pitsast Toomas sõi?"
+                        ]
+                    },
+                    {
+                        topic: "1.2 Ekstra (Identsed)",
+                        q: "Kuidas käsitleda murdu, kus lugeja ja nimetaja on identsed (nt 5/5 või 100/100)?",
+                        a: "See on maskeeritud täisarv. Väärtus on alati <strong>1</strong>. <br><br>Kui lõikad pitsa 5 jupiks ja sööd ära kõik 5, sõidki 1 terve pitsa.",
+                        exercises: [
+                            "Mis on murru 7/7 väärtus täisarvuna?",
+                            "Kirjuta arv 1 murruna, mille nimetaja on 12.",
+                            "Kas 8/8 on suurem, väiksem või võrdne 1-ga?",
+                            "Kui korvis on 10 õuna ja sa võtad 10/10 nendest, mitu õuna sa võtsid?",
+                            "Arvuta: 15/15 + 2",
+                            "Mis on 99/99 väärtus?",
+                            "Kumb on suurem: 5/5 või 8/8? Põhjenda."
+                        ]
+                    },
+                    {
+                        topic: "1.3 Liigmurd -> Segaarv",
+                        q: "Teisenda liigmurd 13/5 segaarvuks. Mis on sammud?",
+                        a: "1. Jaga lugeja nimetajaga (13 : 5 = 2, jääk 3).<br>2. Täisosa on 2.<br>3. Jääk 3 läheb uueks lugejaks.<br><br>Vastus: <strong>2 3/5</strong>. (Nimetaja ei muutu kunagi).",
+                        exercises: [
+                            "Teisenda segaarvuks: 7/2",
+                            "Teisenda segaarvuks: 11/3",
+                            "Teisenda segaarvuks: 15/4",
+                            "Teisenda segaarvuks: 23/5",
+                            "Teisenda segaarvuks: 17/6",
+                            "Teisenda segaarvuks: 25/8",
+                            "Teisenda segaarvuks: 31/10"
+                        ]
+                    },
+                    {
+                        topic: "1.4 Segaarv -> Liigmurd",
+                        q: "Teisenda segaarv 3 2/7 liigmurruks. Kuidas masinavärk töötab?",
+                        a: "1. Korruta täisosa nimetajaga (3 · 7 = 21).<br>2. Liida tulemusele lugeja (21 + 2 = 23).<br>3. Uus lugeja on 23, nimetaja jääb samaks.<br><br>Vastus: <strong>23/7</strong>.",
+                        exercises: [
+                            "Teisenda liigmurruks: 1 1/2",
+                            "Teisenda liigmurruks: 2 3/4",
+                            "Teisenda liigmurruks: 3 2/5",
+                            "Teisenda liigmurruks: 4 1/3",
+                            "Teisenda liigmurruks: 5 3/7",
+                            "Teisenda liigmurruks: 2 7/8",
+                            "Teisenda liigmurruks: 10 1/4"
+                        ]
+                    },
+                    {
+                        topic: "1.5 Arvkiir",
+                        q: "Kuidas paigutada murd 2/3 arvkiirele 0 ja 1 vahele?",
+                        a: "1. Tükelda 0 ja 1 vaheline ala kolmeks võrdseks osaks (sest nimetaja on 3).<br>2. Astu nullist kaks identset sammu paremale (sest lugeja on 2). Märgi punkt.",
+                        exercises: [
+                            "Mitmeks võrdseks osaks jaotad 0 ja 1 vahe, et märkida arvkiirele murd 4/5?",
+                            "Kui arvkiire 0 ja 1 vahe on jaotatud 4 osaks, siis milline murd asub esimese kriipsu juures?",
+                            "Märgi mõttes arvkiirele 1/2. Kas see asub 0-le lähemal, 1-le lähemal või täpselt keskel?",
+                            "Kuhu paigutad arvkiirel segaarvu 1 1/2? Milliste täisarvude vahele?",
+                            "Kui märgid arvkiirele 7/8, siis mitmenda kriipsu juurde nullist lugedes sa punkti teed (kui vahe on jaotatud 8-ks)?",
+                            "Kumb asub arvkiirel nullist kaugemal (paremal): kas 1/4 või 3/4?",
+                            "Kas murd 5/5 asub arvkiirel 0 ja 1 vahel, kohas 0, või kohas 1?"
+                        ]
+                    }
+                ]
+            },
+            {
+                module: "II: Ilukirurgia ehk taandamine",
+                id: "mod-2",
+                cards: [
+                    {
+                        topic: "1.6 Murru põhiomadus",
+                        q: "Miks poole pitsa (1/2) ja kahe neljandiku pitsa (2/4) söömine teeb sind täpselt sama paksuks?",
+                        a: "<strong>Murru põhiomadus:</strong> kui korrutad või jagad lugejat ja nimetajat *täpselt sama* arvuga (v.a 0), jääb murru väärtus samaks.<br><br>(1·2) / (2·2) = 2/4. Lõikasid pitsa lihtsalt väiksemateks tükkideks.",
+                        exercises: [
+                            "Laienda murdu 1/3, korrutades lugejat ja nimetajat arvuga 2. Mis murru saad?",
+                            "Laienda murdu 2/5 arvuga 3.",
+                            "Kas murrud 1/4 ja 2/8 tähistavad sama suurt kogust?",
+                            "Mis arvuga on laiendatud murdu 1/2, kui tulemuseks on 5/10?",
+                            "Kas 3/4 ja 6/8 on võrdsed murrud? Põhjenda.",
+                            "Kirjuta kaks erinevat murdu, mis on väärtuselt võrdsed murruga 1/2.",
+                            "Miks 2/3 = 8/12? Mis arvuga siin laiendati?"
+                        ]
+                    },
+                    {
+                        topic: "1.7 Taandamine (1)",
+                        q: "Kuidas opereerida murdu 12/16, et see näeks viisakam välja? Mis on eesmärk?",
+                        a: "Eesmärk on muuta numbrid väiksemaks ilma väärtust muutmata.<br><br>Jaga lugejat ja nimetajat sama arvuga, mis mõlemaga jagub. Näiteks 4-ga.<br>(12 : 4) / (16 : 4) = <strong>3/4</strong>. Murd on nüüd <strong>taandumatu</strong>.",
+                        exercises: [
+                            "Taanda murd 2/4. Millise arvuga jagasid?",
+                            "Taanda murd 3/9.",
+                            "Taanda murd 5/15.",
+                            "Taanda murd 6/8.",
+                            "Taanda murd 10/20.",
+                            "Taanda murd 7/21.",
+                            "Kas murdu 4/7 on võimalik taandada? Miks?"
+                        ]
+                    },
+                    {
+                        topic: "1.8 Taandamine (2)",
+                        q: "Pead taandama hiiglase 24/36. Kas pead kohe peast teadma suurimat ühist jagajat?",
+                        a: "Ei pea. Võid saagida jupphaaval, kuni enam ei saa.<br><br>1. Mõlemad on paarisarvud, jaga 2-ga &rarr; 12/18.<br>2. Ikka paaris, jaga uuesti 2-ga &rarr; 6/9.<br>3. Nüüd jaga 3-ga &rarr; <strong>2/3</strong>.",
+                        exercises: [
+                            "Taanda samm-sammult murd 12/24 lõpuni (taandamatuks murruks).",
+                            "Taanda lõpuni: 16/32",
+                            "Taanda lõpuni: 18/27",
+                            "Taanda lõpuni: 24/36",
+                            "Taanda lõpuni: 20/50",
+                            "Taanda lõpuni: 30/45",
+                            "Millist murdu ei saa enam taandada? a) 4/8, b) 3/6, c) 2/5."
+                        ]
+                    }
+                ]
+            },
+            {
+                module: "III: Ühine keel ja võrdlemine",
+                id: "mod-3",
+                cards: [
+                    {
+                        topic: "1.9 Võrdlemise probleem",
+                        q: "Miks me ei saa otse võrrelda murde 1/2 ja 1/3?",
+                        a: "Sest tükid (nimetajad) on erineva suurusega. Õunu ja pirne ei saa otse võrrelda koguse põhjal.<br><br>Peame need tegema sama suureks ehk viima <strong>ühisele nimetajale</strong>.",
+                        exercises: [
+                            "Miks ei saa kergesti otsustada, kumb on suurem: 2/5 või 1/3?",
+                            "Mida peab tegema murdude nimetajatega, et murde saaks mugavalt liita või võrrelda?",
+                            "Kas murde 3/8 ja 5/8 saab otse võrrelda? Miks?",
+                            "Kuidas me nimetame protsessi, kus teeme erinevad nimetajad samasuguseks?",
+                            "Kui pitsa A on lõigatud 4 osaks ja pitsa B 6 osaks, siis miks 1 tükk A-st pole sama suur kui 1 tükk B-st?",
+                            "Mis juhtub murru väärtusega, kui me viime selle teisele nimetajale? (Vihje: põhiomadus)",
+                            "Nimetage 1. reegel erineva nimetajaga murdude võrdlemisel."
+                        ]
+                    },
+                    {
+                        topic: "1.10 Ühine nimetaja (Kiire)",
+                        q: "Viime 2/3 ja 3/4 ühisele nimetajale. Kuidas leida laiendajad kähku?",
+                        a: "1. Uus nimetaja on vanade korrutis: 3 · 4 = 12.<br>2. 1. murru laiendaja on 2. nimetaja (4).<br>3. 2. murru laiendaja on 1. nimetaja (3).<br><br>Tulemus: <strong>8/12</strong> ja <strong>9/12</strong>.",
+                        exercises: [
+                            "Vii ühisele nimetajale kiire meetodiga: 1/2 ja 1/3",
+                            "Vii ühisele nimetajale kiire meetodiga: 2/5 ja 1/4",
+                            "Vii ühisele nimetajale kiire meetodiga: 3/7 ja 1/2",
+                            "Vii ühisele nimetajale kiire meetodiga: 2/3 ja 3/5",
+                            "Vii ühisele nimetajale kiire meetodiga: 1/4 ja 2/7",
+                            "Mis on kiire ühine nimetaja murdudele 3/8 ja 1/5?",
+                            "Vii ühisele nimetajale: 4/9 ja 1/2"
+                        ]
+                    },
+                    {
+                        topic: "1.11 Ühine nimetaja (VÜK)",
+                        q: "Viime 1/6 ja 3/8 ühisele nimetajale. Kuidas hoida numbrid väikesed?",
+                        a: "1. Otsi vähimat ühiskordset (VÜK) – väikseimat arvu, mis jagub nii 6 kui 8-ga. See on <strong>24</strong>.<br>2. Laiendajate leidmiseks jaga 24 vanade nimetajatega.<br>3. (24:6=4 ja 24:8=3).<br><br>Tulemus: <strong>4/24</strong> ja <strong>9/24</strong>.",
+                        exercises: [
+                            "Mis on vähim ühine nimetaja (VÜK) arvudele 4 ja 6?",
+                            "Vii VÜK meetodiga ühisele nimetajale: 1/6 ja 1/4",
+                            "Vii VÜK meetodiga ühisele nimetajale: 3/8 ja 5/12",
+                            "Vii VÜK meetodiga ühisele nimetajale: 1/10 ja 3/4",
+                            "Vii VÜK meetodiga ühisele nimetajale: 5/6 ja 2/9",
+                            "Vii VÜK meetodiga ühisele nimetajale: 3/10 ja 7/15",
+                            "Kumba meetodit on kasulikum kasutada murdude 1/20 ja 3/40 puhul: korrutist või VÜK-i?"
+                        ]
+                    },
+                    {
+                        topic: "1.12 Võrdlemine (Reegel)",
+                        q: "Kumb on suurem, kas 5/7 või 4/7? Mis on reegel?",
+                        a: "Kui nimetajad (tükkide suurused) on samad, vaata <strong>lugejat</strong>. Kellel on lugeja suurem, see on suurem.<br><br><strong>5/7 > 4/7</strong> (5 tükki on ilmselgelt rohkem kui 4 tükki sama suurt pitsat).",
+                        exercises: [
+                            "Kumb on suurem: 3/5 või 4/5?",
+                            "Kumb on suurem: 7/10 või 3/10?",
+                            "Kumb on väiksem: 1/8 või 5/8?",
+                            "Pane märk (>, <, =): 6/7 ... 2/7",
+                            "Pane märk (>, <, =): 9/11 ... 10/11",
+                            "Järjesta kasvavalt (väiksemast suuremani): 4/9, 2/9, 8/9",
+                            "Miks on 13/20 suurem kui 11/20? Põhjenda ühe lausega."
+                        ]
+                    },
+                    {
+                        topic: "1.13 Võrdlemine (Rist)",
+                        q: "Kuidas võrrelda kähku 3/5 ja 4/7 ilma uusi murde välja kirjutamata?",
+                        a: "Korruta risti: esimese lugeja teise nimetajaga ja vastupidi.<br><br>Vasakul: 3 · 7 = 21.<br>Paremal: 4 · 5 = 20.<br><br>Kuna 21 > 20, siis <strong>3/5 > 4/7</strong>.",
+                        exercises: [
+                            "Võrdle ristkorrutisega: 1/2 ja 3/5. Kumb on suurem?",
+                            "Võrdle ristkorrutisega: 2/3 ja 3/4.",
+                            "Võrdle ristkorrutisega: 4/5 ja 5/6.",
+                            "Võrdle ristkorrutisega: 3/7 ja 2/5.",
+                            "Võrdle ristkorrutisega: 5/8 ja 2/3.",
+                            "Pane märk ristkorrutist kasutades: 1/4 ... 2/9",
+                            "Pane märk ristkorrutist kasutades: 7/10 ... 2/3"
+                        ]
+                    }
+                ]
+            }
+        ];
+
+        let currentModuleIndex = 0;
+        let currentCardIndex = 0;
+        let isFlipped = false;
+
+        // Abifunktsioon murdude ilusamaks renderdamiseks tekstis
+        function parseTextToFractions(text) {
+            // Asendab kujul N/M murrud veidi ilusama HTML kujundusega
+            return text.replace(/(\d+)\/(\d+)/g, '<span class="font-bold text-blue-700 mx-1">$1/$2</span>');
+        }
+
+        function initApp() {
+            renderModuleFilters();
+            renderExercises();
+            loadCard(0);
+        }
+
+        function renderModuleFilters() {
+            const container = document.getElementById('module-filters');
+            container.innerHTML = '';
+            
+            appData.forEach((mod, idx) => {
+                const btn = document.createElement('button');
+                btn.className = `px-4 py-2 rounded-full text-sm font-medium transition-colors ${idx === currentModuleIndex ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'}`;
+                btn.innerText = mod.module;
+                btn.onclick = () => {
+                    currentModuleIndex = idx;
+                    currentCardIndex = 0;
+                    if(isFlipped) flipCard();
+                    renderModuleFilters();
+                    loadCard(0);
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        function loadCard(index) {
+            const cards = appData[currentModuleIndex].cards;
+            if (index < 0) currentCardIndex = cards.length - 1;
+            else if (index >= cards.length) currentCardIndex = 0;
+            else currentCardIndex = index;
+
+            const card = cards[currentCardIndex];
+            
+            // Juhul kui kaart on ümber pööratud, pööra tagasi enne uue laadimist
+            if (isFlipped) {
+                const cardEl = document.getElementById('flashcard');
+                cardEl.classList.remove('flipped');
+                isFlipped = false;
+                
+                // Oota animatsiooni lõppu, siis vaheta sisu
+                setTimeout(() => {
+                    updateCardDOM(card, cards.length);
+                }, 300);
+            } else {
+                updateCardDOM(card, cards.length);
+            }
+        }
+
+        function updateCardDOM(card, totalCards) {
+            document.getElementById('card-topic').innerText = card.topic;
+            document.getElementById('card-question').innerHTML = parseTextToFractions(card.q);
+            document.getElementById('card-answer').innerHTML = parseTextToFractions(card.a);
+            document.getElementById('card-counter').innerText = `${currentCardIndex + 1} / ${totalCards}`;
+        }
+
+        function flipCard() {
+            const cardEl = document.getElementById('flashcard');
+            isFlipped = !isFlipped;
+            if (isFlipped) {
+                cardEl.classList.add('flipped');
+            } else {
+                cardEl.classList.remove('flipped');
+            }
+        }
+
+        function nextCard() {
+            loadCard(currentCardIndex + 1);
+        }
+
+        function prevCard() {
+            loadCard(currentCardIndex - 1);
+        }
+
+        function renderExercises() {
+            const container = document.getElementById('exercises-container');
+            container.innerHTML = '';
+
+            appData.forEach((mod, modIdx) => {
+                // Mooduli pealkiri
+                const modTitle = document.createElement('h3');
+                modTitle.className = 'text-xl font-bold text-slate-700 mt-8 mb-4 border-b pb-2';
+                modTitle.innerText = mod.module;
+                container.appendChild(modTitle);
+
+                mod.cards.forEach((card, cardIdx) => {
+                    // Akordioni element
+                    const accItem = document.createElement('div');
+                    accItem.className = 'bg-white border border-slate-200 rounded-lg overflow-hidden';
+                    
+                    const header = document.createElement('button');
+                    header.className = 'w-full px-6 py-4 text-left font-medium text-slate-800 bg-slate-50 hover:bg-slate-100 transition-colors flex justify-between items-center';
+                    header.innerHTML = `<span>${card.topic}</span><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-slate-400 transform transition-transform duration-200" id="icon-${modIdx}-${cardIdx}"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>`;
+                    
+                    const body = document.createElement('div');
+                    body.className = 'hidden px-6 py-4 border-t border-slate-100 bg-white';
+                    body.id = `body-${modIdx}-${cardIdx}`;
+
+                    const ol = document.createElement('ol');
+                    ol.className = 'list-decimal list-inside space-y-2 text-slate-600';
+                    card.exercises.forEach(ex => {
+                        const li = document.createElement('li');
+                        li.innerHTML = parseTextToFractions(ex);
+                        ol.appendChild(li);
+                    });
+                    
+                    body.appendChild(ol);
+
+                    // Akordioni avamise loogika
+                    header.onclick = () => {
+                        const isHidden = body.classList.contains('hidden');
+                        const icon = document.getElementById(`icon-${modIdx}-${cardIdx}`);
+                        
+                        // Sulge kõik teised
+                        document.querySelectorAll('[id^="body-"]').forEach(el => el.classList.add('hidden'));
+                        document.querySelectorAll('[id^="icon-"]').forEach(el => el.classList.remove('rotate-180'));
+
+                        if (isHidden) {
+                            body.classList.remove('hidden');
+                            icon.classList.add('rotate-180');
+                        }
+                    };
+
+                    accItem.appendChild(header);
+                    accItem.appendChild(body);
+                    container.appendChild(accItem);
+                });
+            });
+        }
+
+        function switchTab(tab) {
+            const cardsTab = document.getElementById('tab-cards');
+            const exercisesTab = document.getElementById('tab-exercises');
+            const cardsView = document.getElementById('view-cards');
+            const exercisesView = document.getElementById('view-exercises');
+
+            if (tab === 'cards') {
+                cardsTab.classList.add('tab-active', 'text-blue-600');
+                cardsTab.classList.remove('text-slate-600');
+                exercisesTab.classList.remove('tab-active', 'text-blue-600');
+                exercisesTab.classList.add('text-slate-600');
+                
+                cardsView.classList.remove('hidden');
+                exercisesView.classList.add('hidden');
+            } else {
+                exercisesTab.classList.add('tab-active', 'text-blue-600');
+                exercisesTab.classList.remove('text-slate-600');
+                cardsTab.classList.remove('tab-active', 'text-blue-600');
+                cardsTab.classList.add('text-slate-600');
+                
+                exercisesView.classList.remove('hidden');
+                cardsView.classList.add('hidden');
+            }
+        }
+
+        // Käivita rakendus
+        window.onload = initApp;
+
+        // Lisa klaviatuuri tugi (nooled navigeerimiseks, tühik pööramiseks)
+        window.addEventListener('keydown', (e) => {
+            if (document.getElementById('view-cards').classList.contains('hidden')) return; // Ainult kaartide vaates
+            
+            if (e.key === 'ArrowRight') nextCard();
+            if (e.key === 'ArrowLeft') prevCard();
+            if (e.key === ' ' || e.key === 'Enter') {
+                e.preventDefault();
+                flipCard();
+            }
+        });
+    </script>
+</body>
+</html>

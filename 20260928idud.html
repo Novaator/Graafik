@@ -9,6 +9,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Leaflet CSS & JS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 
@@ -140,7 +142,7 @@
                     Iduettevõtteid / 1000 el
                 </button>
                 <button onclick="switchTab('org')" id="tab-org" class="tab-btn px-4 py-3 text-sm text-gray-600 hover:bg-gray-50 flex-1 text-center whitespace-nowrap">
-                    Organisatsioone ja programme / 1000 el
+                    Organisatsioone / 1000 el
                 </button>
             </div>
             
@@ -156,29 +158,24 @@
     </div>
 
     <script>
-        // Manustatud tabeli andmed
         const tableData = {
-            "Hiiumaa": { elanikeArv: 8330, jurIsikud: 1690, tugiOrg: 5, noorteOrg: 1, iduettevotted: 0, idu1000: 0, org1000: 0.6 },
-            "Ida-Virumaa": { elanikeArv: 127909, jurIsikud: 10665, tugiOrg: 26, noorteOrg: 4, iduettevotted: 12, idu1000: 0.094, org1000: 0.203 },
-            "Järvamaa": { elanikeArv: 29573, jurIsikud: 3748, tugiOrg: 9, noorteOrg: 1, iduettevotted: 2, idu1000: 0.068, org1000: 0.304 },
-            "Jõgevamaa": { elanikeArv: 26526, jurIsikud: 3406, tugiOrg: 10, noorteOrg: 5, iduettevotted: 2, idu1000: 0.075, org1000: 0.377 },
-            "Lääne-Virumaa": { elanikeArv: 58309, jurIsikud: 7811, tugiOrg: 11, noorteOrg: 2, iduettevotted: 5, idu1000: 0.086, org1000: 0.189 },
-            "Läänemaa": { elanikeArv: 20200, jurIsikud: 3442, tugiOrg: 7, noorteOrg: 2, iduettevotted: 1, idu1000: 0.05, org1000: 0.347 },
-            "Põlvamaa": { elanikeArv: 23223, jurIsikud: 3116, tugiOrg: 17, noorteOrg: 9, iduettevotted: 0, idu1000: 0, org1000: 0.732 },
-            "Pärnumaa": { elanikeArv: 87015, jurIsikud: 14344, tugiOrg: 19, noorteOrg: 4, iduettevotted: 18, idu1000: 0.207, org1000: 0.218 },
-            "Raplamaa": { elanikeArv: 33733, jurIsikud: 5505, tugiOrg: 12, noorteOrg: 2, iduettevotted: 3, idu1000: 0.089, org1000: 0.356 },
-            "Saaremaa": { elanikeArv: 31521, jurIsikud: 6028, tugiOrg: 14, noorteOrg: 2, iduettevotted: 7, idu1000: 0.222, org1000: 0.444 },
-            "Valgamaa": { elanikeArv: 27034, jurIsikud: 3413, tugiOrg: 16, noorteOrg: 8, iduettevotted: 0, idu1000: 0, org1000: 0.592 },
-            "Viljandimaa": { elanikeArv: 44598, jurIsikud: 6359, tugiOrg: 19, noorteOrg: 6, iduettevotted: 12, idu1000: 0.269, org1000: 0.426 },
-            "Võrumaa": { elanikeArv: 33191, jurIsikud: 4922, tugiOrg: 20, noorteOrg: 8, iduettevotted: 1, idu1000: 0.03, org1000: 0.603 }
+            "Hiiumaa": { elanikeArv: 8330, tugiOrg: 6, noorteOrg: 1, iduettevotted: 0, iduTootajad: 0, idu1000: 0.000, org1000: 0.720, dealroom: 0 },
+            "Ida-Virumaa": { elanikeArv: 127909, tugiOrg: 26, noorteOrg: 4, iduettevotted: 29, iduTootajad: 14, idu1000: 0.227, org1000: 0.203, dealroom: 12 },
+            "Järvamaa": { elanikeArv: 29573, tugiOrg: 10, noorteOrg: 2, iduettevotted: 2, iduTootajad: 3, idu1000: 0.068, org1000: 0.338, dealroom: 2 },
+            "Jõgevamaa": { elanikeArv: 26526, tugiOrg: 10, noorteOrg: 5, iduettevotted: 4, iduTootajad: 10, idu1000: 0.151, org1000: 0.377, dealroom: 2 },
+            "Lääne-Virumaa": { elanikeArv: 58309, tugiOrg: 13, noorteOrg: 2, iduettevotted: 14, iduTootajad: 7, idu1000: 0.240, org1000: 0.223, dealroom: 5 },
+            "Läänemaa": { elanikeArv: 20200, tugiOrg: 7, noorteOrg: 2, iduettevotted: 6, iduTootajad: 14, idu1000: 0.297, org1000: 0.347, dealroom: 1 },
+            "Põlvamaa": { elanikeArv: 23223, tugiOrg: 17, noorteOrg: 9, iduettevotted: 0, iduTootajad: 0, idu1000: 0.000, org1000: 0.732, dealroom: 0 },
+            "Pärnumaa": { elanikeArv: 87015, tugiOrg: 19, noorteOrg: 4, iduettevotted: 46, iduTootajad: 52, idu1000: 0.529, org1000: 0.218, dealroom: 18 },
+            "Raplamaa": { elanikeArv: 33733, tugiOrg: 12, noorteOrg: 2, iduettevotted: 13, iduTootajad: 12, idu1000: 0.385, org1000: 0.356, dealroom: 3 },
+            "Saaremaa": { elanikeArv: 31521, tugiOrg: 13, noorteOrg: 1, iduettevotted: 17, iduTootajad: 17, idu1000: 0.539, org1000: 0.412, dealroom: 7 },
+            "Valgamaa": { elanikeArv: 27034, tugiOrg: 17, noorteOrg: 9, iduettevotted: 5, iduTootajad: 30, idu1000: 0.185, org1000: 0.629, dealroom: 0 },
+            "Viljandimaa": { elanikeArv: 44598, tugiOrg: 20, noorteOrg: 7, iduettevotted: 21, iduTootajad: 181, idu1000: 0.471, org1000: 0.448, dealroom: 12 },
+            "Võrumaa": { elanikeArv: 33191, tugiOrg: 20, noorteOrg: 8, iduettevotted: 7, iduTootajad: 16, idu1000: 0.211, org1000: 0.603, dealroom: 1 }
         };
 
         let currentTab = 'idu';
         let map, geojsonLayer, legendControl;
-        
-        // Leiame maksimumväärtused dünaamiliselt legendi jaoks
-        const maxIdu = Math.max(...Object.values(tableData).map(d => d.idu1000));
-        const maxOrg = Math.max(...Object.values(tableData).map(d => d.org1000));
 
         // Format numbritel
         function formatNumber(num) {
@@ -221,21 +218,21 @@
 
         // Soojuskaardi värvid
         function getColor(val) {
-            if (val === undefined) return '#e5e7eb'; // Hall puuduva info korral (Harjumaa/Tartumaa pildil polnud)
+            if (val === undefined) return '#e5e7eb'; // Hall puuduva info korral
             
             if (currentTab === 'idu') {
-                // Sinised toonid
-                return val > 0.25 ? '#08519c' :
-                       val > 0.15 ? '#3182bd' :
-                       val > 0.08 ? '#6baed6' :
-                       val > 0.04 ? '#bdd7e7' : 
+                // Sinised toonid - kohandatud uutele väärtustele
+                return val > 0.4  ? '#08519c' :
+                       val > 0.25 ? '#3182bd' :
+                       val > 0.15 ? '#6baed6' :
+                       val > 0.05 ? '#bdd7e7' : 
                                     '#eff3ff';
             } else {
-                // Oranžid/Punased toonid
-                return val > 0.6  ? '#a63603' :
-                       val > 0.4  ? '#e6550d' :
-                       val > 0.3  ? '#fd8d3c' :
-                       val > 0.2  ? '#fdbe85' : 
+                // Oranžid/Punased toonid - kohandatud uutele väärtustele
+                return val > 0.65 ? '#a63603' :
+                       val > 0.5  ? '#e6550d' :
+                       val > 0.35 ? '#fd8d3c' :
+                       val > 0.25 ? '#fdbe85' : 
                                     '#feedde';
             }
         }
@@ -302,20 +299,21 @@
                         <tr><th colspan="2">${countyName}</th></tr>
                     </thead>
                     <tbody>
-                        <tr><td>Elanike arv</td><td class="value">${formatNumber(data.elanikeArv)}</td></tr>
-                        <tr><td>Registreeritud juriidiliste isikute arv</td><td class="value">${formatNumber(data.jurIsikud)}</td></tr>
-                        <tr><td>Tugiorganisatsioonide ja -programmide arv</td><td class="value">${data.tugiOrg}</td></tr>
-                        <tr><td>sh noorteettevõtlust edendavate organisatsioonide ja programmide arv</td><td class="value">${data.noorteOrg}</td></tr>
-                        <tr><td>Registreeritud iduettevõtete arv</td><td class="value">${data.iduettevotted}</td></tr>
-                        <tr><td>Iduettevõtteid / 1000 elaniku kohta</td><td class="value text-blue-600 font-bold">${formatFloat(data.idu1000)}</td></tr>
-                        <tr><td>Organisatsioone ja programme / 1000 elaniku kohta</td><td class="value text-orange-600 font-bold">${formatFloat(data.org1000)}</td></tr>
+                        <tr><td>Elanike arv (01.01.2026)</td><td class="value">${formatNumber(data.elanikeArv)}</td></tr>
+                        <tr><td>Tugiorganisatsioone ja -programme (30.09.2026)</td><td class="value">${data.tugiOrg}</td></tr>
+                        <tr><td>sh noortele suunatud</td><td class="value">${data.noorteOrg}</td></tr>
+                        <tr><td>Idufirmasid (unicorns.ee, 30.09.2026)</td><td class="value">${data.iduettevotted}</td></tr>
+                        <tr><td>Idufirmade töötajaid (II kv 2026)</td><td class="value">${formatNumber(data.iduTootajad)}</td></tr>
+                        <tr><td>Võrdluseks: idufirmasid Dealroomis</td><td class="value">${data.dealroom}</td></tr>
+                        <tr><td colspan="2" style="border-bottom: 2px solid #e5e7eb; padding-top: 8px;"></td></tr>
+                        <tr><td>Idufirmasid / 1000 el kohta</td><td class="value text-blue-600 font-bold">${formatFloat(data.idu1000)}</td></tr>
+                        <tr><td>Tugiorg. / 1000 el kohta</td><td class="value text-orange-600 font-bold">${formatFloat(data.org1000)}</td></tr>
                     </tbody>
                 </table>
             `;
         }
 
         function onEachFeature(feature, layer) {
-            // Find county name
             let pName = null;
             for (let key in feature.properties) {
                 if (typeof feature.properties[key] === 'string' && (feature.properties[key].includes('maa') || feature.properties[key].includes('County'))) {
@@ -326,13 +324,11 @@
             if(!pName) pName = feature.properties.name || "Tundmatu";
             let countyName = normalizeCountyName(pName);
             
-            // Add interactions
             layer.on({
                 mouseover: highlightFeature,
                 mouseout: resetHighlight
             });
 
-            // Add Popup
             layer.bindPopup(createPopupContent(countyName, tableData[countyName]));
         }
 
@@ -349,7 +345,7 @@
             // Paneme zoom control'i paremale alla
             L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-            // Aluskaart Esri-lt (hele ja neutraalne, ei vaja API võtit)
+            // Aluskaart Esri-lt
             L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
                 attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ',
                 maxZoom: 16
@@ -387,13 +383,12 @@
             legendControl.onAdd = function (map) {
                 var div = L.DomUtil.create('div', 'info legend');
                 let grades = [];
-                let labels = [];
 
                 if (currentTab === 'idu') {
-                    grades = [0, 0.04, 0.08, 0.15, 0.25];
+                    grades = [0, 0.05, 0.15, 0.25, 0.4];
                     div.innerHTML += '<div class="font-semibold mb-1 text-xs">Iduettevõtteid / 1000 el</div>';
                 } else {
-                    grades = [0, 0.2, 0.3, 0.4, 0.6];
+                    grades = [0, 0.25, 0.35, 0.5, 0.65];
                     div.innerHTML += '<div class="font-semibold mb-1 text-xs">Organisatsioone / 1000 el</div>';
                 }
 

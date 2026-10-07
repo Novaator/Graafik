@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tallinna lennujaama reisijate arv (2017-2026)</title>
+    <title>Tallinna lennujaama reisijad (2017-2026)</title>
     <!-- Kasutame Chart.js teeki (versioon fikseeritud) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.js"></script>
     <!-- Kasutame Tailwind CSSi stiilimiseks (versioon fikseeritud) -->
@@ -34,7 +34,7 @@
 
     <div class="w-full max-w-6xl bg-white rounded-xl shadow-lg p-6 space-y-8">
         <header class="text-center">
-            <h2 class="text-3xl font-bold text-gray-800">Tallinna lennujaama reisijate arv aastate ja kuude lõikes (2017-2026)</h1>
+            <h2 class="text-3xl font-bold text-gray-800">Tallinna lennujaama reisijate arv kuude ja aastate lõikes</h1>
         </header>
 
         <!-- Ülemine joongraafik (kuude lõikes) -->
@@ -183,14 +183,8 @@
             }
         });
 
-        // Genereerime tulpgraafiku (viimane aasta on tumedam)
-        const barColors = years.map((_, index) => {
-             if (index === years.length - 1) {
-                 return 'rgba(15, 37, 104, 0.9)'; // Tume viimane aasta
-             } else {
-                 return 'rgba(59, 130, 246, 0.6)'; // Heledamad varasemad aastad
-             }
-        });
+        // Genereerime tulpgraafiku värvid, jäljendades ülemise graafiku loogikat
+        const barColors = years.map((_, index) => getColorForYear(index, years.length));
 
         const ctxBar = document.getElementById('yearlyBarChart').getContext('2d');
         const yearlyBarChart = new Chart(ctxBar, {

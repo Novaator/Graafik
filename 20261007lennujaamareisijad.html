@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tallinna lennujaama reisijate arv (2017-2026)</title>
+    <!-- Kasutame Chart.js teeki (versioon fikseeritud) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.js"></script>
+    <!-- Kasutame Tailwind CSSi stiilimiseks (versioon fikseeritud) -->
+    <script src="https://cdn.tailwindcss.com/3.4.3"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Tailwind gray-100 */
+        }
+        .chart-container {
+            position: relative;
+            margin: auto;
+            width: 100%;
+        }
+        .line-chart-container {
+            height: 50vh;
+            max-height: 400px; /* Piiratud maksimaalne kõrgus 400px */
+            min-height: 300px;
+        }
+        .bar-chart-container {
+            height: 25vh;
+            max-height: 250px; /* Piiratud maksimaalne kõrgus 250px */
+            min-height: 200px;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8 flex flex-col items-center">
+
+    <div class="w-full max-w-6xl bg-white rounded-xl shadow-lg p-6 space-y-8">
+        <header class="text-center">
+            <h1 class="text-3xl font-bold text-gray-800">Tallinna lennujaama reisijate arv</h1>
+        </header>
+
+        <!-- Ülemine joongraafik (kuude lõikes) -->
+        <div class="chart-container line-chart-container">
+            <canvas id="monthlyLineChart"></canvas>
+        </div>
+
+        <hr class="border-gray-200">
+
+        <!-- Alumine tulpgraafik (aastate lõikes) -->
+        <div class="chart-container bar-chart-container w-full max-w-4xl mx-auto">
+            <canvas id="yearlyBarChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        const months = ['Jaanuar', 'Veebruar', 'Märts', 'Aprill', 'Mai', 'Juuni', 'Juuli', 'August', 'September', 'Oktoober', 'November', 'Detsember'];
+        const years = ['2017', '2018', '2019', '2020', '2021', '2022', '2023', '2024', '2025', '2026'];
+
+        // Andmed on siia sisestatud käsitsi, tuginedes kasutaja antud ekraanipiltidele (pilt.png / pilt_2.png)
+        // Mõned andmed puuduvad hilisematel kuudel, kasutame null väärtust (mis hiljem filtreeritakse välja)
+        const passengerData = {
+            '2017': [154783, 149564, 184431, 203869, 234008, 259775, 272688, 274075, 266751, 257027, 202701, 188600],
+            '2018': [175197, 171163, 210693, 238756, 275550, 300621, 312348, 305980, 283921, 284376, 227051, 221945],
+            '2019': [205024, 195826, 231074, 266242, 301185, 317662, 319488, 326057, 311214, 316689, 242374, 235075],
+            '2020': [213445, 211646, 103300, 2999, 10541, 25126, 75696, 84397, 45313, 35026, 25945, 30155],
+            '2021': [27691, 25061, 33290, 44650, 54891, 97912, 158764, 177589, 165420, 184791, 164125, 166873],
+            '2022': [132720, 127457, 172686, 216857, 272183, 281260, 283644, 287004, 276113, 283485, 207133, 207137],
+            '2023': [195381, 190227, 232935, 232943, 273603, 270199, 276967, 284528, 274160, 284245, 219754, 225505],
+            '2024': [209495, 200937, 245121, 297961, 333233, 329464, 343701, 350209, 333012, 338861, 248310, 261810],
+            '2025': [219417, 216900, 264572, 279359, 313673, 326958, 323136, 334563, 313755, 348620, 260677, 287343],
+            '2026': [227376, 227319, 270767, 313297, 354108, 373546, 384607, 389523, 355725, null, null, null] // 2026 lõpp on tühi vastavalt pildile
+        };
+
+        const yearlyTotals = [
+            2648272, // 2017
+            3007601, // 2018
+            3267910, // 2019
+            863589,  // 2020
+            1301057, // 2021
+            2747679, // 2022
+            2960447, // 2023
+            3492114, // 2024
+            3488973, // 2025
+            2896268  // 2026
+        ];
+
+        // Värvide funktsioon - viimane aasta (2026) on tume, varasemad lähevad heledamaks
+        function getColorForYear(yearIndex, totalYears) {
+            if (yearIndex === totalYears - 1) {
+                // Viimane aasta (kõige tumedam, nt tumesinine)
+                return 'rgba(15, 37, 104, 1)'; // Tumesinine
+            } else {
+                // Mida vanem aasta, seda heledam sinine
+                // yearIndex 0 (2017) -> kõige heledam, yearIndex 8 (2025) -> keskmiselt tume
+                const alpha = 0.15 + (0.5 * (yearIndex / (totalYears - 1)));
+                return `rgba(59, 130, 246, ${alpha})`; // Tailwind blue-500 baasil
+            }
+        }
+        
+        function getBorderWidth(yearIndex, totalYears) {
+            // Viimane aasta on paksema joonega
+            return (yearIndex === totalYears - 1) ? 3 : 1.5;
+        }
+
+        // Genereerime joongraafiku andmekogumid
+        const lineDatasets = years.map((year, index) => {
+            const color = getColorForYear(index, years.length);
+            return {
+                label: year,
+                data: passengerData[year],
+                borderColor: color,
+                backgroundColor: color, // Mõjutab legendi värvi
+                borderWidth: getBorderWidth(index, years.length),
+                pointRadius: index === years.length - 1 ? 4 : 2, // Väikesed punktid varasematel aastatel, et hover töötaks
+                pointHoverRadius: 6,
+                hitRadius: 15, // Suurendame nähtamatut hover-ala, et hiirega oleks lihtsam tabada
+                pointBackgroundColor: color, // Määrab punktide ja legendi värvi õigeks
+                pointBorderColor: color,
+                tension: 0.3, // Teeb jooned veidi sujuvamaks
+                fill: false
+            };
+        });
+
+        const ctxLine = document.getElementById('monthlyLineChart').getContext('2d');
+        const monthlyLineChart = new Chart(ctxLine, {
+            type: 'line',
+            data: {
+                labels: months,
+                datasets: lineDatasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'nearest', // Leiab kursorile lähima punkti
+                    intersect: true,
+                },
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: {
+                            usePointStyle: true,
+                            boxWidth: 8
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y !== null) {
+                                    // Formateerime numbrid tühikutega (nt 300 000)
+                                    label += new Intl.NumberFormat('et-EE').format(context.parsed.y);
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Reisijate arv kuus',
+                            font: { size: 14, weight: 'bold' }
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return new Intl.NumberFormat('et-EE').format(value);
+                            }
+                        },
+                        grid: {
+                            color: '#e5e7eb' // Tailwind gray-200
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+
+        // Genereerime tulpgraafiku (viimane aasta on tumedam)
+        const barColors = years.map((_, index) => {
+             if (index === years.length - 1) {
+                 return 'rgba(15, 37, 104, 0.9)'; // Tume viimane aasta
+             } else {
+                 return 'rgba(59, 130, 246, 0.6)'; // Heledamad varasemad aastad
+             }
+        });
+
+        const ctxBar = document.getElementById('yearlyBarChart').getContext('2d');
+        const yearlyBarChart = new Chart(ctxBar, {
+            type: 'bar',
+            data: {
+                labels: years,
+                datasets: [{
+                    label: 'Reisijate koguarv aastas',
+                    data: yearlyTotals,
+                    backgroundColor: barColors,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false // Peidame legendi, kuna see on ilmne
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return new Intl.NumberFormat('et-EE').format(context.parsed.y) + ' reisijat';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Reisijaid kokku',
+                            font: { size: 12, weight: 'bold' }
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                // Kuvame numbrid miljonites või tuhandetes lühemalt, nt 3M
+                                if (value >= 1000000) {
+                                    return (value / 1000000).toFixed(1) + ' M';
+                                }
+                                return new Intl.NumberFormat('et-EE').format(value);
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

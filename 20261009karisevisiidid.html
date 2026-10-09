@@ -465,7 +465,9 @@
       ]
     };
 
+    // Terviklik eestikeelsete riiginimede nimistu (ISO 3166-1 numbrilised koodid)
     const ESTONIAN_COUNTRY_NAMES = {
+      // Euroopa
       "233": "Eesti",
       "428": "Läti",
       "440": "Leedu",
@@ -503,31 +505,86 @@
       "498": "Moldova",
       "112": "Valgevene",
       "643": "Venemaa",
-      "792": "Türgi",
       "196": "Küpros",
       "470": "Malta",
+      "442": "Luksemburg",
+      "020": "Andorra",
+      "492": "Monaco",
+      "438": "Liechtenstein",
+      "674": "San Marino",
+      "336": "Vatikan",
+
+      // Lõuna-Ameerika
+      "032": "Argentina",
+      "068": "Boliivia",
+      "076": "Brasiilia",
+      "152": "Tšiili",
+      "170": "Colombia",
+      "218": "Ecuador",
+      "238": "Falklandi saared",
+      "254": "Prantsuse Guajaana",
+      "328": "Guyana",
+      "600": "Paraguay",
+      "604": "Peruu",
+      "740": "Suriname",
+      "858": "Uruguay",
+      "862": "Venezuela",
+
+      // Antarktika
+      "010": "Antarktika",
+
+      // Okeaania ja Austraalia
+      "036": "Austraalia",
+      "554": "Uus-Meremaa",
+      "598": "Paapua Uus-Guinea",
+      "242": "Fidži",
+      "090": "Saalomoni Saared",
+      "548": "Vanuatu",
+      "540": "Uus-Kaledoonia",
+
+      // Põhja- ja Kesk-Ameerika, Kariibi mere piirkond
       "840": "Ameerika Ühendriigid",
       "124": "Kanada",
       "484": "Mehhiko",
-      "076": "Brasiilia",
-      "032": "Argentina",
-      "156": "Hiina",
-      "392": "Jaapan",
-      "410": "Lõuna-Korea",
-      "356": "India",
+      "304": "Gröönimaa",
+      "044": "Bahama",
+      "084": "Belize",
+      "188": "Costa Rica",
+      "192": "Kuuba",
+      "214": "Dominikaani Vabariik",
+      "222": "El Salvador",
+      "320": "Guatemala",
+      "332": "Haiti",
+      "340": "Honduras",
+      "388": "Jamaica",
+      "558": "Nicaragua",
+      "591": "Panama",
+      "630": "Puerto Rico",
+      "780": "Trinidad ja Tobago",
+
+      // Aasia ja Lähis-Ida
+      "792": "Türgi",
+      "268": "Gruusia",
+      "051": "Armeenia",
+      "031": "Aserbaidžaan",
       "368": "Iraak",
       "400": "Jordaania",
       "376": "Iisrael",
       "275": "Palestiina",
       "784": "Araabia Ühendemiraadid",
       "682": "Saudi Araabia",
-      "818": "Egiptus",
-      "024": "Angola",
-      "072": "Botswana",
-      "710": "Lõuna-Aafrika Vabariik",
-      "036": "Austraalia",
-      "554": "Uus-Meremaa",
-      "304": "Gröönimaa",
+      "414": "Kuveit",
+      "634": "Katar",
+      "512": "Omaan",
+      "887": "Jeemen",
+      "364": "Iraan",
+      "422": "Liibanon",
+      "760": "Süüria",
+      "156": "Hiina",
+      "392": "Jaapan",
+      "410": "Lõuna-Korea",
+      "408": "Põhja-Korea",
+      "356": "India",
       "398": "Kasahstan",
       "860": "Usbekistan",
       "762": "Tadžikistan",
@@ -542,40 +599,26 @@
       "586": "Pakistan",
       "050": "Bangladesh",
       "524": "Nepal",
+      "064": "Bhutan",
       "144": "Sri Lanka",
-      "152": "Tšiili",
-      "170": "Colombia",
-      "604": "Peruu",
-      "862": "Venezuela",
-      "068": "Boliivia",
-      "600": "Paraguay",
-      "858": "Uruguay",
-      "218": "Ecuador",
-      "044": "Bahama",
-      "192": "Kuuba",
-      "388": "Jamaica",
-      "332": "Haiti",
-      "214": "Dominikaani Vabariik",
-      "422": "Liibanon",
-      "760": "Süüria",
-      "414": "Kuveit",
-      "634": "Katar",
-      "512": "Omaan",
-      "887": "Jeemen",
-      "364": "Iraan",
-      "051": "Armeenia",
-      "031": "Aserbaidžaan",
-      "268": "Gruusia",
-      "336": "Vatikan",
-      "674": "San Marino",
-      "438": "Liechtenstein",
-      "492": "Monaco",
-      "020": "Andorra",
+      "104": "Myanmar",
+      "418": "Laos",
+      "116": "Kambodža",
+      "004": "Afganistan",
+      "702": "Singapur",
+      "158": "Taiwan",
+
+      // Aafrika
+      "818": "Egiptus",
+      "024": "Angola",
+      "072": "Botswana",
+      "710": "Lõuna-Aafrika Vabariik",
       "012": "Alžeeria",
       "788": "Tuneesia",
       "434": "Liibüa",
       "504": "Maroko",
       "729": "Sudaan",
+      "728": "Lõuna-Sudaan",
       "466": "Mali",
       "562": "Niger",
       "148": "Tšaad",
@@ -604,6 +647,85 @@
       "894": "Sambia",
       "450": "Madagaskar"
     };
+
+    // Tagame, et koodid toimivad nii juhtnulliga ("036") kui ka ilma juhtnullita ("36")
+    Object.keys(ESTONIAN_COUNTRY_NAMES).forEach(code => {
+      const num = parseInt(code, 10);
+      if (!isNaN(num)) {
+        const unpadded = String(num);
+        const padded = String(num).padStart(3, '0');
+        const estName = ESTONIAN_COUNTRY_NAMES[code];
+        ESTONIAN_COUNTRY_NAMES[unpadded] = estName;
+        ESTONIAN_COUNTRY_NAMES[padded] = estName;
+      }
+    });
+
+    // Otsetõlgete varu-sõnastik ingliskeelsete nimede alusel (nt d.properties.name)
+    const ENGLISH_TO_ESTONIAN_NAMES = {
+      "Australia": "Austraalia",
+      "Antarctica": "Antarktika",
+      "Brazil": "Brasiilia",
+      "Argentina": "Argentina",
+      "Bolivia": "Boliivia",
+      "Chile": "Tšiili",
+      "Colombia": "Colombia",
+      "Ecuador": "Ecuador",
+      "Guyana": "Guyana",
+      "Paraguay": "Paraguay",
+      "Peru": "Peruu",
+      "Suriname": "Suriname",
+      "Uruguay": "Uruguay",
+      "Venezuela": "Venezuela",
+      "Falkland Islands": "Falklandi saared",
+      "Falkland Is.": "Falklandi saared",
+      "French Guiana": "Prantsuse Guajaana",
+      "Fr. Guiana": "Prantsuse Guajaana",
+      "New Zealand": "Uus-Meremaa",
+      "Papua New Guinea": "Paapua Uus-Guinea",
+      "Fiji": "Fidži",
+      "Solomon Islands": "Saalomoni Saared",
+      "Solomon Is.": "Saalomoni Saared",
+      "Vanuatu": "Vanuatu",
+      "New Caledonia": "Uus-Kaledoonia",
+      "Greenland": "Gröönimaa",
+      "Canada": "Kanada",
+      "United States": "Ameerika Ühendriigid",
+      "United States of America": "Ameerika Ühendriigid",
+      "USA": "Ameerika Ühendriigid",
+      "Mexico": "Mehhiko",
+      "Russia": "Venemaa",
+      "China": "Hiina",
+      "India": "India",
+      "Kazakhstan": "Kasahstan",
+      "Mongolia": "Mongoolia",
+      "South Africa": "Lõuna-Aafrika Vabariik"
+    };
+
+    // Universaalne abifunktsioon korrektse eestikeelse riiginime leidmiseks
+    function getCountryEstonianName(d) {
+      if (!d) return "Välisriik";
+      const rawId = d.id !== undefined && d.id !== null ? String(d.id).trim() : "";
+      const num = parseInt(rawId, 10);
+      const padId = !isNaN(num) ? String(num).padStart(3, '0') : "";
+      const unpadId = !isNaN(num) ? String(num) : "";
+      const engName = (d.properties && d.properties.name) ? d.properties.name.trim() : "";
+
+      // 1. Kontrollime numbriliste koodide järgi
+      if (padId && ESTONIAN_COUNTRY_NAMES[padId]) return ESTONIAN_COUNTRY_NAMES[padId];
+      if (unpadId && ESTONIAN_COUNTRY_NAMES[unpadId]) return ESTONIAN_COUNTRY_NAMES[unpadId];
+      if (rawId && ESTONIAN_COUNTRY_NAMES[rawId]) return ESTONIAN_COUNTRY_NAMES[rawId];
+
+      // 2. Kontrollime ingliskeelse nime varu-sõnastikust
+      if (engName && ENGLISH_TO_ESTONIAN_NAMES[engName]) return ENGLISH_TO_ESTONIAN_NAMES[engName];
+      if (engName) {
+        const lower = engName.toLowerCase();
+        for (const [enKey, estVal] of Object.entries(ENGLISH_TO_ESTONIAN_NAMES)) {
+          if (enKey.toLowerCase() === lower) return estVal;
+        }
+      }
+
+      return engName || "Välisriik";
+    }
 
     // Normaliseerime visiitide andmed ametlike nimede ja lippudega
     Object.keys(visitsData).forEach(year => {
@@ -837,7 +959,7 @@
 
       tooltip.classList.remove('opacity-0');
 
-      const estonianName = ESTONIAN_COUNTRY_NAMES[normId] || (d.properties && d.properties.name) || "Välisriik";
+      const estonianName = getCountryEstonianName(d);
 
       if (isEstonia) {
         tooltip.innerHTML = `🇪🇪 <b class="text-[16pt]">Eesti</b> <span class="text-blue-300 text-[14pt]">(koduriik)</span>`;

@@ -56,20 +56,34 @@
       fill: #0284c7 !important; /* Kodumaa Eesti helesinine */
     }
 
-    /* Täisekraanirežiim */
+    /* Täisekraani režiimi stiilid (nii brauseri Fullscreen API kui ka CSS varuvariandi jaoks) */
+    #chart-widget:fullscreen,
+    #chart-widget:-webkit-full-screen,
     #chart-widget.is-fullscreen {
-      position: fixed !important;
-      inset: 0 !important;
       width: 100vw !important;
       height: 100vh !important;
       max-width: 100vw !important;
       max-height: 100vh !important;
-      z-index: 99999 !important;
       border-radius: 0 !important;
       margin: 0 !important;
+      border: none !important;
     }
 
-    /* Peidetud või stiilsed kerimisribad */
+    #chart-widget.is-fullscreen {
+      position: fixed !important;
+      inset: 0 !important;
+      z-index: 99999 !important;
+    }
+
+    #chart-widget:fullscreen #map-viewport,
+    #chart-widget:-webkit-full-screen #map-viewport,
+    #chart-widget.is-fullscreen #map-viewport {
+      flex: 1 1 0% !important;
+      height: 100% !important;
+      min-height: 0 !important;
+    }
+
+    /* Skrolliribade stiilid */
     .custom-scrollbar::-webkit-scrollbar {
       height: 5px;
       width: 5px;
@@ -98,7 +112,7 @@
   <div id="chart-widget" class="relative w-full max-w-[670px] bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden flex flex-col transition-all duration-300">
     
     <!-- Graafiku päis: pealkirjad vasakul ühes plokis, nupud paremal -->
-    <header class="bg-slate-900 text-white px-3 sm:px-4 pt-3.5 pb-2.5 select-none border-b border-slate-800">
+    <header class="bg-slate-900 text-white px-3 sm:px-4 pt-3 pb-2 select-none border-b border-slate-800 shrink-0">
       <div class="flex items-start justify-between gap-2 mb-2">
         <!-- Pealkirjad koos ühises plokis: pealkirjas pole boldi, alapealkiri mahub ühele reale -->
         <div class="min-w-0 flex-1 pr-1">
@@ -112,13 +126,13 @@
 
         <!-- Parema serva nupud: 'Ava üle ekraani' ja selle all kollakasoranž 'Juhend' -->
         <div class="flex flex-col gap-1.5 shrink-0 pt-0.5 w-[114px]">
-          <button id="fullscreen-btn" title="Muuda täisekraaniks / normaliseeri" class="w-full px-2 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white shadow-sm transition-colors flex items-center justify-center gap-1.5 text-xs font-medium leading-tight">
+          <button id="fullscreen-btn" type="button" title="Muuda täisekraaniks / normaliseeri" class="w-full px-2 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white shadow-sm transition-colors flex items-center justify-center gap-1.5 text-xs font-medium leading-tight">
             <svg id="fullscreen-icon" class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
             </svg>
             <span id="fullscreen-text" class="truncate">Ava üle ekraani</span>
           </button>
-          <button id="guide-btn" title="Vaata kaardi kasutusjuhendit" class="w-full px-2 py-1 rounded-lg bg-amber-500 hover:bg-amber-600 text-white shadow-sm transition-colors flex items-center justify-center gap-1.5 text-xs font-semibold leading-tight">
+          <button id="guide-btn" type="button" title="Vaata kaardi kasutusjuhendit" class="w-full px-2 py-1 rounded-lg bg-amber-500 hover:bg-amber-600 text-white shadow-sm transition-colors flex items-center justify-center gap-1.5 text-xs font-semibold leading-tight">
             <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
               <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
             </svg>
@@ -154,7 +168,7 @@
     </header>
 
     <!-- Kaardiala: kõrgus vähemalt 550px -->
-    <div id="map-viewport" class="relative w-full h-[550px] min-h-[550px] bg-[#eef2f6] overflow-hidden select-none">
+    <div id="map-viewport" class="relative w-full h-[550px] min-h-[550px] bg-[#eef2f6] overflow-hidden select-none flex-1">
       <svg id="map-svg" class="absolute inset-0 w-full h-full block cursor-grab active:cursor-grabbing"></svg>
 
       <!-- Laadimisindikaator -->
@@ -170,13 +184,13 @@
 
       <!-- Kaardi suuminupud ja vaate lähtestamine -->
       <div class="absolute bottom-4 right-4 z-10 flex flex-col gap-1.5 bg-white/95 backdrop-blur-sm p-1 rounded-xl shadow-md border border-slate-200">
-        <button id="zoom-in" title="Suurenda kaarti" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-700 hover:bg-slate-100 transition-colors font-bold text-lg leading-none">
+        <button id="zoom-in" type="button" title="Suurenda kaarti" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-700 hover:bg-slate-100 transition-colors font-bold text-lg leading-none">
           +
         </button>
-        <button id="zoom-out" title="Vähenda kaarti" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-700 hover:bg-slate-100 transition-colors font-bold text-lg leading-none">
+        <button id="zoom-out" type="button" title="Vähenda kaarti" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-700 hover:bg-slate-100 transition-colors font-bold text-lg leading-none">
           −
         </button>
-        <button id="zoom-reset" title="Lähtesta algvaade" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-700 hover:bg-slate-100 transition-colors text-xs font-semibold">
+        <button id="zoom-reset" type="button" title="Lähtesta algvaade" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-700 hover:bg-slate-100 transition-colors text-xs font-semibold">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path d="M3 12a9 9 0 109-9 9.75 9.75 0 00-6.74 2.74L3 8"/>
             <path d="M3 3v5h5"/>
@@ -184,8 +198,8 @@
         </button>
       </div>
 
-      <!-- Legendi bänner all vasakul: 14 pt kirjasuurus ja uuendatud järjestus -->
-      <div class="absolute bottom-4 left-4 z-10 bg-white/95 backdrop-blur-sm px-3.5 py-2.5 rounded-xl shadow-md border border-slate-200 text-[14pt] flex flex-col gap-2 leading-tight">
+      <!-- Legendi bänner all vasakul: 14 pt kirjasuurus ja nõutud järjestus -->
+      <div class="absolute bottom-4 left-4 z-10 bg-white/95 backdrop-blur-sm px-3.5 py-2.5 rounded-xl shadow-md border border-slate-200 text-[14pt] flex flex-col gap-2 leading-tight pointer-events-none">
         <div class="flex items-center gap-2.5">
           <span class="w-3.5 h-3.5 rounded bg-[#0284c7] inline-block shadow-sm shrink-0"></span>
           <span class="text-slate-800 font-medium">Eesti</span>
@@ -206,7 +220,7 @@
     </div>
 
     <!-- Kiirvaliku riba kaardi all: aasta rippmenüü ning sikutatav riikide nimistu -->
-    <div class="bg-white border-t border-slate-200 px-3 sm:px-4 py-2 flex items-center justify-between gap-3 text-xs">
+    <div class="bg-white border-t border-slate-200 px-3 sm:px-4 py-2 flex items-center justify-between gap-3 text-xs shrink-0">
       <div class="flex items-center gap-2 overflow-hidden flex-1">
         <label for="bottom-year-select" class="text-slate-600 font-medium shrink-0 flex items-center gap-1.5">
           <span>Aasta:</span>
@@ -230,9 +244,9 @@
     </div>
 
     <!-- Üksikasjade külgkaart: 16 pt font kirjeldustele, laius 440px -->
-    <div id="details-modal" class="absolute inset-y-0 right-0 w-full sm:w-[440px] bg-white/95 backdrop-blur-md shadow-2xl border-l border-slate-200 z-40 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col text-[16pt]">
+    <div id="details-modal" class="absolute inset-y-0 right-0 w-full sm:w-[440px] bg-white/95 backdrop-blur-md shadow-2xl border-l border-slate-200 z-40 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
       <!-- Modal päis -->
-      <div class="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/90">
+      <div class="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/90 shrink-0">
         <div class="flex items-center gap-3">
           <span id="detail-flag" class="text-3xl leading-none">🌍</span>
           <div>
@@ -240,7 +254,7 @@
             <p id="detail-year-badge" class="text-[14pt] text-blue-700 font-semibold">Visiitide nimekiri</p>
           </div>
         </div>
-        <button id="close-modal-btn" title="Sulge aken" class="p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors">
+        <button id="close-modal-btn" type="button" title="Sulge aken" class="p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
             <path d="M6 18L18 6M6 6l12 12"/>
           </svg>
@@ -254,15 +268,15 @@
           <img id="detail-photo" src="" alt="Visiidi foto" class="w-full h-full object-cover">
         </div>
 
-        <!-- Tegevuste loend (toetab mitut visiiti samasse riiki) -->
+        <!-- Tegevuste loend -->
         <div id="visits-list-container" class="space-y-3.5">
           <!-- Täidetakse dünaamiliselt -->
         </div>
       </div>
 
       <!-- Modali jalus -->
-      <div class="p-3 border-t border-slate-200 bg-slate-50/60 flex justify-end">
-        <button id="modal-close-bottom" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-lg text-[15pt] font-semibold transition-colors">
+      <div class="p-3 border-t border-slate-200 bg-slate-50/60 flex justify-end shrink-0">
+        <button id="modal-close-bottom" type="button" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-lg text-[15pt] font-semibold transition-colors">
           Sulge aken
         </button>
       </div>
@@ -280,6 +294,7 @@
       "Prantsusmaa": { id: "250", flag: "🇫🇷", name: "Prantsusmaa" },
       "Belgia": { id: "056", flag: "🇧🇪", name: "Belgia" },
       "Ameerika Ühendriigid": { id: "840", flag: "🇺🇸", name: "Ameerika Ühendriigid" },
+      "USA": { id: "840", flag: "🇺🇸", name: "Ameerika Ühendriigid" },
       "Rootsi": { id: "752", flag: "🇸🇪", name: "Rootsi" },
       "Norra": { id: "578", flag: "🇳🇴", name: "Norra" },
       "Ukraina": { id: "804", flag: "🇺🇦", name: "Ukraina" },
@@ -291,14 +306,17 @@
       "Taani": { id: "208", flag: "🇩🇰", name: "Taani" },
       "Island": { id: "352", flag: "🇮🇸", name: "Island" },
       "Ühendkuningriik": { id: "826", flag: "🇬🇧", name: "Ühendkuningriik" },
+      "Suurbritannia": { id: "826", flag: "🇬🇧", name: "Ühendkuningriik" },
       "Malta": { id: "470", flag: "🇲🇹", name: "Malta" },
       "Egiptus": { id: "818", flag: "🇪🇬", name: "Egiptus" },
       "Kanada": { id: "124", flag: "🇨🇦", name: "Kanada" },
       "Slovakkia": { id: "703", flag: "🇸🇰", name: "Slovakkia" },
       "Madalmaad": { id: "528", flag: "🇳🇱", name: "Madalmaad" },
+      "Holland": { id: "528", flag: "🇳🇱", name: "Madalmaad" },
       "Albaania": { id: "008", flag: "🇦🇱", name: "Albaania" },
       "Portugal": { id: "620", flag: "🇵🇹", name: "Portugal" },
       "Korea Vabariik": { id: "410", flag: "🇰🇷", name: "Lõuna-Korea" },
+      "Lõuna-Korea": { id: "410", flag: "🇰🇷", name: "Lõuna-Korea" },
       "Iraak": { id: "368", flag: "🇮🇶", name: "Iraak" },
       "Angola": { id: "024", flag: "🇦🇴", name: "Angola" },
       "Küpros": { id: "196", flag: "🇨🇾", name: "Küpros" },
@@ -315,6 +333,7 @@
       "Kreeka": { id: "300", flag: "🇬🇷", name: "Kreeka" }
     };
 
+    // Kõik visiidid 2021-2026 täpselt kasutaja andmete järgi
     const visitsData = {
       2021: [
         { country: "Läti", action: "Ametiaja alguse visiit" },
@@ -324,7 +343,7 @@
         { country: "Prantsusmaa", action: "Ametiaja alguse visiit" },
         { country: "Leedu", action: "Ametiaja alguse visiit" },
         { country: "Belgia", action: "Ametiaja alguse visiit" },
-        { country: "Ameerika Ühendriigid", action: "Ametiaja alguse visiit" }
+        { country: "USA", action: "Ametiaja alguse visiit" }
       ],
       2022: [
         { country: "Belgia", action: "Kohtumised NATOs ja Belgia kuningaga Brüsselis" },
@@ -345,8 +364,8 @@
         { country: "Läti", action: "Kolme mere tippkohtumine Riias" },
         { country: "Island", action: "Balti riikide diplomaatiliste suhete sõlmimise 30. aastapäeva pidulik tseremoonia Reykjavíkis" },
         { country: "Ühendkuningriik", action: "Kuninganna Elizabeth II matusetalitus Londonis" },
-        { country: "Ameerika Ühendriigid", action: "ÜRO Peaassamblee kõrgetasemelise avanädala üritused New Yorgis" },
-        { country: "Ameerika Ühendriigid", action: "Töövisiit koos äridelegatsiooniga Texasesse; sõnavõtt Texase ülikoolis" },
+        { country: "USA", action: "ÜRO Peaassamblee kõrgetasemelise avanädala üritused New Yorgis" },
+        { country: "USA", action: "Töövisiit koos äridelegatsiooniga Texasesse; sõnavõtt Texase ülikoolis" },
         { country: "Malta", action: "Arraiolose grupi kohtumine Vallettas" },
         { country: "Island", action: "Arctic Circle Assembly Reykjavíkis; loeng Islandi ülikoolis" },
         { country: "Egiptus", action: "ÜRO kliimakonverents COP27 Sharm el-Sheikhis" },
@@ -366,7 +385,7 @@
         { country: "Albaania", action: "Ametlik visiit" },
         { country: "Ühendkuningriik", action: "Ukraina ülesehituskonverents Londonis; visiit koos äridelegatsiooniga" },
         { country: "Rumeenia", action: "Kolme mere tippkohtumine Bukarestis" },
-        { country: "Ameerika Ühendriigid", action: "ÜRO Peaassamblee kõrgetasemelise avanädala üritused New Yorgis" },
+        { country: "USA", action: "ÜRO Peaassamblee kõrgetasemelise avanädala üritused New Yorgis" },
         { country: "Portugal", action: "Arraiolose tippkohtumine" },
         { country: "Korea Vabariik", action: "Töövisiit koos äridelegatsiooniga" },
         { country: "Šveits", action: "Inimõiguste ülddeklaratsiooni 75. aastapäeva kõrgetasemeline tähistamine Genfis" }
@@ -386,7 +405,7 @@
         { country: "Läti", action: "Balti keti 35. aastapäeva tähistamine Lilli piiripunktis" },
         { country: "Moldova", action: "Balti riikide presidentide osalemine iseseisvuspäeva tähistamisel Chișinăus" },
         { country: "Ukraina", action: "YES-konverents" },
-        { country: "Ameerika Ühendriigid", action: "ÜRO Peaassamblee kõrgetasemelise avanädala üritused New Yorgis" },
+        { country: "USA", action: "ÜRO Peaassamblee kõrgetasemelise avanädala üritused New Yorgis" },
         { country: "Poola", action: "Arraiolose tippkohtumine Krakówis" },
         { country: "Šveits", action: "Eesti lipu tseremoonia CERNis Genfis seoses Eesti liikmeks saamisega" },
         { country: "Jordaania", action: "Ametlik visiit" },
@@ -418,9 +437,9 @@
         { country: "Poola", action: "Balti riikide ja Poola presidentide ning Taani peaministri kohtumine Varssavis" },
         { country: "Sloveenia", action: "Bledi strateegiafoorum" },
         { country: "Belgia", action: "Kohtumised Brüsselis" },
-        { country: "Ameerika Ühendriigid", action: "ÜRO Peaassamblee kõrgetasemelise avanädala üritused" },
+        { country: "USA", action: "ÜRO Peaassamblee kõrgetasemelise avanädala üritused" },
         { country: "Ühendkuningriik", action: "Visiit koos kultuuridelegatsiooniga" },
-        { country: "Ameerika Ühendriigid", action: "Visiit New Yorki ja Chicagosse" },
+        { country: "USA", action: "Visiit New Yorki ja Chicagosse" },
         { country: "Läti", action: "Balti riikide presidentide kohtumine" }
       ],
       2026: [
@@ -436,7 +455,7 @@
         { country: "Šveits", action: "Global Dialogue on Artificial Intelligence’i avakohtumine Genfis" },
         { country: "Ukraina", action: "Visiit Ukrainasse" },
         { country: "Itaalia", action: "Visiit Itaaliasse" },
-        { country: "Ameerika Ühendriigid", action: "ÜRO Peaassamblee kõrgetasemelise avanädala üritused" },
+        { country: "USA", action: "ÜRO Peaassamblee kõrgetasemelise avanädala üritused" },
         { country: "Läti", action: "Lahkumisvisiit" },
         { country: "Saksamaa", action: "Lahkumisvisiit" },
         { country: "Poola", action: "Lahkumisvisiit" },
@@ -586,6 +605,7 @@
       "450": "Madagaskar"
     };
 
+    // Normaliseerime visiitide andmed ametlike nimede ja lippudega
     Object.keys(visitsData).forEach(year => {
       visitsData[year].forEach(v => {
         const meta = COUNTRY_META[v.country];
@@ -600,6 +620,7 @@
       });
     });
 
+    // Värskendame vahelehtede visiitide arvu
     [2021, 2022, 2023, 2024, 2025, 2026].forEach(yr => {
       const b = document.getElementById(`badge-${yr}`);
       if (b && visitsData[yr]) {
@@ -782,8 +803,9 @@
       const uniqueCountries = [];
       const seen = new Set();
       visits.forEach(v => {
-        if (!seen.has(v.country)) {
-          seen.add(v.country);
+        const cName = v.displayName || v.country;
+        if (!seen.has(cName)) {
+          seen.add(cName);
           uniqueCountries.push(v);
         }
       });
@@ -797,6 +819,7 @@
 
       uniqueCountries.forEach(v => {
         const chip = document.createElement('button');
+        chip.type = "button";
         chip.className = "px-2.5 py-1 rounded-full bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-700 text-[11px] font-medium border border-slate-200 transition-colors flex items-center gap-1 shrink-0 select-none";
         chip.innerHTML = `<span>${v.flag || "🌍"}</span> <span>${v.displayName || v.country}</span>`;
         chip.onclick = () => {
@@ -850,7 +873,7 @@
       } else if (normId === "233") {
         openDetailsModal("Eesti Vabariik", "🇪🇪", [
           {
-            yearOccurred: currentYear,
+            yearOccurred: currentYear === "all" ? "2021–2026" : currentYear,
             action: "Alar Karis andis Riigikogu ees ametivande 11. oktoobril 2021, astudes Eesti Vabariigi presidendiks."
           }
         ]);
@@ -862,7 +885,7 @@
 
     function focusCountryByName(countryName) {
       const meta = COUNTRY_META[countryName];
-      const visits = getActiveVisits().filter(v => v.country === countryName);
+      const visits = getActiveVisits().filter(v => v.country === countryName || (meta && v.country === meta.name));
       if (!meta || visits.length === 0) return;
 
       openDetailsModal(meta.name, meta.flag, visits);
@@ -914,7 +937,6 @@
       detailFlag.textContent = flag || "🌍";
       detailCountryName.textContent = countryName;
       
-      // Kui avatakse juhend, kuvatakse selge alapealkiri visiidiaastate asemel
       if (isManual) {
         detailYearBadge.textContent = "Kasutusjuhis";
       } else {
@@ -943,7 +965,6 @@
         titleSpan.className = "font-bold text-slate-800 text-[18pt] leading-tight";
 
         if (isManual) {
-          // Juhendi puhul kuvatakse vaid teema pealkiri ilma "Visiit 1" ja aastamärgiseta
           titleSpan.textContent = v.title || "Juhis";
           headerDiv.appendChild(titleSpan);
         } else {
@@ -996,7 +1017,7 @@
           },
           {
             title: "Täisekraan ja vaate sulgemine",
-            action: "Päises olev nupp „Ava üle ekraani” suurendab graafiku kogu kuvarile. Üksikasjade akna sulgemiseks klõpsa graafikul suvalises kohas või vajuta klahvi Esc."
+            action: "Päises olev nupp „Ava üle ekraani” suurendab graafiku kogu kuvarile. Üksikasjade akna sulgemiseks klõpsa kaardil suvalises kohas või vajuta klahvi Esc."
           }
         ],
         true
@@ -1063,6 +1084,7 @@
       });
     }
 
+    // Ülemise aastateriba sikutamine (drag-to-scroll)
     const yearTabsNav = document.getElementById('year-tabs');
     let isTabsDragging = false;
     let tabsStartX = 0;
@@ -1098,6 +1120,7 @@
       }
     }, { passive: false });
 
+    // Allserva riikide riba sikutamine (drag-to-scroll)
     const chipsContainer = document.getElementById('country-chips-container');
     let isChipsDragging = false;
     let chipsStartX = 0;
@@ -1129,23 +1152,65 @@
     const fullscreenBtn = document.getElementById('fullscreen-btn');
     const fullscreenText = document.getElementById('fullscreen-text');
 
-    fullscreenBtn.onclick = toggleFullscreen;
+    function isWidgetFullscreen() {
+      return Boolean(
+        document.fullscreenElement === chartWidget ||
+        document.webkitFullscreenElement === chartWidget ||
+        chartWidget.classList.contains('is-fullscreen')
+      );
+    }
 
-    function toggleFullscreen() {
-      const isFull = chartWidget.classList.toggle('is-fullscreen');
-
+    function updateFullscreenUI() {
+      const isFull = isWidgetFullscreen();
       if (isFull) {
         fullscreenText.textContent = "Välju ekraanilt";
-        document.body.style.overflow = "hidden";
       } else {
         fullscreenText.textContent = "Ava üle ekraani";
         document.body.style.overflow = "";
       }
-
       setTimeout(() => {
         handleResize();
-      }, 250);
+      }, 100);
     }
+
+    fullscreenBtn.onclick = toggleFullscreen;
+
+    async function toggleFullscreen() {
+      if (!isWidgetFullscreen()) {
+        try {
+          if (chartWidget.requestFullscreen) {
+            await chartWidget.requestFullscreen();
+          } else if (chartWidget.webkitRequestFullscreen) {
+            await chartWidget.webkitRequestFullscreen();
+          } else {
+            chartWidget.classList.add('is-fullscreen');
+            document.body.style.overflow = "hidden";
+          }
+        } catch (err) {
+          // Kui brauser või iframe ei luba Fullscreen API-t, rakendub CSS-varulahendus
+          chartWidget.classList.add('is-fullscreen');
+          document.body.style.overflow = "hidden";
+        }
+      } else {
+        if (document.fullscreenElement || document.webkitFullscreenElement) {
+          try {
+            if (document.exitFullscreen) {
+              await document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+              await document.webkitExitFullscreen();
+            }
+          } catch (e) {
+            // Eirame võimalikke sulgemishälbeid
+          }
+        }
+        chartWidget.classList.remove('is-fullscreen');
+        document.body.style.overflow = "";
+      }
+      updateFullscreenUI();
+    }
+
+    document.addEventListener('fullscreenchange', updateFullscreenUI);
+    document.addEventListener('webkitfullscreenchange', updateFullscreenUI);
 
     const guideBtn = document.getElementById('guide-btn');
     if (guideBtn) {
@@ -1154,11 +1219,8 @@
 
     window.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
-        if (chartWidget.classList.contains('is-fullscreen')) {
-          chartWidget.classList.remove('is-fullscreen');
-          fullscreenText.textContent = "Ava üle ekraani";
-          document.body.style.overflow = "";
-          handleResize();
+        if (isWidgetFullscreen()) {
+          toggleFullscreen();
         }
         closeDetailsModal();
       }

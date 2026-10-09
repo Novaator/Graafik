@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alar Karise riigivisiidid (2021–2026)</title>
+  
+  <!-- Fira Sans Google Font läbivaks kasutuseks -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+  <!-- Fikseeritud versioonidega teegid -->
+  <script src="https://cdn.tailwindcss.com/3.4.1"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Fira Sans"', 'sans-serif'],
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    body {
+      font-family: 'Fira Sans', sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Kaardiradade interaktsioonid */
+    .country-path {
+      transition: fill 0.2s ease, stroke 0.2s ease;
+      cursor: pointer;
+    }
+    .country-path:hover {
+      filter: brightness(0.92);
+      stroke: #0f172a;
+      stroke-width: 0.8px;
+    }
+    .country-visited {
+      fill: #0f294a !important; /* Tumesinine toon */
+    }
+    .country-visited:hover {
+      fill: #1d4ed8 !important;
+      filter: drop-shadow(0 2px 5px rgba(15, 41, 74, 0.45));
+    }
+    .country-home {
+      fill: #0284c7 !important; /* Kodumaa Eesti helesinine */
+    }
+
+    /* Täisekraanirežiim */
+    #chart-widget.is-fullscreen {
+      position: fixed !important;
+      inset: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      max-width: 100vw !important;
+      max-height: 100vh !important;
+      z-index: 99999 !important;
+      border-radius: 0 !important;
+      margin: 0 !important;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="p-2 sm:p-6 min-h-screen flex items-center justify-center">
+
+  <!-- Peamine graafiku konteiner: vaikevalikus laius 670px, mobiilis skaleeruv -->
+  <div id="chart-widget" class="relative w-full max-w-[670px] bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden flex flex-col transition-all duration-300">
+    
+    <!-- Graafiku päis ja aastate vahelehed -->
+    <header class="bg-slate-900 text-white px-4 sm:px-5 pt-4 pb-3.5 select-none border-b border-slate-800">
+      <div class="flex items-start justify-between gap-3 mb-1">
+        <h1 class="font-bold tracking-tight text-white leading-tight text-[22pt]">
+          Alar Karise riigivisiidid 2021–2026
+        </h1>
+
+        <!-- Nurga nupud: täisekraan ja teave -->
+        <div class="flex items-center gap-1.5 shrink-0 pt-1">
+          <button id="toggle-info-btn" title="Infomärkus" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
+            </svg>
+          </button>
+          <button id="fullscreen-btn" title="Muuda täisekraaniks / normaliseeri" class="px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white shadow-sm transition-colors flex items-center gap-1.5 text-xs font-medium">
+            <svg id="fullscreen-icon" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+            </svg>
+            <span class="inline" id="fullscreen-text">Ava üle ekraani</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Alapealkiri 18pt ühele reale mahutatult täislaiuses -->
+      <p class="text-slate-300 font-normal leading-snug mb-3 text-[18pt] tracking-tight whitespace-nowrap overflow-hidden text-ellipsis">
+        Presidendi ametlikud välisvisiidid ja kohtumised
+      </p>
+
+      <!-- Vahelehed: 2021 kuni 2026 ning koondvaade (16 pt font) -->
+      <nav class="flex items-center gap-1.5 overflow-x-auto pb-1 custom-scrollbar text-[16pt] font-medium" id="year-tabs" aria-label="Aastate valik">
+        <button data-year="2021" class="tab-btn px-3 py-1.5 rounded-lg transition-all duration-150 whitespace-nowrap bg-blue-600 text-white font-semibold shadow-sm text-[16pt]">
+          2021 <span class="ml-1 px-2 py-0.5 text-xs rounded-full bg-blue-800/80 text-blue-100" id="badge-2021">8</span>
+        </button>
+        <button data-year="2022" class="tab-btn px-3 py-1.5 rounded-lg transition-all duration-150 whitespace-nowrap text-slate-300 hover:text-white hover:bg-slate-800 text-[16pt]">
+          2022 <span class="ml-1 px-2 py-0.5 text-xs rounded-full bg-slate-800 text-slate-300" id="badge-2022">26</span>
+        </button>
+        <button data-year="2023" class="tab-btn px-3 py-1.5 rounded-lg transition-all duration-150 whitespace-nowrap text-slate-300 hover:text-white hover:bg-slate-800 text-[16pt]">
+          2023 <span class="ml-1 px-2 py-0.5 text-xs rounded-full bg-slate-800 text-slate-300" id="badge-2023">15</span>
+        </button>
+        <button data-year="2024" class="tab-btn px-3 py-1.5 rounded-lg transition-all duration-150 whitespace-nowrap text-slate-300 hover:text-white hover:bg-slate-800 text-[16pt]">
+          2024 <span class="ml-1 px-2 py-0.5 text-xs rounded-full bg-slate-800 text-slate-300" id="badge-2024">21</span>
+        </button>
+        <button data-year="2025" class="tab-btn px-3 py-1.5 rounded-lg transition-all duration-150 whitespace-nowrap text-slate-300 hover:text-white hover:bg-slate-800 text-[16pt]">
+          2025 <span class="ml-1 px-2 py-0.5 text-xs rounded-full bg-slate-800 text-slate-300" id="badge-2025">27</span>
+        </button>
+        <button data-year="2026" class="tab-btn px-3 py-1.5 rounded-lg transition-all duration-150 whitespace-nowrap text-slate-300 hover:text-white hover:bg-slate-800 text-[16pt]">
+          2026 <span class="ml-1 px-2 py-0.5 text-xs rounded-full bg-slate-800 text-slate-300" id="badge-2026">19</span>
+        </button>
+        <button data-year="all" class="tab-btn px-3 py-1.5 rounded-lg transition-all duration-150 whitespace-nowrap text-slate-300 hover:text-white hover:bg-slate-800 text-[16pt]">
+          Kõik aastad
+        </button>
+      </nav>
+    </header>
+
+    <!-- Kaardiala: kõrgus vähemalt 550px -->
+    <div id="map-viewport" class="relative w-full h-[550px] min-h-[550px] bg-[#eef2f6] overflow-hidden select-none">
+      <svg id="map-svg" class="absolute inset-0 w-full h-full block cursor-grab active:cursor-grabbing"></svg>
+
+      <!-- Laadimisindikaator -->
+      <div id="map-loader" class="absolute inset-0 bg-slate-50/80 backdrop-blur-sm flex items-center justify-center z-20 transition-opacity">
+        <div class="flex items-center gap-2 text-slate-600 text-sm font-medium">
+          <svg class="animate-spin h-5 w-5 text-blue-600" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+          </svg>
+          <span>Laadin maailmakaarti...</span>
+        </div>
+      </div>
+
+      <!-- Kaardi suuminupud ja lähtestus -->
+      <div class="absolute bottom-4 right-4 z-10 flex flex-col gap-1.5 bg-white/90 backdrop-blur-sm p-1 rounded-xl shadow-md border border-slate-200">
+        <button id="zoom-in" title="Suurenda kaarti" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-700 hover:bg-slate-100 transition-colors font-bold text-lg leading-none">
+          +
+        </button>
+        <button id="zoom-out" title="Vähenda kaarti" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-700 hover:bg-slate-100 transition-colors font-bold text-lg leading-none">
+          −
+        </button>
+        <button id="zoom-reset" title="Lähtesta vaade" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-700 hover:bg-slate-100 transition-colors text-xs font-semibold">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M3 12a9 9 0 109-9 9.75 9.75 0 00-6.74 2.74L3 8"/>
+            <path d="M3 3v5h5"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Legendi bänner all vasakul: 14 pt kirjasuurus -->
+      <div class="absolute bottom-4 left-4 z-10 bg-white/95 backdrop-blur-sm px-4 py-3 rounded-xl shadow-md border border-slate-200 text-[14pt] flex flex-col gap-2 leading-tight">
+        <div class="flex items-center gap-2.5">
+          <span class="w-4 h-4 rounded bg-[#0284c7] inline-block shadow-sm shrink-0"></span>
+          <span class="text-slate-800 font-medium">Eesti</span>
+        </div>
+        <div class="flex items-center gap-2.5">
+          <span class="w-4 h-4 rounded bg-[#0f294a] inline-block shadow-sm shrink-0"></span>
+          <span class="text-slate-800 font-medium">Külastatud riik (klõpsa lisainfoks)</span>
+        </div>
+        <div class="flex items-center gap-2.5">
+          <span class="w-4 h-4 rounded bg-[#e2e8f0] border border-slate-300 inline-block shrink-0"></span>
+          <span class="text-slate-600">Teised riigid</span>
+        </div>
+      </div>
+
+      <!-- Tooltip hõljumisel: riiginimi 16pt -->
+      <div id="map-tooltip" class="pointer-events-none absolute z-30 opacity-0 bg-slate-900/95 text-white px-3.5 py-2 rounded-xl shadow-xl text-[16pt] font-medium transition-opacity duration-150 -translate-x-1/2 -translate-y-full mb-3 whitespace-nowrap leading-snug">
+      </div>
+    </div>
+
+    <!-- Kiirvaliku riba kaardi all: aasta rippmenüü ning sikutatav riikide nimistu -->
+    <div class="bg-white border-t border-slate-200 px-4 py-2.5 flex items-center justify-between gap-3 text-xs">
+      <div class="flex items-center gap-2 overflow-hidden flex-1">
+        <label for="bottom-year-select" class="text-slate-600 font-medium shrink-0 flex items-center gap-1.5">
+          <span>Aasta:</span>
+          <select id="bottom-year-select" class="bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-900 rounded-lg px-2.5 py-1 font-semibold text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer">
+            <option value="2021">2021</option>
+            <option value="2022">2022</option>
+            <option value="2023">2023</option>
+            <option value="2024">2024</option>
+            <option value="2025">2025</option>
+            <option value="2026">2026</option>
+            <option value="all">Kõik aastad</option>
+          </select>
+        </label>
+        <div id="country-chips-container" class="flex items-center gap-1.5 overflow-x-auto custom-scrollbar py-1 cursor-grab select-none active:cursor-grabbing flex-1">
+          <!-- Täidetakse dünaamiliselt JS-iga -->
+        </div>
+      </div>
+      <div class="text-[11px] text-slate-400 shrink-0 font-medium whitespace-nowrap pl-1" id="stats-counter">
+        8 visiiti
+      </div>
+    </div>
+
+    <!-- Üksikasjade külgkaart: 18 pt font tekstidele, laius 440px -->
+    <div id="details-modal" class="absolute inset-y-0 right-0 w-full sm:w-[440px] bg-white/95 backdrop-blur-md shadow-2xl border-l border-slate-200 z-40 transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col text-[18pt]">
+      <!-- Modal päis -->
+      <div class="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/90">
+        <div class="flex items-center gap-3">
+          <span id="detail-flag" class="text-3xl leading-none">🌍</span>
+          <div>
+            <h3 id="detail-country-name" class="font-bold text-slate-900 text-[20pt] leading-tight">Riigi nimi</h3>
+            <p id="detail-year-badge" class="text-[14pt] text-blue-700 font-semibold">Visiitide nimekiri</p>
+          </div>
+        </div>
+        <button id="close-modal-btn" title="Sulge aken" class="p-2 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Modal sisu: 18pt font kirjeldustele -->
+      <div class="p-4 overflow-y-auto flex-1 custom-scrollbar space-y-4 text-[18pt]">
+        <!-- Foto konteiner: kuvatakse vaid siis, kui photo omadus on määratud -->
+        <div id="photo-wrapper" class="hidden rounded-xl overflow-hidden bg-slate-100 border border-slate-200 aspect-[16/10]">
+          <img id="detail-photo" src="" alt="Visiidi foto" class="w-full h-full object-cover">
+        </div>
+
+        <!-- Tegevuste loend (toetab mitut visiiti samasse riiki) -->
+        <div id="visits-list-container" class="space-y-3.5">
+          <!-- Täidetakse dünaamiliselt -->
+        </div>
+      </div>
+
+      <!-- Modali jalus -->
+      <div class="p-3 border-t border-slate-200 bg-slate-50/60 flex justify-end">
+        <button id="modal-close-bottom" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-lg text-[15pt] font-semibold transition-colors">
+          Sulge aken
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Riikide metaandmed (ISO-kood, lipp ja eestikeelne ametlik nimi)
+    const COUNTRY_META = {
+      "Läti": { id: "428", code: "LVA", flag: "🇱🇻", name: "Läti" },
+      "Soome": { id: "246", code: "FIN", flag: "🇫🇮", name: "Soome" },
+      "Leedu": { id: "440", code: "LTU", flag: "🇱🇹", name: "Leedu" },
+      "Poola": { id: "616", code: "POL", flag: "🇵🇱", name: "Poola" },
+      "Prantsusmaa": { id: "250", code: "FRA", flag: "🇫🇷", name: "Prantsusmaa" },
+      "Belgia": { id: "056", code: "BEL", flag: "🇧🇪", name: "Belgia" },
+      "USA": { id: "840", code: "USA", flag: "🇺🇸", name: "Ameerika Ühendriigid" },
+      "Rootsi": { id: "752", code: "SWE", flag: "🇸🇪", name: "Rootsi" },
+      "Norra": { id: "578", code: "NOR", flag: "🇳🇴", name: "Norra" },
+      "Ukraina": { id: "804", code: "UKR", flag: "🇺🇦", name: "Ukraina" },
+      "Moldova": { id: "498", code: "MDA", flag: "🇲🇩", name: "Moldova" },
+      "Rumeenia": { id: "642", code: "ROU", flag: "🇷🇴", name: "Rumeenia" },
+      "Araabia Ühendemiraadid": { id: "784", code: "ARE", flag: "🇦🇪", name: "Araabia Ühendemiraadid" },
+      "Itaalia": { id: "380", code: "ITA", flag: "🇮🇹", name: "Itaalia" },
+      "Šveits": { id: "756", code: "CHE", flag: "🇨🇭", name: "Šveits" },
+      "Taani": { id: "208", code: "DNK", flag: "🇩🇰", name: "Taani" },
+      "Island": { id: "352", code: "ISL", flag: "🇮🇸", name: "Island" },
+      "Ühendkuningriik": { id: "826", code: "GBR", flag: "🇬🇧", name: "Ühendkuningriik" },
+      "Malta": { id: "470", code: "MLT", flag: "🇲🇹", name: "Malta" },
+      "Egiptus": { id: "818", code: "EGY", flag: "🇪🇬", name: "Egiptus" },
+      "Kanada": { id: "124", code: "CAN", flag: "🇨🇦", name: "Kanada" },
+      "Slovakkia": { id: "703", code: "SVK", flag: "🇸🇰", name: "Slovakkia" },
+      "Madalmaad": { id: "528", code: "NLD", flag: "🇳🇱", name: "Madalmaad" },
+      "Albaania": { id: "008", code: "ALB", flag: "🇦🇱", name: "Albaania" },
+      "Portugal": { id: "620", code: "PRT", flag: "🇵🇹", name: "Portugal" },
+      "Korea Vabariik": { id: "410", code: "KOR", flag: "🇰🇷", name: "Lõuna-Korea" },
+      "Iraak": { id: "368", code: "IRQ", flag: "🇮🇶", name: "Iraak" },
+      "Angola": { id: "024", code: "AGO", flag: "🇦🇴", name: "Angola" },
+      "Küpros": { id: "196", code: "CYP", flag: "🇨🇾", name: "Küpros" },
+      "Saksamaa": { id: "276", code: "DEU", flag: "🇩🇪", name: "Saksamaa" },
+      "Türgi": { id: "792", code: "TUR", flag: "🇹🇷", name: "Türgi" },
+      "Jordaania": { id: "400", code: "JOR", flag: "🇯🇴", name: "Jordaania" },
+      "Iisrael": { id: "376", code: "ISR", flag: "🇮🇱", name: "Iisrael" },
+      "Palestiina": { id: "275", code: "PSE", flag: "🇵🇸", name: "Palestiina" },
+      "Vatikan": { id: "336", code: "VAT", flag: "🇻🇦", name: "Vatikan" },
+      "Montenegro": { id: "499", code: "MNE", flag: "🇲🇪", name: "Montenegro" },
+      "Hispaania": { id: "724", code: "ESP", flag: "🇪🇸", name: "Hispaania" },
+      "Sloveenia": { id: "705", code: "SVN", flag: "🇸🇮", name: "Sloveenia" },
+      "India": { id: "356", code: "IND", flag: "🇮🇳", name: "India" },
+      "Kreeka": { id: "300", code: "GRC", flag: "🇬🇷", name: "Kreeka" }
+    };
+
+    const visitsData = {
+      2021: [
+        { country: "Läti", action: "Ametiaja alguse visiit" },
+        { country: "Soome", action: "Ametiaja alguse visiit" },
+        { country: "Leedu", action: "Ametiaja alguse visiit" },
+        { country: "Poola", action: "Ametiaja alguse visiit" },
+        { country: "Prantsusmaa", action: "Ametiaja alguse visiit" },
+        { country: "Leedu", action: "Ametiaja alguse visiit" },
+        { country: "Belgia", action: "Ametiaja alguse visiit" },
+        { country: "USA", action: "Ametiaja alguse visiit" }
+      ],
+      2022: [
+        { country: "Belgia", action: "Kohtumised NATOs ja Belgia kuningaga Brüsselis" },
+        { country: "Rootsi", action: "Kohtumised kuninga, parlamendi esimehe ja Rootsi eestlaste ühenduste esindajatega Stockholmis; Eesti Kooli külastus" },
+        { country: "Norra", action: "Kohtumised kroonprintsi, parlamendi esimehe, välis- ja kaitsekomisjoni juhi ning peaministriga; ümarlaud NUPIs, Eesti saatkonna avamine Oslos" },
+        { country: "Ukraina", action: "Kohtumised Kiievis" },
+        { country: "Poola", action: "NATO idatiiva ja Põhjala riikide liidrite kohtumine" },
+        { country: "Moldova", action: "Visiit" },
+        { country: "Rumeenia", action: "Visiit" },
+        { country: "Araabia Ühendemiraadid", action: "Eesti päev EXPO maailmanäitusel Dubais; kohtumised Abu Dhabis ja Sharjahis" },
+        { country: "Belgia", action: "Balti riikide ja Poola presidentide kohtumine Brüsselis" },
+        { country: "Ukraina", action: "Balti riikide ja Poola presidentide visiit Kiievisse" },
+        { country: "Itaalia", action: "Veneetsia biennaal" },
+        { country: "Soome", action: "Tuglase Seltsi 40. aastapäev; kohtumised ja SITRA külastamine Helsingis" },
+        { country: "Šveits", action: "Maailma Majandusfoorum Davosis" },
+        { country: "Rumeenia", action: "NATO idatiiva ja Põhjala riikide liidrite kohtumine" },
+        { country: "Taani", action: "Kohtumised kuninganna, kroonprintsi ja spiikriga; seminarid, rohepöörde esitluskeskuse ja psühhiaatriakliiniku külastused Kopenhaagenis" },
+        { country: "Läti", action: "Kolme mere tippkohtumine Riias" },
+        { country: "Island", action: "Balti riikide diplomaatiliste suhete sõlmimise 30. aastapäeva pidulik tseremoonia Reykjavíkis" },
+        { country: "Ühendkuningriik", action: "Kuninganna Elizabeth II matusetalitus Londonis" },
+        { country: "USA", action: "ÜRO Peaassamblee kõrgetasemelise avanädala üritused New Yorgis" },
+        { country: "USA", action: "Töövisiit koos äridelegatsiooniga Texasesse; sõnavõtt Texase ülikoolis" },
+        { country: "Malta", action: "Arraiolose grupi kohtumine Vallettas" },
+        { country: "Island", action: "Arctic Circle Assembly Reykjavíkis; loeng Islandi ülikoolis" },
+        { country: "Egiptus", action: "ÜRO kliimakonverents COP27 Sharm el-Sheikhis" },
+        { country: "Prantsusmaa", action: "Pariisi rahufoorum" },
+        { country: "Kanada", action: "Halifaxi julgeolekufoorum; kahepoolne visiit Ottawasse ja Torontosse" },
+        { country: "Läti", action: "Balti riikide presidentide kohtumine Riias" }
+      ],
+      2023: [
+        { country: "Poola", action: "NATO idatiiva ja Põhjala riikide liidrite kohtumine Varssavis" },
+        { country: "Slovakkia", action: "Ametlik visiit" },
+        { country: "Rootsi", action: "Töövisiit Lundi ja Malmösse" },
+        { country: "Madalmaad", action: "Töövisiit" },
+        { country: "Ühendkuningriik", action: "Kuningas Charles III kroonimistseremoonia Londonis" },
+        { country: "Island", action: "Euroopa Nõukogu tippkohtumine Reykjavíkis" },
+        { country: "Ukraina", action: "Töövisiit" },
+        { country: "Slovakkia", action: "NATO idatiiva ja Põhjala riikide liidrite kohtumine Bratislavas" },
+        { country: "Albaania", action: "Ametlik visiit" },
+        { country: "Ühendkuningriik", action: "Ukraina ülesehituskonverents Londonis; visiit koos äridelegatsiooniga" },
+        { country: "Rumeenia", action: "Kolme mere tippkohtumine Bukarestis" },
+        { country: "USA", action: "ÜRO Peaassamblee kõrgetasemelise avanädala üritused New Yorgis" },
+        { country: "Portugal", action: "Arraiolose tippkohtumine" },
+        { country: "Korea Vabariik", action: "Töövisiit koos äridelegatsiooniga" },
+        { country: "Šveits", action: "Inimõiguste ülddeklaratsiooni 75. aastapäeva kõrgetasemeline tähistamine Genfis" }
+      ],
+      2024: [
+        { country: "Iraak", action: "Ametlik visiit" },
+        { country: "Soome", action: "Ahtisaari loeng ja kohtumised Soome riigijuhtidega" },
+        { country: "Angola", action: "Töövisiit" },
+        { country: "Küpros", action: "Ametlik visiit" },
+        { country: "Leedu", action: "Kolme mere tippkohtumine Vilniuses" },
+        { country: "Saksamaa", action: "Töövisiit" },
+        { country: "Läti", action: "NATO idatiiva ja Põhjala riikide liidrite kohtumine Riias" },
+        { country: "Läti", action: "Võnnu lahingu 105. aastapäeva tähistamine Cēsises" },
+        { country: "Türgi", action: "Ametlik visiit" },
+        { country: "Leedu", action: "Leedu riikluse päeva ja Leedu laulupeo 100. aastapäeva tähistamine Vilniuses" },
+        { country: "Prantsusmaa", action: "Olümpiamängude avamine" },
+        { country: "Läti", action: "Balti keti 35. aastapäeva tähistamine Lilli piiripunktis" },
+        { country: "Moldova", action: "Balti riikide presidentide osalemine iseseisvuspäeva tähistamisel Chișinăus" },
+        { country: "Ukraina", action: "YES-konverents" },
+        { country: "USA", action: "ÜRO Peaassamblee kõrgetasemelise avanädala üritused New Yorgis" },
+        { country: "Poola", action: "Arraiolose tippkohtumine Krakówis" },
+        { country: "Šveits", action: "Eesti lipu tseremoonia CERNis Genfis seoses Eesti liikmeks saamisega" },
+        { country: "Jordaania", action: "Ametlik visiit" },
+        { country: "Egiptus", action: "Ametlik visiit" },
+        { country: "Leedu", action: "Balti riikide presidentide kohtumine Klaipėdas" },
+        { country: "Prantsusmaa", action: "Notre-Dame'i taasavamine Pariisis" }
+      ],
+      2025: [
+        { country: "Poola", action: "Auschwitzi vabastamise 80. aastapäeva mälestusüritused" },
+        { country: "Leedu", action: "Balti riikide elektrisüsteemi sünkroniseerimine Mandri-Euroopaga" },
+        { country: "Prantsusmaa", action: "Tehisintellekti konverents Pariisis" },
+        { country: "Iisrael", action: "Töövisiit" },
+        { country: "Palestiina", action: "Töövisiit" },
+        { country: "Saksamaa", action: "Müncheni julgeolekukonverents" },
+        { country: "Soome", action: "Töövisiit" },
+        { country: "Läti", action: "Eesti saatkonnahoone avamine Riias" },
+        { country: "Itaalia", action: "Bologna raamatumess" },
+        { country: "Itaalia", action: "Ametlik visiit" },
+        { country: "Vatikan", action: "Töövisiit" },
+        { country: "Vatikan", action: "Paavst Franciscuse matus" },
+        { country: "Poola", action: "Kolme mere tippkohtumine Varssavis" },
+        { country: "Saksamaa", action: "Visiit Berliini, Dresdenisse, Mittweidasse ja Chemnitzi koos äridelegatsiooniga" },
+        { country: "Leedu", action: "NATO idatiiva ja Põhjala riikide liidrite kohtumine Vilniuses" },
+        { country: "Montenegro", action: "Ametlik visiit" },
+        { country: "Soome", action: "Osalemine välispoliitika ja julgeoleku arutelul Soome presidendi suveresidentsis Kultarantas" },
+        { country: "Hispaania", action: "Arengu rahastamise neljas rahvusvaheline konverents Sevillas" },
+        { country: "Šveits", action: "Rahvusvahelise Telekommunikatsiooni Liidu 160. aastapäeva üritus Genfis" },
+        { country: "Läti", action: "Raamatuküla külastus" },
+        { country: "Poola", action: "Balti riikide ja Poola presidentide ning Taani peaministri kohtumine Varssavis" },
+        { country: "Sloveenia", action: "Bledi strateegiafoorum" },
+        { country: "Belgia", action: "Kohtumised Brüsselis" },
+        { country: "USA", action: "ÜRO Peaassamblee kõrgetasemelise avanädala üritused" },
+        { country: "Ühendkuningriik", action: "Visiit koos kultuuridelegatsiooniga" },
+        { country: "USA", action: "Visiit New Yorki ja Chicagosse" },
+        { country: "Läti", action: "Balti riikide presidentide kohtumine" }
+      ],
+      2026: [
+        { country: "Araabia Ühendemiraadid", action: "World Governments Summit Dubai" },
+        { country: "Itaalia", action: "Taliolümpiamängud Milanose" },
+        { country: "India", action: "Tehisintellekti konverents New Delhis" },
+        { country: "Ühendkuningriik", action: "Konrad Mägi näituse avamine Londonis" },
+        { country: "Madalmaad", action: "Kahepoolsed kohtumised, World Leader Cycle Award Rotterdami ülikoolis ja loeng" },
+        { country: "Kreeka", action: "Ametlik visiit ja Delfi majandusfoorumi avamine" },
+        { country: "Rumeenia", action: "B9 kohtumine" },
+        { country: "Leedu", action: "Eesti, Läti ja Leedu riigipeade kohtumine Euroopa Komisjoni presidendi Ursula von der Leyeniga" },
+        { country: "Poola", action: "Poznańi juunikuu mälestuspäev" },
+        { country: "Šveits", action: "Global Dialogue on Artificial Intelligence’i avakohtumine Genfis" },
+        { country: "Ukraina", action: "Visiit Ukrainasse" },
+        { country: "Itaalia", action: "Visiit Itaaliasse" },
+        { country: "USA", action: "ÜRO Peaassamblee kõrgetasemelise avanädala üritused" },
+        { country: "Läti", action: "Lahkumisvisiit" },
+        { country: "Saksamaa", action: "Lahkumisvisiit" },
+        { country: "Poola", action: "Lahkumisvisiit" },
+        { country: "Leedu", action: "Lahkumisvisiit" },
+        { country: "Soome", action: "Lahkumisvisiit" },
+        { country: "Rootsi", action: "Lahkumisvisiit" }
+      ]
+    };
+
+    const ESTONIAN_COUNTRY_NAMES = {
+      "233": "Eesti",
+      "428": "Läti",
+      "440": "Leedu",
+      "246": "Soome",
+      "752": "Rootsi",
+      "578": "Norra",
+      "208": "Taani",
+      "352": "Island",
+      "616": "Poola",
+      "276": "Saksamaa",
+      "250": "Prantsusmaa",
+      "826": "Ühendkuningriik",
+      "056": "Belgia",
+      "528": "Madalmaad",
+      "756": "Šveits",
+      "040": "Austria",
+      "380": "Itaalia",
+      "724": "Hispaania",
+      "620": "Portugal",
+      "300": "Kreeka",
+      "203": "Tšehhi",
+      "703": "Slovakkia",
+      "348": "Ungari",
+      "642": "Rumeenia",
+      "100": "Bulgaaria",
+      "705": "Sloveenia",
+      "191": "Horvaatia",
+      "499": "Montenegro",
+      "070": "Bosnia ja Hertsegoviina",
+      "688": "Serbia",
+      "807": "Põhja-Makedoonia",
+      "008": "Albaania",
+      "804": "Ukraina",
+      "498": "Moldova",
+      "112": "Valgevene",
+      "643": "Venemaa",
+      "792": "Türgi",
+      "196": "Küpros",
+      "470": "Malta",
+      "840": "Ameerika Ühendriigid",
+      "124": "Kanada",
+      "484": "Mehhiko",
+      "076": "Brasiilia",
+      "032": "Argentina",
+      "156": "Hiina",
+      "392": "Jaapan",
+      "410": "Lõuna-Korea",
+      "356": "India",
+      "368": "Iraak",
+      "400": "Jordaania",
+      "376": "Iisrael",
+      "275": "Palestiina",
+      "784": "Araabia Ühendemiraadid",
+      "682": "Saudi Araabia",
+      "818": "Egiptus",
+      "024": "Angola",
+      "072": "Botswana",
+      "710": "Lõuna-Aafrika Vabariik",
+      "036": "Austraalia",
+      "554": "Uus-Meremaa"
+    };
+
+    Object.keys(visitsData).forEach(year => {
+      visitsData[year].forEach(v => {
+        const meta = COUNTRY_META[v.country];
+        if (meta) {
+          v.id = meta.id;
+          v.code = meta.code;
+          v.flag = meta.flag;
+          v.displayName = meta.name;
+        } else {
+          v.displayName = v.country;
+          v.flag = "🌍";
+        }
+      });
+    });
+
+    [2021, 2022, 2023, 2024, 2025, 2026].forEach(yr => {
+      const b = document.getElementById(`badge-${yr}`);
+      if (b && visitsData[yr]) {
+        b.textContent = visitsData[yr].length;
+      }
+    });
+
+    let currentYear = "2021";
+    let worldGeoData = null;
+    let svg, g, projection, pathGenerator, zoomBehavior;
+
+    const mapViewport = document.getElementById('map-viewport');
+    const tooltip = document.getElementById('map-tooltip');
+
+    function initD3Map() {
+      const width = mapViewport.clientWidth || 670;
+      const height = mapViewport.clientHeight || 550;
+
+      projection = d3.geoNaturalEarth1()
+        .scale(width / 5.2)
+        .center([15, 25])
+        .translate([width / 2, height / 2]);
+
+      pathGenerator = d3.geoPath().projection(projection);
+
+      svg = d3.select("#map-svg");
+      svg.selectAll("*").remove();
+
+      g = svg.append("g").attr("id", "map-layers");
+
+      zoomBehavior = d3.zoom()
+        .scaleExtent([1, 14])
+        .on("zoom", (event) => {
+          g.attr("transform", event.transform);
+        });
+
+      svg.call(zoomBehavior);
+
+      // Sulge hüpikaken kaardi tühjale taustale klõpsates
+      svg.on('click', (event) => {
+        if (event.target === svg.node() || event.target.tagName === 'svg') {
+          closeDetailsModal();
+        }
+      });
+
+      document.getElementById('zoom-in').onclick = () => {
+        svg.transition().duration(300).call(zoomBehavior.scaleBy, 1.4);
+      };
+      document.getElementById('zoom-out').onclick = () => {
+        svg.transition().duration(300).call(zoomBehavior.scaleBy, 0.7);
+      };
+      document.getElementById('zoom-reset').onclick = () => {
+        resetMapView();
+      };
+    }
+
+    async function loadWorldMap() {
+      initD3Map();
+      const loader = document.getElementById('map-loader');
+      loader.classList.remove('hidden');
+
+      const urls = [
+        "https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-110m.json",
+        "https://unpkg.com/world-atlas@2.0.2/countries-110m.json",
+        "https://raw.githubusercontent.com/topojson/world-atlas/master/countries-110m.json"
+      ];
+
+      let topology = null;
+      for (const url of urls) {
+        try {
+          const res = await fetch(url);
+          if (res.ok) {
+            topology = await res.json();
+            break;
+          }
+        } catch (e) {
+          console.warn("TopoJSON laadimise katse ebaõnnestus:", url);
+        }
+      }
+
+      if (topology) {
+        worldGeoData = topojson.feature(topology, topology.objects.countries);
+        renderCountries();
+        updateMapColors();
+        loader.classList.add('hidden');
+      } else {
+        loader.innerHTML = `
+          <div class="text-center p-4">
+            <p class="text-xs text-rose-600 font-semibold mb-1">Kaardi laadimine ebaõnnestus</p>
+            <p class="text-[11px] text-slate-500">Palun kontrolli võrguühendust ja värskenda lehte.</p>
+          </div>
+        `;
+      }
+    }
+
+    function renderCountries() {
+      if (!worldGeoData || !g) return;
+
+      const layer = g.append("g").attr("class", "countries-layer");
+
+      layer.selectAll("path")
+        .data(worldGeoData.features)
+        .enter()
+        .append("path")
+        .attr("class", "country-path")
+        .attr("d", pathGenerator)
+        .attr("stroke", "#94a3b8")
+        .attr("stroke-width", "0.4")
+        .attr("fill", "#e2e8f0")
+        .on("mouseenter", handleCountryHover)
+        .on("mousemove", handleCountryMove)
+        .on("mouseleave", handleCountryLeave)
+        .on("click", (event, d) => handleCountryClick(event, d));
+
+      g.selectAll(".country-path")
+        .filter(d => parseInt(d.id, 10) === 233)
+        .classed("country-home", true)
+        .attr("stroke", "#0369a1")
+        .attr("stroke-width", "0.8");
+    }
+
+    function getActiveVisits() {
+      if (currentYear === "all") {
+        const all = [];
+        Object.keys(visitsData).forEach(yr => {
+          visitsData[yr].forEach(v => all.push({ ...v, yearOccurred: yr }));
+        });
+        return all;
+      }
+      return (visitsData[currentYear] || []).map(v => ({ ...v, yearOccurred: currentYear }));
+    }
+
+    function getVisitsByFeatureId(featureId) {
+      const active = getActiveVisits();
+      const normId = parseInt(featureId, 10);
+      return active.filter(v => v.id && parseInt(v.id, 10) === normId);
+    }
+
+    function updateMapColors() {
+      if (!g) return;
+
+      const active = getActiveVisits();
+      const visitedIds = new Set(active.filter(v => v.id).map(v => parseInt(v.id, 10)));
+
+      g.selectAll(".country-path")
+        .each(function(d) {
+          const path = d3.select(this);
+          const normId = parseInt(d.id, 10);
+
+          if (normId === 233) {
+            path.classed("country-home", true);
+            path.classed("country-visited", false);
+          } else if (visitedIds.has(normId)) {
+            path.classed("country-visited", true);
+            path.classed("country-home", false);
+          } else {
+            path.classed("country-visited", false);
+            path.classed("country-home", false);
+          }
+        });
+
+      renderCountryChips();
+    }
+
+    function renderCountryChips() {
+      const container = document.getElementById('country-chips-container');
+      const counter = document.getElementById('stats-counter');
+      const bottomSelect = document.getElementById('bottom-year-select');
+      
+      if (bottomSelect && bottomSelect.value !== currentYear) {
+        bottomSelect.value = currentYear;
+      }
+
+      const visits = getActiveVisits();
+      container.innerHTML = "";
+
+      const uniqueCountries = [];
+      const seen = new Set();
+      visits.forEach(v => {
+        if (!seen.has(v.country)) {
+          seen.add(v.country);
+          uniqueCountries.push(v);
+        }
+      });
+
+      counter.textContent = `${visits.length} visiiti (${uniqueCountries.length} riiki)`;
+
+      if (uniqueCountries.length === 0) {
+        container.innerHTML = `<span class="text-slate-400 italic text-[11px]">Sellel perioodil visiite ei toimunud</span>`;
+        return;
+      }
+
+      uniqueCountries.forEach(v => {
+        const chip = document.createElement('button');
+        chip.className = "px-2.5 py-1 rounded-full bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-700 text-[11px] font-medium border border-slate-200 transition-colors flex items-center gap-1 shrink-0 select-none";
+        chip.innerHTML = `<span>${v.flag || "🌍"}</span> <span>${v.displayName || v.country}</span>`;
+        chip.onclick = () => {
+          if (chipsHaveMoved) return;
+          focusCountryByName(v.country);
+        };
+        container.appendChild(chip);
+      });
+    }
+
+    function handleCountryHover(event, d) {
+      const normId = String(parseInt(d.id, 10));
+      const visits = getVisitsByFeatureId(d.id);
+      const isEstonia = normId === "233";
+
+      tooltip.classList.remove('opacity-0');
+
+      const estonianName = ESTONIAN_COUNTRY_NAMES[normId] || (d.properties && d.properties.name) || "Välisriik";
+
+      if (isEstonia) {
+        tooltip.innerHTML = `🇪🇪 <b class="text-[16pt]">Eesti</b> <span class="text-blue-300 text-[14pt]">(koduriik)</span>`;
+      } else if (visits.length > 0) {
+        const flag = visits[0].flag || "🌍";
+        const countTxt = visits.length > 1 ? `(${visits.length} visiiti)` : '(visiit)';
+        tooltip.innerHTML = `${flag} <b class="text-[16pt]">${visits[0].displayName || estonianName}</b> <span class="text-blue-300 text-[14pt]">★ ${countTxt}</span>`;
+      } else {
+        tooltip.innerHTML = `<span class="text-[16pt] font-semibold">${estonianName}</span> <span class="text-slate-400 text-[14pt]">(Teised riigid)</span>`;
+      }
+    }
+
+    function handleCountryMove(event) {
+      const rect = mapViewport.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+
+      tooltip.style.left = `${x}px`;
+      tooltip.style.top = `${y - 12}px`;
+    }
+
+    function handleCountryLeave() {
+      tooltip.classList.add('opacity-0');
+    }
+
+    function handleCountryClick(event, d) {
+      const normId = String(parseInt(d.id, 10));
+      const visits = getVisitsByFeatureId(d.id);
+
+      if (visits.length > 0) {
+        openDetailsModal(visits[0].displayName || visits[0].country, visits[0].flag, visits);
+        zoomToFeature(d);
+      } else if (normId === "233") {
+        openDetailsModal("Eesti Vabariik", "🇪🇪", [
+          {
+            yearOccurred: currentYear,
+            action: "Alar Karis andis Riigikogu ees ametivande 11. oktoobril 2021, astudes Eesti Vabariigi presidendiks."
+          }
+        ]);
+        zoomToFeature(d);
+      } else {
+        // Klõpsates külastamata riigile sulgub hüpikaken
+        closeDetailsModal();
+      }
+    }
+
+    function focusCountryByName(countryName) {
+      const meta = COUNTRY_META[countryName];
+      const visits = getActiveVisits().filter(v => v.country === countryName);
+      if (!meta || visits.length === 0) return;
+
+      openDetailsModal(meta.name, meta.flag, visits);
+
+      if (worldGeoData) {
+        const feature = worldGeoData.features.find(f => parseInt(f.id, 10) === parseInt(meta.id, 10));
+        if (feature) {
+          zoomToFeature(feature);
+        }
+      }
+    }
+
+    function zoomToFeature(feature) {
+      const bounds = pathGenerator.bounds(feature);
+      const dx = bounds[1][0] - bounds[0][0];
+      const dy = bounds[1][1] - bounds[0][1];
+      const x = (bounds[0][0] + bounds[1][0]) / 2;
+      const y = (bounds[0][1] + bounds[1][1]) / 2;
+
+      const width = mapViewport.clientWidth || 670;
+      const height = mapViewport.clientHeight || 550;
+
+      const scale = Math.max(1.5, Math.min(8, 0.85 / Math.max(dx / width, dy / height)));
+      const translate = [width / 2 - scale * x, height / 2 - scale * y];
+
+      svg.transition()
+        .duration(650)
+        .call(
+          zoomBehavior.transform,
+          d3.zoomIdentity.translate(translate[0], translate[1]).scale(scale)
+        );
+    }
+
+    function resetMapView() {
+      svg.transition()
+        .duration(500)
+        .call(zoomBehavior.transform, d3.zoomIdentity);
+    }
+
+    const detailsModal = document.getElementById('details-modal');
+    const detailFlag = document.getElementById('detail-flag');
+    const detailCountryName = document.getElementById('detail-country-name');
+    const detailYearBadge = document.getElementById('detail-year-badge');
+    const visitsListContainer = document.getElementById('visits-list-container');
+    const photoWrapper = document.getElementById('photo-wrapper');
+    const detailPhoto = document.getElementById('detail-photo');
+
+    function openDetailsModal(countryName, flag, visits) {
+      detailFlag.textContent = flag || "🌍";
+      detailCountryName.textContent = countryName;
+      detailYearBadge.textContent = currentYear === "all" ? "Kõik visiidid (2021–2026)" : `${currentYear}. aasta visiidid`;
+
+      const photoItem = visits.find(v => v.photo && v.photo.trim() !== "");
+      if (photoItem && photoItem.photo) {
+        detailPhoto.src = photoItem.photo;
+        photoWrapper.classList.remove('hidden');
+      } else {
+        photoWrapper.classList.add('hidden');
+        detailPhoto.src = "";
+      }
+
+      visitsListContainer.innerHTML = "";
+
+      visits.forEach((v, idx) => {
+        const card = document.createElement('div');
+        card.className = "p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5";
+
+        const headerDiv = document.createElement('div');
+        headerDiv.className = "flex items-center justify-between";
+
+        const titleSpan = document.createElement('span');
+        titleSpan.className = "font-bold text-slate-800 text-[18pt] leading-tight";
+        titleSpan.textContent = visits.length > 1 ? `Visiit ${idx + 1}` : 'Visiidi tegevus';
+
+        const yearTag = document.createElement('span');
+        yearTag.className = "px-2 py-0.5 rounded bg-blue-100 text-blue-800 text-[14pt] font-semibold";
+        yearTag.textContent = v.yearOccurred ? `${v.yearOccurred}. a` : `${currentYear}. a`;
+
+        headerDiv.appendChild(titleSpan);
+        headerDiv.appendChild(yearTag);
+
+        const descP = document.createElement('p');
+        descP.className = "text-slate-700 text-[18pt] leading-relaxed pt-1";
+        descP.textContent = v.action || "Visiit";
+
+        card.appendChild(headerDiv);
+        card.appendChild(descP);
+        visitsListContainer.appendChild(card);
+      });
+
+      detailsModal.classList.remove('translate-x-full');
+    }
+
+    function closeDetailsModal() {
+      detailsModal.classList.add('translate-x-full');
+    }
+
+    document.getElementById('close-modal-btn').onclick = closeDetailsModal;
+    document.getElementById('modal-close-bottom').onclick = closeDetailsModal;
+
+    // Sulgeb hüpikakna, kui inimene klõpsab graafikul mis tahes muus kohas
+    document.addEventListener('click', (event) => {
+      if (!detailsModal.classList.contains('translate-x-full')) {
+        const isInsideModal = detailsModal.contains(event.target);
+        const isCountryPath = event.target.closest && event.target.closest('.country-path');
+        const isChip = event.target.closest && event.target.closest('#country-chips-container');
+        const isInfoBtn = event.target.closest && event.target.closest('#toggle-info-btn');
+
+        if (!isInsideModal && !isCountryPath && !isChip && !isInfoBtn) {
+          closeDetailsModal();
+        }
+      }
+    });
+
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const bottomYearSelect = document.getElementById('bottom-year-select');
+
+    function switchActiveYear(year) {
+      if (year === currentYear) return;
+      currentYear = year;
+
+      if (bottomYearSelect && bottomYearSelect.value !== currentYear) {
+        bottomYearSelect.value = currentYear;
+      }
+
+      tabButtons.forEach(b => {
+        const bYear = b.getAttribute('data-year');
+        if (bYear === currentYear) {
+          b.className = "tab-btn px-3 py-1.5 rounded-lg transition-all duration-150 whitespace-nowrap bg-blue-600 text-white font-semibold shadow-sm text-[16pt]";
+          const activeBadge = b.querySelector('span');
+          if (activeBadge) {
+            activeBadge.className = "ml-1 px-2 py-0.5 text-xs rounded-full bg-blue-800/80 text-blue-100";
+          }
+        } else {
+          b.className = "tab-btn px-3 py-1.5 rounded-lg transition-all duration-150 whitespace-nowrap text-slate-300 hover:text-white hover:bg-slate-800 text-[16pt]";
+          const badge = b.querySelector('span');
+          if (badge) {
+            badge.className = "ml-1 px-2 py-0.5 text-xs rounded-full bg-slate-800 text-slate-300";
+          }
+        }
+      });
+
+      closeDetailsModal();
+      updateMapColors();
+    }
+
+    tabButtons.forEach(btn => {
+      btn.onclick = () => {
+        switchActiveYear(btn.getAttribute('data-year'));
+      };
+    });
+
+    if (bottomYearSelect) {
+      bottomYearSelect.addEventListener('change', (e) => {
+        switchActiveYear(e.target.value);
+      });
+    }
+
+    const chipsContainer = document.getElementById('country-chips-container');
+    let isChipsDragging = false;
+    let chipsStartX = 0;
+    let chipsScrollLeft = 0;
+    let chipsHaveMoved = false;
+
+    chipsContainer.addEventListener('mousedown', (e) => {
+      isChipsDragging = true;
+      chipsHaveMoved = false;
+      chipsStartX = e.pageX - chipsContainer.offsetLeft;
+      chipsScrollLeft = chipsContainer.scrollLeft;
+    });
+
+    window.addEventListener('mouseup', () => {
+      isChipsDragging = false;
+    });
+
+    chipsContainer.addEventListener('mousemove', (e) => {
+      if (!isChipsDragging) return;
+      e.preventDefault();
+      const x = e.pageX - chipsContainer.offsetLeft;
+      const walk = (x - chipsStartX) * 1.5;
+      if (Math.abs(walk) > 4) {
+        chipsHaveMoved = true;
+      }
+      chipsContainer.scrollLeft = chipsScrollLeft - walk;
+    });
+
+    const chartWidget = document.getElementById('chart-widget');
+    const fullscreenBtn = document.getElementById('fullscreen-btn');
+    const fullscreenText = document.getElementById('fullscreen-text');
+
+    fullscreenBtn.onclick = toggleFullscreen;
+
+    function toggleFullscreen() {
+      const isFull = chartWidget.classList.toggle('is-fullscreen');
+
+      if (isFull) {
+        fullscreenText.textContent = "Välju täisekraanilt";
+        document.body.style.overflow = "hidden";
+      } else {
+        fullscreenText.textContent = "Ava üle ekraani";
+        document.body.style.overflow = "";
+      }
+
+      setTimeout(() => {
+        handleResize();
+      }, 250);
+    }
+
+    const toggleInfoBtn = document.getElementById('toggle-info-btn');
+    if (toggleInfoBtn) {
+      toggleInfoBtn.onclick = () => {
+        openDetailsModal("Teave graafiku kohta", "ℹ️", [
+          {
+            yearOccurred: "2021–2026",
+            action: "Kaardil on tähistatud Vabariigi Presidendi Alar Karise ametlikud välisvisiidid. Klõpsa kaardil olevale riigile või allolevale nimele, et vaadata tegevuste kirjeldust. Kaarti saab suumida hiire rullikuga või juhtnuppudest. Akna sulgemiseks klõpsa graafikul suvalises kohas."
+          }
+        ]);
+      };
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        if (chartWidget.classList.contains('is-fullscreen')) {
+          chartWidget.classList.remove('is-fullscreen');
+          fullscreenText.textContent = "Ava üle ekraani";
+          document.body.style.overflow = "";
+          handleResize();
+        }
+        closeDetailsModal();
+      }
+    });
+
+    const resizeObserver = new ResizeObserver(() => {
+      handleResize();
+    });
+    resizeObserver.observe(mapViewport);
+
+    function handleResize() {
+      if (!projection || !pathGenerator || !g) return;
+
+      const width = mapViewport.clientWidth || 670;
+      const height = mapViewport.clientHeight || 550;
+
+      projection
+        .scale(width / 5.2)
+        .center([15, 25])
+        .translate([width / 2, height / 2]);
+
+      g.selectAll(".country-path").attr("d", pathGenerator);
+    }
+
+    window.onload = function() {
+      loadWorldMap();
+    };
+  </script>
+</body>
+</html>

@@ -11,11 +11,11 @@
       box-sizing: border-box;
       margin: 0;
       padding: 0;
+      font-family: 'Fira Sans Condensed', sans-serif;
+      font-weight: 400; /* Strict adherence to no-bold rule */
     }
 
     body {
-      font-family: 'Fira Sans Condensed', sans-serif;
-      font-weight: 400;
       background-color: #ffffff;
       color: #333333;
       display: flex;
@@ -39,18 +39,17 @@
       align-items: flex-end;
       margin-bottom: 12px;
       gap: 12px;
+      flex-wrap: wrap;
     }
 
     .chart-title {
       font-size: 20px;
-      font-weight: 400;
       color: #333333;
       outline: none;
     }
 
     .chart-legend {
       font-size: 14px;
-      font-weight: 400;
       color: #555555;
       white-space: nowrap;
       display: flex;
@@ -114,12 +113,11 @@
     }
 
     .party-label {
-      width: 125px;
-      min-width: 125px;
+      width: 120px;
+      min-width: 120px;
       text-align: right;
       padding-right: 12px;
       font-size: 15px;
-      font-weight: 400;
       color: #222222;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -133,16 +131,6 @@
       border-left: 1px solid #CCCCCC;
     }
 
-    .bar-wrapper {
-      position: absolute;
-      left: 0;
-      top: 0;
-      bottom: 0;
-      display: flex;
-      align-items: center;
-      cursor: pointer;
-    }
-
     .bar {
       height: 100%;
       border-radius: 0 3px 3px 0;
@@ -150,11 +138,11 @@
       align-items: center;
       padding-left: 8px;
       position: relative;
+      cursor: pointer;
     }
 
     .bar-value {
       font-size: 15px;
-      font-weight: 400;
       white-space: nowrap;
       pointer-events: none;
       user-select: none;
@@ -213,27 +201,24 @@
     .chart-footer {
       display: flex;
       flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      align-items: flex-start;
       margin-top: 14px;
       gap: 3px;
     }
 
     .footer-line {
       font-size: 13px;
-      font-weight: 400;
       color: #777777;
       outline: none;
     }
 
-    /* Ujuvsilt (Tooltip) */
+    /* Tooltip Styles */
     .custom-tooltip {
       position: fixed;
       display: none;
       background: #333333;
       color: #FFFFFF;
       font-size: 13px;
-      font-weight: 400;
       padding: 5px 9px;
       border-radius: 3px;
       pointer-events: none;
@@ -259,7 +244,7 @@
 
   <div class="chart-container">
     <div class="chart-header">
-      <div class="chart-title" contenteditable="true">Erakondade reitingud küsitlusperioodil XX.-XX.YY.ZZZZ</div>
+      <div class="chart-title" contenteditable="true">Erakondade reitingud küsitlusperioodil 12.-21. oktoober 2026</div>
       <div class="chart-legend">
         <span class="legend-symbol">
           <span class="cap left"></span>
@@ -291,13 +276,13 @@
       { name: "KOOS", support: 1.7, error: 0.7, color: "#dc5356", textTheme: "dark" },
       { name: "Eesti 200", support: 1.5, error: 0.6, color: "#00C0C9", textTheme: "dark" },
       { name: "Rohelised", support: 0.8, error: 0.5, color: "#60BE19", textTheme: "dark" },
-      { name: "ERK", support: 0.7, error: 0.4, color: "#000000", textTheme: "light" },
-      { name: "Vasakliit", support: 0.2, error: 0.2, color: "#FA040A", textTheme: "light" },
+      { name: "ERK", support: 0.7, error: 0.4, color: "#000000", textTheme: "dark" },
+      { name: "Vasakliit", support: 0.2, error: 0.2, color: "#FA040A", textTheme: "dark" },
       { name: "Vabaerakond", support: 0.0, error: 0.0, color: "#2EC9D1", textTheme: "dark" }
     ];
 
     const maxVal = Math.max(...data.map(d => d.support + d.error));
-    const scaleMax = maxVal * 1.12;
+    const scaleMax = maxVal * 1.15; // Jätame veidi ruumi paremale
 
     const barsContainer = document.getElementById('barsArea');
     const tooltip = document.getElementById('tooltip');
@@ -344,8 +329,11 @@
       if (item.support < 2.5) {
         valSpan.classList.add('outside');
         valSpan.innerText = valFormatted;
+        // Väljaspool tulpa on tekst alati must, hoolimata teemast
         valSpan.style.color = '#111111';
-        valSpan.style.left = `calc(${barWidthPct}% + ${item.error > 0 ? (item.error / scaleMax * 100) + 1.5 : 0.5}%)`;
+        // Nihutame teksti paremale, et vältida kattumist veapiiriga, kui see eksisteerib
+        let offset = item.error > 0 ? ((item.error / scaleMax) * 100) + 1.5 : 1;
+        valSpan.style.left = `calc(${barWidthPct}% + ${offset}%)`;
         plotArea.appendChild(valSpan);
       } else {
         valSpan.innerText = valFormatted;
@@ -359,6 +347,7 @@
 
       plotArea.appendChild(bar);
 
+      // Veapiiri marker
       if (item.support > 0 || item.error > 0) {
         const minVal = Math.max(0, item.support - item.error);
         const maxVal = item.support + item.error;
@@ -369,7 +358,7 @@
         const errorMarker = document.createElement('div');
         errorMarker.className = 'error-marker';
         errorMarker.style.left = leftPct + '%';
-        errorMarker.style.width = Math.max(widthPct, 0.2) + '%';
+        errorMarker.style.width = Math.max(widthPct, 0.2) + '%'; 
 
         const line = document.createElement('div');
         line.className = 'error-line';
@@ -388,6 +377,7 @@
         centerDot.style.left = ((centerOffsetPct - leftPct) / widthPct) * 100 + '%';
         errorMarker.appendChild(centerDot);
 
+        // Veapiiri tooltip - peatame event propagationi, et vältida tulba tooltippi kattumist
         errorMarker.addEventListener('mouseenter', (e) => {
           e.stopPropagation();
           showTooltip(e, errFormatted);

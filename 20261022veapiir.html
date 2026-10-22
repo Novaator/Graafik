@@ -3,109 +3,77 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Erakondade reitingud</title>
+  <title>Erakondade reitingud küsitlusperioodil 12.–21. oktoober 2026</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Fira+Sans+Condensed:wght@400&display=swap');
 
-    * {
+    *, *::before, *::after {
       box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Fira Sans Condensed', sans-serif;
-      font-weight: 400; /* Strict adherence to no-bold rule */
+      font-family: 'Fira Sans Condensed', sans-serif !important;
+      font-weight: 400 !important;
+      -webkit-font-smoothing: antialiased;
     }
 
     body {
+      margin: 0;
+      padding: 12px;
       background-color: #ffffff;
-      color: #333333;
       display: flex;
       justify-content: center;
       align-items: flex-start;
-      padding: 16px;
     }
 
-    .chart-container {
+    .chart-wrapper {
       width: 100%;
-      max-width: 780px;
+      max-width: 820px;
       max-height: 665px;
-      display: flex;
-      flex-direction: column;
+      margin: 0 auto;
+      padding: 8px 12px 8px 12px;
+      background: #ffffff;
       position: relative;
     }
 
-    .chart-header {
+    /* Päis */
+    .header {
       display: flex;
       justify-content: space-between;
-      align-items: flex-end;
-      margin-bottom: 12px;
+      align-items: center;
+      margin-bottom: 14px;
+      min-height: 28px;
       gap: 12px;
-      flex-wrap: wrap;
     }
 
-    .chart-title {
-      font-size: 20px;
+    .title {
+      font-size: 19px;
       color: #333333;
-      outline: none;
+      user-select: none;
+      line-height: 1.3;
     }
 
-    .chart-legend {
-      font-size: 14px;
-      color: #555555;
-      white-space: nowrap;
+    .legend {
       display: flex;
       align-items: center;
       gap: 6px;
+      font-size: 14px;
+      color: #4A4A4A;
+      user-select: none;
+      white-space: nowrap;
+      flex-shrink: 0;
     }
 
-    .legend-symbol {
-      display: inline-flex;
-      align-items: center;
-      position: relative;
-      width: 32px;
-      height: 14px;
+    .legend svg {
+      display: block;
     }
 
-    .legend-symbol::before {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 0;
-      right: 0;
-      height: 1.5px;
-      background-color: #4A4A4A;
-      transform: translateY(-50%);
-    }
-
-    .legend-symbol .cap {
-      position: absolute;
-      top: 1px;
-      bottom: 1px;
-      width: 1.5px;
-      background-color: #4A4A4A;
-    }
-
-    .legend-symbol .cap.left { left: 0; }
-    .legend-symbol .cap.right { right: 0; }
-
-    .legend-symbol .dot {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      width: 5px;
-      height: 5px;
-      background-color: #4A4A4A;
-      border-radius: 50%;
-      transform: translate(-50%, -50%);
-    }
-
-    .bars-container {
+    /* Graafikuala */
+    .chart-container {
       display: flex;
       flex-direction: column;
       gap: 5px;
       position: relative;
     }
 
-    .bar-row {
+    .row {
       display: flex;
       align-items: center;
       height: 40px;
@@ -113,284 +81,325 @@
     }
 
     .party-label {
-      width: 120px;
-      min-width: 120px;
+      width: 125px;
+      min-width: 125px;
       text-align: right;
-      padding-right: 12px;
+      padding-right: 14px;
       font-size: 15px;
       color: #222222;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      line-height: 40px;
       white-space: nowrap;
+      user-select: none;
     }
 
-    .plot-area {
-      flex-grow: 1;
-      height: 100%;
+    .bar-track {
+      flex: 1;
+      height: 40px;
       position: relative;
       border-left: 1px solid #CCCCCC;
     }
 
     .bar {
-      height: 100%;
+      height: 40px;
       border-radius: 0 3px 3px 0;
+      position: absolute;
+      left: 0;
+      top: 0;
       display: flex;
       align-items: center;
       padding-left: 8px;
-      position: relative;
       cursor: pointer;
+      transition: opacity 0.15s ease;
     }
 
-    .bar-value {
+    .bar:hover {
+      opacity: 0.92;
+    }
+
+    .value-label {
       font-size: 15px;
-      white-space: nowrap;
-      pointer-events: none;
       user-select: none;
+      pointer-events: none;
+      line-height: 1;
     }
 
-    .bar-value.outside {
+    .value-label.outside {
       position: absolute;
-      left: 100%;
-      margin-left: 8px;
+      top: 50%;
+      transform: translateY(-50%);
       color: #111111;
+      white-space: nowrap;
     }
 
-    .error-marker {
+    /* Veapiiri SVG kiht */
+    .error-bar-svg {
       position: absolute;
+      left: 0;
       top: 0;
-      bottom: 0;
-      display: flex;
-      align-items: center;
+      width: 100%;
+      height: 40px;
+      pointer-events: none;
+      overflow: visible;
+    }
+
+    .error-marker-group {
       pointer-events: all;
       cursor: pointer;
-      z-index: 5;
     }
 
-    .error-line {
+    .error-marker-group:hover line,
+    .error-marker-group:hover circle {
+      stroke: #111111;
+      fill: #111111;
+    }
+
+    /* Ujuvad sildid (tooltips) */
+    .tooltip {
       position: absolute;
-      height: 1.5px;
-      background-color: #4A4A4A;
-      left: 0;
-      right: 0;
-      top: 50%;
-      transform: translateY(-50%);
-    }
-
-    .error-cap {
-      position: absolute;
-      width: 1.5px;
-      height: 18px;
-      background-color: #4A4A4A;
-      top: 50%;
-      transform: translateY(-50%);
-    }
-
-    .error-cap.left { left: 0; }
-    .error-cap.right { right: 0; }
-
-    .error-center-dot {
-      position: absolute;
-      width: 6px;
-      height: 6px;
-      background-color: #4A4A4A;
-      border-radius: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-    }
-
-    .chart-footer {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      margin-top: 14px;
-      gap: 3px;
-    }
-
-    .footer-line {
-      font-size: 13px;
-      color: #777777;
-      outline: none;
-    }
-
-    /* Tooltip Styles */
-    .custom-tooltip {
-      position: fixed;
-      display: none;
       background: #333333;
-      color: #FFFFFF;
+      color: #ffffff;
       font-size: 13px;
       padding: 5px 9px;
       border-radius: 3px;
       pointer-events: none;
-      z-index: 1000;
-      white-space: nowrap;
+      opacity: 0;
       transform: translate(-50%, -100%);
-      margin-top: -8px;
+      transition: opacity 0.12s ease;
+      white-space: nowrap;
+      z-index: 100;
     }
 
-    .custom-tooltip::after {
+    .tooltip.active {
+      opacity: 1;
+    }
+
+    .tooltip-arrow::after {
       content: '';
       position: absolute;
       top: 100%;
       left: 50%;
       transform: translateX(-50%);
-      border-width: 4px;
+      border-width: 5px;
       border-style: solid;
       border-color: #333333 transparent transparent transparent;
+    }
+
+    /* Jalus */
+    .footer {
+      margin-top: 14px;
+      text-align: center;
+      font-size: 13px;
+      color: #777777;
+      line-height: 1.45;
+      user-select: none;
     }
   </style>
 </head>
 <body>
 
-  <div class="chart-container">
-    <div class="chart-header">
-      <div class="chart-title" contenteditable="true">Erakondade reitingud küsitlusperioodil 12.-21. oktoober 2026</div>
-      <div class="chart-legend">
-        <span class="legend-symbol">
-          <span class="cap left"></span>
-          <span class="dot"></span>
-          <span class="cap right"></span>
-        </span>
-        <span>- veapiir</span>
+  <div class="chart-wrapper">
+    <!-- Päis -->
+    <div class="header">
+      <div class="title">Erakondade reitingud küsitlusperioodil 12.–21. oktoober 2026</div>
+      <div class="legend">
+        <svg width="42" height="20" viewBox="0 0 42 20" aria-hidden="true">
+          <line x1="4" y1="4" x2="4" y2="16" stroke="#4A4A4A" stroke-width="1.5" />
+          <line x1="4" y1="10" x2="38" y2="10" stroke="#4A4A4A" stroke-width="1.5" />
+          <circle cx="21" cy="10" r="3.5" fill="#4A4A4A" />
+          <line x1="38" y1="4" x2="38" y2="16" stroke="#4A4A4A" stroke-width="1.5" />
+        </svg>
+        <span> - veapiir</span>
       </div>
     </div>
 
-    <div class="bars-container" id="barsArea"></div>
+    <!-- Tulpdiagramm -->
+    <div class="chart-container" id="chart"></div>
 
-    <div class="chart-footer">
-      <div class="footer-line" contenteditable="true">Graafika: Mirjam Mäekivi</div>
-      <div class="footer-line" contenteditable="true">Allikas: Kantar Emor</div>
+    <!-- Jalus -->
+    <div class="footer">
+      Graafika: Mirjam Mäekivi<br>
+      Allikas: Emor
     </div>
+
+    <!-- Ujuv vihjesilt -->
+    <div id="tooltip" class="tooltip"></div>
   </div>
 
-  <div class="custom-tooltip" id="tooltip"></div>
-
   <script>
+    // Pildilt loetud andmestik sorteeritud toetuse järgi kahanevalt
     const data = [
-      { name: "Keskerakond", support: 20.6, error: 2.1, color: "#027D2B", textTheme: "light" },
-      { name: "SDE", support: 20.4, error: 2.0, color: "#CE1126", textTheme: "light" },
-      { name: "Isamaa", support: 19.4, error: 2.0, color: "#009DE0", textTheme: "light" },
-      { name: "Reformierakond", support: 14.2, error: 1.8, color: "#FFDC00", textTheme: "dark" },
-      { name: "EKRE", support: 13.8, error: 1.8, color: "#2139B5", textTheme: "light" },
-      { name: "Parempoolsed", support: 6.5, error: 1.3, color: "#ff6100", textTheme: "dark" },
-      { name: "KOOS", support: 1.7, error: 0.7, color: "#dc5356", textTheme: "dark" },
-      { name: "Eesti 200", support: 1.5, error: 0.6, color: "#00C0C9", textTheme: "dark" },
-      { name: "Rohelised", support: 0.8, error: 0.5, color: "#60BE19", textTheme: "dark" },
+      { name: "Keskerakond",    val: 20.6, err: 2.1, color: "#027D2B", textInsideColor: "#FFFFFF" },
+      { name: "SDE",            val: 20.4, err: 2.0, color: "#CE1126", textInsideColor: "#FFFFFF" },
+      { name: "Isamaa",         val: 19.4, err: 2.0, color: "#009DE0", textInsideColor: "#FFFFFF" },
+      { name: "Reformierakond", val: 14.2, err: 1.8, color: "#FFDC00", textInsideColor: "#111111" },
+      { name: "EKRE",           val: 13.8, err: 1.8, color: "#2139B5", textInsideColor: "#FFFFFF" },
+      { name: "Parempoolsed",   val: 6.5,  err: 1.3, color: "#ff6100", textInsideColor: "#111111" },
+      { name: "KOOS",           val: 1.7,  err: 0.7, color: "#dc5356", textInsideColor: "#111111" },
+      { name: "Eesti 200",      val: 1.5,  err: 0.6, color: "#00C0C9", textInsideColor: "#111111" },
+      { name: "Rohelised",      val: 0.8,  err: 0.5, color: "#60BE19", textInsideColor: "#111111" }
+    ];
+
+    // X-telje skaala arvutamine suurima ulatuse järgi varuga
+    const maxDataReach = Math.max(...data.map(d => d.val + d.err));
+    const scaleMax = maxDataReach * 1.15; // ~26,1%
+
+    const formatPct = (num) => num.toFixed(1).replace('.', ',') + '%';
+    const formatErr = (num) => '± ' + num.toFixed(1).replace('.', ',') + '%';
+
+    const chartEl = document.getElementById('chart');
+    const tooltipEl = document.getElementById('tooltip');
+    const wrapperEl = document.querySelector('.chart-wrapper');
+
+    function showTooltip(x, y, text, withArrow = false) {
+      tooltipEl.textContent = text;
+      tooltipEl.className = withArrow ? 'tooltip active tooltip-arrow' : 'tooltip active';
       
-    ]
+      const wrapperRect = wrapperEl.getBoundingClientRect();
+      const leftPos = x - wrapperRect.left;
+      const topPos = y - wrapperRect.top - 8;
 
-    const maxVal = Math.max(...data.map(d => d.support + d.error));
-    const scaleMax = maxVal * 1.15; // Jätame veidi ruumi paremale
-
-    const barsContainer = document.getElementById('barsArea');
-    const tooltip = document.getElementById('tooltip');
-
-    function showTooltip(e, text) {
-      tooltip.innerText = text;
-      tooltip.style.display = 'block';
-      moveTooltip(e);
-    }
-
-    function moveTooltip(e) {
-      tooltip.style.left = e.clientX + 'px';
-      tooltip.style.top = e.clientY + 'px';
+      tooltipEl.style.left = `${leftPos}px`;
+      tooltipEl.style.top = `${topPos}px`;
     }
 
     function hideTooltip() {
-      tooltip.style.display = 'none';
+      tooltipEl.className = 'tooltip';
     }
 
     data.forEach(item => {
       const row = document.createElement('div');
-      row.className = 'bar-row';
+      row.className = 'row';
 
-      const label = document.createElement('div');
-      label.className = 'party-label';
-      label.innerText = item.name;
-      row.appendChild(label);
+      // Erakonna nime veerg
+      const nameCol = document.createElement('div');
+      nameCol.className = 'party-label';
+      nameCol.textContent = item.name;
+      row.appendChild(nameCol);
 
-      const plotArea = document.createElement('div');
-      plotArea.className = 'plot-area';
+      // Tulba ala
+      const track = document.createElement('div');
+      track.className = 'bar-track';
 
-      const barWidthPct = (item.support / scaleMax) * 100;
+      const barWidthPct = (item.val / scaleMax) * 100;
+      const minValPct = Math.max(0, (item.val - item.err) / scaleMax * 100);
+      const maxValPct = (item.val + item.err) / scaleMax * 100;
+      const centerPct = (item.val / scaleMax) * 100;
+
+      // Põhitulp
       const bar = document.createElement('div');
       bar.className = 'bar';
-      bar.style.width = barWidthPct + '%';
+      bar.style.width = `${barWidthPct}%`;
       bar.style.backgroundColor = item.color;
 
-      const valFormatted = item.support.toFixed(1).replace('.', ',') + '%';
-      const errFormatted = '± ' + item.error.toFixed(1).replace('.', ',') + '%';
+      const isShortBar = item.val < 2.5;
 
-      const valSpan = document.createElement('span');
-      valSpan.className = 'bar-value';
-
-      if (item.support < 2.5) {
-        valSpan.classList.add('outside');
-        valSpan.innerText = valFormatted;
-        // Väljaspool tulpa on tekst alati must, hoolimata teemast
-        valSpan.style.color = '#111111';
-        // Nihutame teksti paremale, et vältida kattumist veapiiriga, kui see eksisteerib
-        let offset = item.error > 0 ? ((item.error / scaleMax) * 100) + 1.5 : 1;
-        valSpan.style.left = `calc(${barWidthPct}% + ${offset}%)`;
-        plotArea.appendChild(valSpan);
-      } else {
-        valSpan.innerText = valFormatted;
-        valSpan.style.color = item.textTheme === 'light' ? '#FFFFFF' : '#111111';
+      if (!isShortBar) {
+        const valSpan = document.createElement('span');
+        valSpan.className = 'value-label';
+        valSpan.style.color = item.textInsideColor;
+        valSpan.textContent = formatPct(item.val);
         bar.appendChild(valSpan);
       }
 
-      bar.addEventListener('mouseenter', (e) => showTooltip(e, `${item.name}: ${valFormatted}`));
-      bar.addEventListener('mousemove', moveTooltip);
+      // Tulba hover sündmused
+      bar.addEventListener('mouseenter', (e) => {
+        const rect = bar.getBoundingClientRect();
+        showTooltip(rect.left + rect.width / 2, rect.top, `${item.name}: ${formatPct(item.val)}`, false);
+      });
+      bar.addEventListener('mousemove', (e) => {
+        showTooltip(e.clientX, e.clientY - 12, `${item.name}: ${formatPct(item.val)}`, false);
+      });
       bar.addEventListener('mouseleave', hideTooltip);
 
-      plotArea.appendChild(bar);
+      track.appendChild(bar);
 
-      // Veapiiri marker
-      if (item.support > 0 || item.error > 0) {
-        const minVal = Math.max(0, item.support - item.error);
-        const maxVal = item.support + item.error;
-        const leftPct = (minVal / scaleMax) * 100;
-        const widthPct = ((maxVal - minVal) / scaleMax) * 100;
-        const centerOffsetPct = (item.support / scaleMax) * 100;
-
-        const errorMarker = document.createElement('div');
-        errorMarker.className = 'error-marker';
-        errorMarker.style.left = leftPct + '%';
-        errorMarker.style.width = Math.max(widthPct, 0.2) + '%'; 
-
-        const line = document.createElement('div');
-        line.className = 'error-line';
-        errorMarker.appendChild(line);
-
-        const leftCap = document.createElement('div');
-        leftCap.className = 'error-cap left';
-        errorMarker.appendChild(leftCap);
-
-        const rightCap = document.createElement('div');
-        rightCap.className = 'error-cap right';
-        errorMarker.appendChild(rightCap);
-
-        const centerDot = document.createElement('div');
-        centerDot.className = 'error-center-dot';
-        centerDot.style.left = ((centerOffsetPct - leftPct) / widthPct) * 100 + '%';
-        errorMarker.appendChild(centerDot);
-
-        // Veapiiri tooltip - peatame event propagationi, et vältida tulba tooltippi kattumist
-        errorMarker.addEventListener('mouseenter', (e) => {
-          e.stopPropagation();
-          showTooltip(e, errFormatted);
-        });
-        errorMarker.addEventListener('mousemove', (e) => {
-          e.stopPropagation();
-          moveTooltip(e);
-        });
-        errorMarker.addEventListener('mouseleave', hideTooltip);
-
-        plotArea.appendChild(errorMarker);
+      // Lühikeste tulpade (< 2,5%) väärtus paigutatakse veapiiri lõpust paremale
+      if (isShortBar) {
+        const outsideSpan = document.createElement('span');
+        outsideSpan.className = 'value-label outside';
+        outsideSpan.style.left = `calc(${maxValPct}% + 9px)`;
+        outsideSpan.textContent = formatPct(item.val);
+        track.appendChild(outsideSpan);
       }
 
-      row.appendChild(plotArea);
-      barsContainer.appendChild(row);
+      // Veapiiri SVG kiht
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('class', 'error-bar-svg');
+
+      const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      group.setAttribute('class', 'error-marker-group');
+
+      // Tundlik ala (hover hitbox) hõlpsaks tabamiseks
+      const hitLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      hitLine.setAttribute('x1', `${minValPct}%`);
+      hitLine.setAttribute('y1', '20');
+      hitLine.setAttribute('x2', `${maxValPct}%`);
+      hitLine.setAttribute('y2', '20');
+      hitLine.setAttribute('stroke', 'transparent');
+      hitLine.setAttribute('stroke-width', '18');
+      group.appendChild(hitLine);
+
+      // Horisontaalne joon
+      const hLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      hLine.setAttribute('x1', `${minValPct}%`);
+      hLine.setAttribute('y1', '20');
+      hLine.setAttribute('x2', `${maxValPct}%`);
+      hLine.setAttribute('y2', '20');
+      hLine.setAttribute('stroke', '#4A4A4A');
+      hLine.setAttribute('stroke-width', '1.5');
+      group.appendChild(hLine);
+
+      // Vasak otsakriips
+      const leftTick = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      leftTick.setAttribute('x1', `${minValPct}%`);
+      leftTick.setAttribute('y1', '11');
+      leftTick.setAttribute('x2', `${minValPct}%`);
+      leftTick.setAttribute('y2', '29');
+      leftTick.setAttribute('stroke', '#4A4A4A');
+      leftTick.setAttribute('stroke-width', '1.5');
+      group.appendChild(leftTick);
+
+      // Parem otsakriips
+      const rightTick = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      rightTick.setAttribute('x1', `${maxValPct}%`);
+      rightTick.setAttribute('y1', '11');
+      rightTick.setAttribute('x2', `${maxValPct}%`);
+      rightTick.setAttribute('y2', '29');
+      rightTick.setAttribute('stroke', '#4A4A4A');
+      rightTick.setAttribute('stroke-width', '1.5');
+      group.appendChild(rightTick);
+
+      // Keskpunkti ring tulba lõpus
+      const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      dot.setAttribute('cx', `${centerPct}%`);
+      dot.setAttribute('cy', '20');
+      dot.setAttribute('r', '3.5');
+      dot.setAttribute('fill', '#4A4A4A');
+      group.appendChild(dot);
+
+      // Veapiiri hover sündmused
+      group.addEventListener('mouseenter', (e) => {
+        e.stopPropagation();
+        const dotRect = dot.getBoundingClientRect();
+        const targetX = dotRect.left + dotRect.width / 2;
+        const targetY = dotRect.top;
+        showTooltip(targetX, targetY - 4, formatErr(item.err), true);
+      });
+
+      group.addEventListener('mousemove', (e) => {
+        e.stopPropagation();
+      });
+
+      group.addEventListener('mouseleave', (e) => {
+        e.stopPropagation();
+        hideTooltip();
+      });
+
+      svg.appendChild(group);
+      track.appendChild(svg);
+
+      row.appendChild(track);
+      chartEl.appendChild(row);
     });
   </script>
 </body>

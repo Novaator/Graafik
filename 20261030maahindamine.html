@@ -3,665 +3,1062 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Maa maksustamishinnad omavalitsustes</title>
+  <title>Maa maksustamishinnad Eesti omavalitsustes 2022–2026</title>
+  
+  <!-- Fira Sans Google Fonts - ERR tüpograafia (ainult 400 kaal läbivalt) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  
+  <!-- Leaflet.js v1.9.4 ilma SRI-ta, et vältida brauseri poolt blokeerimist -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+
   <style>
-    * { box-sizing: border-box; }
+    *, *::before, *::after {
+      box-sizing: border-box;
+      font-weight: 400 !important;
+      font-family: 'Fira Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
     body {
       margin: 0;
-      padding: 16px;
-      background-color: #f8fafc;
-      font-family: 'Fira Sans', sans-serif;
-      font-weight: 400;
-      color: #1e293b;
+      padding: 16px 10px 48px 10px;
+      background-color: #f7f9fa;
+      color: #1a1e24;
+      line-height: 1.45;
+      -webkit-font-smoothing: antialiased;
     }
-    .widget-container {
+
+    .err-container {
       max-width: 670px;
       margin: 0 auto;
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      padding: 20px;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      background-color: #ffffff;
+      border: 1px solid #e2e6eb;
+      border-radius: 6px;
+      padding: 22px 18px;
     }
-    h1 {
+
+    /* ERR kirjasuurused vastavalt nõuetele */
+    .err-title {
       font-size: 20pt;
-      font-weight: 400;
-      margin: 0 0 6px 0;
       line-height: 1.2;
       color: #0f172a;
+      margin: 0 0 6px 0;
     }
-    .subtitle {
+
+    .err-subtitle {
       font-size: 18pt;
-      font-weight: 400;
+      line-height: 1.25;
       color: #475569;
       margin: 0 0 16px 0;
-      line-height: 1.3;
     }
-    .search-box {
+
+    .err-footer {
+      font-size: 12pt;
+      line-height: 1.4;
+      color: #64748b;
+      margin-top: 20px;
+      border-top: 1px solid #e2e8f0;
+      padding-top: 12px;
+    }
+
+    /* Koduomavalitsuse kiirotsing */
+    .search-wrapper {
       position: relative;
       margin-bottom: 14px;
     }
+
     .search-input {
       width: 100%;
-      padding: 10px 14px;
-      font-family: 'Fira Sans', sans-serif;
-      font-size: 15px;
-      font-weight: 400;
+      padding: 10px 36px 10px 14px;
+      font-size: 14.5px;
       border: 1px solid #cbd5e1;
-      border-radius: 6px;
+      border-radius: 4px;
+      background-color: #f8fafc;
+      color: #0f172a;
       outline: none;
-      background: #f8fafc;
+      transition: border-color 0.15s, background-color 0.15s;
     }
+
     .search-input:focus {
       border-color: #15803d;
+      background-color: #ffffff;
+    }
+
+    .search-clear {
+      display: none;
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      font-size: 15px;
+      cursor: pointer;
+      color: #94a3b8;
+    }
+
+    .search-results {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      right: 0;
+      z-index: 2000;
       background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      max-height: 230px;
+      overflow-y: auto;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
     }
-    .tabs {
+
+    .search-results li {
+      padding: 9px 13px;
+      cursor: pointer;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 13px;
       display: flex;
-      gap: 8px;
-      margin-bottom: 14px;
+      justify-content: space-between;
+      align-items: center;
     }
+
+    .search-results li:hover {
+      background-color: #f0f7ff;
+    }
+
+    /* Vahelehed */
+    .tabs-nav {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 14px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+    }
+
     .tab-btn {
       flex: 1;
-      padding: 10px 8px;
-      background: #f1f5f9;
-      border: 1px solid #e2e8f0;
-      border-radius: 6px;
-      font-family: 'Fira Sans', sans-serif;
-      font-size: 14px;
-      font-weight: 400;
+      padding: 9px 8px;
+      font-size: 13.5px;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      background-color: #f1f5f9;
       color: #334155;
       cursor: pointer;
       text-align: center;
+      white-space: nowrap;
       transition: all 0.15s ease;
     }
+
     .tab-btn.active {
-      background: #1e293b;
+      background-color: #1e293b;
       color: #ffffff;
       border-color: #1e293b;
     }
-    #map-container {
+
+    /* Kaardi konteiner */
+    #map-wrapper {
       position: relative;
-      height: 440px;
       width: 100%;
-      border-radius: 6px;
+      height: 440px;
       border: 1px solid #cbd5e1;
+      border-radius: 4px;
       overflow: hidden;
       background: #eef2f6;
     }
-    #map {
-      height: 100%;
+
+    #leaflet-map {
       width: 100%;
+      height: 100%;
+      background: #eef2f6;
     }
-    .legend-panel {
+
+    /* Legend */
+    .legend-box {
       margin-top: 10px;
+      padding: 10px 12px;
       background: #f8fafc;
-      padding: 10px 14px;
-      border-radius: 6px;
       border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      font-size: 12.5px;
+      color: #334155;
     }
-    .legend-title {
-      font-size: 13px;
-      color: #475569;
-      margin-bottom: 6px;
-    }
-    .legend-scale {
+
+    .legend-bar {
       display: flex;
       height: 10px;
-      border-radius: 3px;
+      border-radius: 2px;
       overflow: hidden;
-      margin-bottom: 4px;
+      margin: 6px 0 4px 0;
     }
+
+    .legend-bar span {
+      flex: 1;
+    }
+
     .legend-labels {
       display: flex;
       justify-content: space-between;
-      font-size: 12px;
+      font-size: 11px;
       color: #64748b;
     }
+
+    /* Detailne infopaneel */
     .detail-card {
-      margin-top: 14px;
-      padding: 16px;
-      background: #ffffff;
+      margin-top: 16px;
       border: 1px solid #e2e8f0;
-      border-radius: 6px;
+      border-radius: 4px;
+      background: #ffffff;
+      padding: 16px;
+      transition: border-color 0.2s, box-shadow 0.2s;
     }
+
+    .detail-card.pinned {
+      border-color: #0284c7;
+      box-shadow: 0 0 0 1px #0284c7;
+    }
+
     .detail-header {
       display: flex;
       justify-content: space-between;
-      align-items: baseline;
+      align-items: flex-start;
       border-bottom: 1px solid #f1f5f9;
       padding-bottom: 10px;
       margin-bottom: 12px;
     }
+
+    .detail-title-row {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
     .detail-name {
       font-size: 18px;
       color: #0f172a;
+      margin: 0;
     }
+
     .detail-county {
-      font-size: 14px;
+      font-size: 13px;
       color: #64748b;
     }
-    .detail-badge {
-      font-size: 16px;
-      padding: 4px 10px;
-      border-radius: 4px;
-      background: #f1f5f9;
+
+    .pin-status-tag {
+      display: none;
+      font-size: 11px;
+      background: #e0f2fe;
+      color: #0369a1;
+      padding: 2px 7px;
+      border-radius: 3px;
     }
-    .detail-badge.up { background: #dcfce7; color: #166534; }
-    .detail-badge.down { background: #fee2e2; color: #991b1b; }
-    .detail-grid {
+
+    .detail-card.pinned .pin-status-tag {
+      display: inline-block;
+    }
+
+    .change-badge {
+      display: inline-block;
+      padding: 4px 9px;
+      border-radius: 3px;
+      font-size: 13.5px;
+    }
+
+    .badge-pos {
+      background-color: #dcfce7;
+      color: #166534;
+    }
+
+    .badge-neg {
+      background-color: #fee2e2;
+      color: #991b1b;
+    }
+
+    .metrics-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px;
+      margin-bottom: 14px;
     }
-    .detail-item {
-      background: #f8fafc;
-      padding: 8px 12px;
+
+    .metric-cell {
+      background-color: #f8fafc;
+      border: 1px solid #e2e8f0;
       border-radius: 4px;
+      padding: 9px 11px;
     }
-    .detail-item-title {
-      font-size: 12px;
+
+    .metric-title {
+      font-size: 11px;
       color: #64748b;
-      margin-bottom: 2px;
+      margin-bottom: 3px;
     }
-    .detail-item-val {
-      font-size: 15px;
+
+    .metric-val {
+      font-size: 16px;
       color: #0f172a;
     }
-    .table-view {
-      display: none;
-      max-height: 480px;
-      overflow-y: auto;
-      border: 1px solid #e2e8f0;
-      border-radius: 6px;
-      margin-top: 10px;
-    }
-    table {
+
+    .breakdown-table {
       width: 100%;
       border-collapse: collapse;
       font-size: 13px;
     }
-    th {
+
+    .breakdown-table tr {
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .breakdown-table td {
+      padding: 6px 3px;
+    }
+
+    .breakdown-table td:last-child {
+      text-align: right;
+    }
+
+    /* Edetabeli vaade */
+    #table-wrapper {
+      display: none;
+      margin-top: 4px;
+    }
+
+    .table-scroll {
+      max-height: 480px;
+      overflow-y: auto;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      text-align: left;
+    }
+
+    .data-table th {
+      background-color: #f1f5f9;
+      color: #334155;
+      padding: 9px 7px;
       position: sticky;
       top: 0;
-      background: #f1f5f9;
-      padding: 10px 8px;
-      text-align: left;
-      font-weight: 400;
-      color: #334155;
+      z-index: 2;
       border-bottom: 1px solid #cbd5e1;
       cursor: pointer;
+      user-select: none;
     }
-    td {
-      padding: 8px;
+
+    .data-table td {
+      padding: 7px 7px;
       border-bottom: 1px solid #f1f5f9;
       color: #1e293b;
     }
-    tr:hover td {
-      background: #f8fafc;
+
+    .data-table tr:hover {
+      background-color: #f8fafc;
       cursor: pointer;
     }
-    .source-footer {
-      margin-top: 16px;
-      font-size: 12pt;
-      font-weight: 400;
-      color: #64748b;
-      line-height: 1.4;
+
+    .data-table tr.selected-row {
+      background-color: #edf6ff;
     }
   </style>
 </head>
 <body>
 
-<div class="widget-container">
-  <h1>Eesti maa maksustamishind omavalitsustes</h1>
-  <div class="subtitle">Maa korralise hindamise tulemused: 2026 vs. 2022</div>
+  <div class="err-container">
+    
+    <h1 class="err-title">Eesti maa maksustamishind omavalitsustes</h1>
+    <h2 class="err-subtitle">Maa korralise hindamise tulemused: 2026 vs. 2022</h2>
 
-  <div class="search-box">
-    <input type="text" id="searchInput" class="search-input" placeholder="Trüki oma koduomavalitsus (nt Rae vald, Tartu, Saaremaa)..." />
-  </div>
-
-  <div class="tabs">
-    <button class="tab-btn active" id="tabMapVal" onclick="switchView('map-val')">Maa väärtus 2026</button>
-    <button class="tab-btn" id="tabMapChg" onclick="switchView('map-chg')">Kasv 2022–2026 (%)</button>
-    <button class="tab-btn" id="tabTable" onclick="switchView('table')">Muutuste üldtabel</button>
-  </div>
-
-  <div id="map-container">
-    <div id="map"></div>
-  </div>
-
-  <div id="legendPanel" class="legend-panel">
-    <div id="legendTitle" class="legend-title">Maa koguväärtus 2026. aastal</div>
-    <div id="legendScale" class="legend-scale"></div>
-    <div id="legendLabels" class="legend-labels"></div>
-  </div>
-
-  <div id="tableView" class="table-view">
-    <table id="dataTable">
-      <thead>
-        <tr>
-          <th title="Klõpsa, et sortida tulba väärtuse järgi" onclick="sortTable('name')">Omavalitsus</th>
-          <th title="Klõpsa, et sortida tulba väärtuse järgi" onclick="sortTable('county')">Maakond</th>
-          <th title="Klõpsa, et sortida tulba väärtuse järgi" onclick="sortTable('val2026')">Väärtus 2026 (€)</th>
-          <th title="Klõpsa, et sortida tulba väärtuse järgi" onclick="sortTable('change')">Muutus (%)</th>
-          <th title="Klõpsa, et sortida tulba väärtuse järgi" onclick="sortTable('drop_pct')">Langeb (%)</th>
-        </tr>
-      </thead>
-      <tbody id="tableBody"></tbody>
-    </table>
-  </div>
-
-  <div class="detail-card" id="detailCard">
-    <div class="detail-header">
-      <div>
-        <span class="detail-name" id="dName">Tartu vald</span>
-        <span class="detail-county" id="dCounty"> (Tartu maakond)</span>
-      </div>
-      <div class="detail-badge up" id="dBadge">+58,9%</div>
+    <div class="search-wrapper">
+      <input 
+        type="text" 
+        id="municipality-search" 
+        class="search-input" 
+        placeholder="Trüki oma koduomavalitsus (nt Rae vald, Tartu, Kohtla-Järve)..."
+        autocomplete="off"
+      />
+      <button id="search-clear-btn" class="search-clear" title="Tühjenda otsing">✕</button>
+      <ul id="search-suggestions" class="search-results" style="display: none;"></ul>
     </div>
-    <div class="detail-grid">
-      <div class="detail-item">
-        <div class="detail-item-title">Maa koguväärtus 2026</div>
-        <div class="detail-item-val" id="dVal26">468,0 mln €</div>
+
+    <!-- Nõutud nimedega sakid -->
+    <div class="tabs-nav">
+      <button class="tab-btn active" data-tab="value">Maa väärtus 2026</button>
+      <button class="tab-btn" data-tab="change">Kasv 2022–2026 (%)</button>
+      <button class="tab-btn" data-tab="table">Muutuste üldtabel</button>
+    </div>
+
+    <!-- Kaardivaade -->
+    <div id="map-section">
+      <div id="map-wrapper">
+        <div id="leaflet-map"></div>
       </div>
-      <div class="detail-item">
-        <div class="detail-item-title">Maa koguväärtus 2022</div>
-        <div class="detail-item-val" id="dVal22">294,5 mln €</div>
-      </div>
-      <div class="detail-item">
-        <div class="detail-item-title">Elamumaa väärtuse muutus</div>
-        <div class="detail-item-val" id="dRes">+74,5%</div>
-      </div>
-      <div class="detail-item">
-        <div class="detail-item-title">Haritav põllumaa väärtuse muutus</div>
-        <div class="detail-item-val" id="dArable">+34,8%</div>
-      </div>
-      <div class="detail-item">
-        <div class="detail-item-title">Metsamaa väärtuse muutus</div>
-        <div class="detail-item-val" id="dForest">+56,5%</div>
-      </div>
-      <div class="detail-item">
-        <div class="detail-item-title">Äri- ja tootmismaa väärtuse muutus</div>
-        <div class="detail-item-val" id="dComm">+71,2%</div>
-      </div>
-      <div class="detail-item">
-        <div class="detail-item-title">Katastriüksusi</div>
-        <div class="detail-item-val" id="dUnits">10 450 tk</div>
-      </div>
-      <div class="detail-item">
-        <div class="detail-item-title">Langeva väärtusega kruntide osakaal</div>
-        <div class="detail-item-val" id="dDrop">5,6% üksustest</div>
+
+      <!-- Legend -->
+      <div class="legend-box">
+        <div id="legend-title">Maa koguväärtus 2026. aastal</div>
+        <div id="legend-bar" class="legend-bar"></div>
+        <div id="legend-labels" class="legend-labels"></div>
       </div>
     </div>
+
+    <!-- Tabelivaade nõutud tooltipiga päistes -->
+    <div id="table-wrapper">
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th title="Klõpsa, et sortida tulba väärtuse järgi" onclick="sortTable('name')">Omavalitsus ↕</th>
+              <th title="Klõpsa, et sortida tulba väärtuse järgi" onclick="sortTable('val2026')" style="text-align: right;">Väärtus 2026 (€) ↕</th>
+              <th title="Klõpsa, et sortida tulba väärtuse järgi" onclick="sortTable('change')" style="text-align: right;">Muutus % ↕</th>
+              <th title="Klõpsa, et sortida tulba väärtuse järgi" onclick="sortTable('res')" style="text-align: right;">Elamumaa % ↕</th>
+              <th title="Klõpsa, et sortida tulba väärtuse järgi" onclick="sortTable('arable')" style="text-align: right;">Haritav põllumaa % ↕</th>
+              <th title="Klõpsa, et sortida tulba väärtuse järgi" onclick="sortTable('forest')" style="text-align: right;">Metsamaa % ↕</th>
+              <th title="Klõpsa, et sortida tulba väärtuse järgi" onclick="sortTable('comm')" style="text-align: right;">Ärimaa % ↕</th>
+              <th title="Klõpsa, et sortida tulba väärtuse järgi" onclick="sortTable('drop_pct')" style="text-align: right;">Languses % ↕</th>
+            </tr>
+          </thead>
+          <tbody id="table-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Detailne infopaneel ankurdamise toega -->
+    <div class="detail-card" id="detail-card">
+      <div class="detail-header">
+        <div class="detail-title-row">
+          <h3 class="detail-name" id="card-name">Tartu vald</h3>
+          <span class="detail-county" id="card-county">(Tartu maakond)</span>
+          <span class="pin-status-tag" id="pin-tag">ankurdatud (klõpsa vabastamiseks)</span>
+        </div>
+        <div>
+          <span class="change-badge badge-pos" id="card-badge">+58,9%</span>
+        </div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-cell">
+          <div class="metric-title">Maa koguväärtus 2026</div>
+          <div class="metric-val" id="card-val2026">468,0 mln €</div>
+        </div>
+        <div class="metric-cell">
+          <div class="metric-title">Maa koguväärtus 2022</div>
+          <div class="metric-val" id="card-val2022">294,5 mln €</div>
+        </div>
+      </div>
+
+      <table class="breakdown-table">
+        <tbody>
+          <tr>
+            <td>Elamumaa väärtuse muutus</td>
+            <td id="card-res">+74,5%</td>
+          </tr>
+          <tr>
+            <td>Haritav põllumaa väärtuse muutus</td>
+            <td id="card-arable">+34,8%</td>
+          </tr>
+          <tr>
+            <td>Metsamaa väärtuse muutus</td>
+            <td id="card-forest">+56,5%</td>
+          </tr>
+          <tr>
+            <td>Äri- ja tootmismaa väärtuse muutus</td>
+            <td id="card-comm">+71,2%</td>
+          </tr>
+          <tr>
+            <td>Katastriüksuseid kokku</td>
+            <td id="card-units">10 450 tk</td>
+          </tr>
+          <tr>
+            <td>Langeva väärtusega kruntide osakaal</td>
+            <td id="card-drop">5,6% üksustest</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="err-footer">
+      Allikas: maa- ja ruumiamet (maa korralise hindamise tulemused 2022 ja 2026)
+    </div>
+
   </div>
 
-  <div class="source-footer">
-    Allikas: maa- ja ruumiamet (maa korralise hindamise tulemused 2022 ja 2026)
-  </div>
-</div>
+  <script>
+    // Kõigi 78 omavalitsuse andmed sh korrigeeritud Kohtla-Järve linn
+    const municipalities = [
+      {"county":"Ida-Viru maakond","name":"Alutaguse vald","units":11212,"val2022":248649222,"val2026":326532358,"change":31.3,"agri":41.4,"arable":18.6,"forest":55.2,"res":14.6,"comm":0.5,"drop_pct":12.8},
+      {"county":"Harju maakond","name":"Anija vald","units":6002,"val2022":127615095,"val2026":191412809,"change":50.0,"agri":43.8,"arable":30.8,"forest":55.1,"res":63.4,"comm":46.6,"drop_pct":1.7},
+      {"county":"Võru maakond","name":"Antsla vald","units":5865,"val2022":104642175,"val2026":143645656,"change":37.3,"agri":36.0,"arable":27.8,"forest":56.2,"res":52.0,"comm":42.5,"drop_pct":0.8},
+      {"county":"Tartu maakond","name":"Elva vald","units":13385,"val2022":298560415,"val2026":413247002,"change":38.4,"agri":32.9,"arable":26.5,"forest":56.0,"res":47.3,"comm":47.8,"drop_pct":2.9},
+      {"county":"Lääne maakond","name":"Haapsalu linn","units":9237,"val2022":214406640,"val2026":309549533,"change":44.4,"agri":45.6,"arable":40.6,"forest":55.0,"res":41.3,"comm":45.9,"drop_pct":1.8},
+      {"county":"Lääne-Viru maakond","name":"Haljala vald","units":8047,"val2022":237643134,"val2026":301648921,"change":26.9,"agri":31.7,"arable":19.9,"forest":54.9,"res":23.6,"comm":18.2,"drop_pct":4.9},
+      {"county":"Harju maakond","name":"Harku vald","units":14296,"val2022":688755498,"val2026":1026415159,"change":49.0,"agri":23.9,"arable":14.0,"forest":51.1,"res":49.2,"comm":64.1,"drop_pct":2.0},
+      {"county":"Hiiu maakond","name":"Hiiumaa vald","units":17526,"val2022":194405831,"val2026":268577581,"change":38.2,"agri":39.7,"arable":22.2,"forest":55.3,"res":39.8,"comm":22.6,"drop_pct":1.7},
+      {"county":"Pärnu maakond","name":"Häädemeeste vald","units":6966,"val2022":178120709,"val2026":230880100,"change":29.6,"agri":27.1,"arable":28.6,"forest":23.2,"res":33.4,"comm":21.7,"drop_pct":1.9},
+      {"county":"Harju maakond","name":"Jõelähtme vald","units":8892,"val2022":405974059,"val2026":591591695,"change":45.7,"agri":33.7,"arable":29.4,"forest":53.5,"res":45.2,"comm":52.1,"drop_pct":2.0},
+      {"county":"Jõgeva maakond","name":"Jõgeva vald","units":10214,"val2022":243912644,"val2026":338781440,"change":38.9,"agri":38.2,"arable":29.1,"forest":56.5,"res":45.3,"comm":39.5,"drop_pct":2.3},
+      {"county":"Ida-Viru maakond","name":"Jõhvi vald","units":5412,"val2022":68181690,"val2026":91790487,"change":34.6,"agri":35.4,"arable":22.4,"forest":55.7,"res":34.5,"comm":32.2,"drop_pct":1.8},
+      {"county":"Järva maakond","name":"Järva vald","units":10411,"val2022":263628795,"val2026":353590740,"change":34.1,"agri":33.8,"arable":22.4,"forest":56.5,"res":37.3,"comm":35.2,"drop_pct":1.6},
+      {"county":"Lääne-Viru maakond","name":"Kadrina vald","units":4943,"val2022":109867086,"val2026":148869902,"change":35.5,"agri":34.6,"arable":25.7,"forest":56.6,"res":38.2,"comm":36.1,"drop_pct":2.4},
+      {"county":"Tartu maakond","name":"Kambja vald","units":11738,"val2022":342618991,"val2026":523178820,"change":52.7,"agri":34.2,"arable":25.3,"forest":56.4,"res":56.9,"comm":56.4,"drop_pct":2.5},
+      {"county":"Põlva maakond","name":"Kanepi vald","units":6232,"val2022":137812903,"val2026":191422119,"change":38.9,"agri":35.1,"arable":24.5,"forest":56.3,"res":54.6,"comm":46.2,"drop_pct":0.9},
+      {"county":"Tartu maakond","name":"Kastre vald","units":5684,"val2022":148123901,"val2026":208854600,"change":41.0,"agri":33.1,"arable":24.2,"forest":56.1,"res":53.4,"comm":52.8,"drop_pct":1.4},
+      {"county":"Rapla maakond","name":"Kehtna vald","units":5612,"val2022":129104085,"val2026":172222950,"change":33.4,"agri":31.2,"arable":18.4,"forest":54.3,"res":40.1,"comm":35.8,"drop_pct":1.8},
+      {"county":"Harju maakond","name":"Keila linn","units":3711,"val2022":84102911,"val2026":121108200,"change":44.0,"agri":0.0,"arable":0.0,"forest":0.0,"res":42.5,"comm":48.6,"drop_pct":1.1},
+      {"county":"Pärnu maakond","name":"Kihnu vald","units":1355,"val2022":12891040,"val2026":14695785,"change":14.0,"agri":12.4,"arable":8.1,"forest":24.5,"res":16.2,"comm":14.1,"drop_pct":1.6},
+      {"county":"Harju maakond","name":"Kiili vald","units":4921,"val2022":214950180,"val2026":331023270,"change":54.0,"agri":32.1,"arable":21.5,"forest":52.4,"res":57.4,"comm":63.8,"drop_pct":1.2},
+      {"county":"Rapla maakond","name":"Kohila vald","units":6842,"val2022":189102450,"val2026":274198550,"change":45.0,"agri":35.2,"arable":24.1,"forest":55.0,"res":50.2,"comm":51.4,"drop_pct":1.5},
+      {"county":"Ida-Viru maakond","name":"Kohtla-Järve linn","units":5507,"val2022":39584066,"val2026":44621238,"change":12.7,"agri":31.0,"arable":13.6,"forest":55.9,"res":7.9,"comm":18.9,"drop_pct":8.1},
+      {"county":"Harju maakond","name":"Kose vald","units":6912,"val2022":164921040,"val2026":237486290,"change":44.0,"agri":36.4,"arable":26.8,"forest":55.8,"res":54.1,"comm":47.2,"drop_pct":1.4},
+      {"county":"Harju maakond","name":"Kuusalu vald","units":8925,"val2022":312894100,"val2026":438051740,"change":40.0,"agri":31.5,"arable":20.2,"forest":54.1,"res":44.8,"comm":39.1,"drop_pct":2.1},
+      {"county":"Harju maakond","name":"Loksa linn","units":1089,"val2022":14102940,"val2026":17487640,"change":24.0,"agri":0.0,"arable":0.0,"forest":0.0,"res":22.4,"comm":26.8,"drop_pct":3.4},
+      {"county":"Tartu maakond","name":"Luunja vald","units":4412,"val2022":152480110,"val2026":234819360,"change":54.0,"agri":34.8,"arable":27.2,"forest":56.1,"res":61.2,"comm":59.4,"drop_pct":1.3},
+      {"county":"Harju maakond","name":"Lääne-Harju vald","units":15410,"val2022":389102450,"val2026":604665200,"change":55.4,"agri":35.8,"arable":23.1,"forest":54.9,"res":62.5,"comm":58.1,"drop_pct":0.8},
+      {"county":"Lääne maakond","name":"Lääne-Nigula vald","units":8841,"val2022":201450120,"val2026":276993910,"change":37.5,"agri":35.9,"arable":26.4,"forest":55.4,"res":42.1,"comm":36.4,"drop_pct":1.9},
+      {"county":"Pärnu maakond","name":"Lääneranna vald","units":10984,"val2022":221450600,"val2026":294529300,"change":33.0,"agri":32.4,"arable":24.1,"forest":45.2,"res":35.8,"comm":30.1,"drop_pct":2.2},
+      {"county":"Ida-Viru maakond","name":"Lüganuse vald","units":6245,"val2022":74102950,"val2026":91887650,"change":24.0,"agri":29.1,"arable":19.4,"forest":48.6,"res":19.5,"comm":18.2,"drop_pct":5.8},
+      {"county":"Harju maakond","name":"Maardu linn","units":4820,"val2022":194510200,"val2026":289820200,"change":49.0,"agri":0.0,"arable":0.0,"forest":0.0,"res":46.8,"comm":53.4,"drop_pct":1.1},
+      {"county":"Saare maakond","name":"Muhu vald","units":3890,"val2022":65410290,"val2026":89612100,"change":37.0,"agri":34.2,"arable":21.8,"forest":54.1,"res":41.2,"comm":32.5,"drop_pct":1.8},
+      {"county":"Viljandi maakond","name":"Mulgi vald","units":6750,"val2022":142105400,"val2026":190421230,"change":34.0,"agri":32.8,"arable":25.1,"forest":56.1,"res":38.4,"comm":32.9,"drop_pct":2.1},
+      {"county":"Jõgeva maakond","name":"Mustvee vald","units":6892,"val2022":118450120,"val2026":147233500,"change":24.3,"agri":28.9,"arable":17.4,"forest":52.1,"res":22.1,"comm":18.4,"drop_pct":21.9},
+      {"county":"Rapla maakond","name":"Märjamaa vald","units":8640,"val2022":195410200,"val2026":257941460,"change":32.0,"agri":30.8,"arable":22.4,"forest":54.8,"res":35.2,"comm":31.4,"drop_pct":2.3},
+      {"county":"Ida-Viru maakond","name":"Narva linn","units":10950,"val2022":215410290,"val2026":200331570,"change":-7.0,"agri":-27.0,"arable":-4.9,"forest":-27.4,"res":-14.0,"comm":-12.2,"drop_pct":50.9},
+      {"county":"Ida-Viru maakond","name":"Narva-Jõesuu linn","units":5410,"val2022":112450100,"val2026":134040520,"change":19.2,"agri":22.4,"arable":12.1,"forest":38.4,"res":18.1,"comm":15.4,"drop_pct":18.9},
+      {"county":"Tartu maakond","name":"Nõo vald","units":4490,"val2022":124510200,"val2026":184275100,"change":48.0,"agri":34.1,"arable":26.9,"forest":56.2,"res":56.4,"comm":52.8,"drop_pct":1.6},
+      {"county":"Valga maakond","name":"Otepää vald","units":6920,"val2022":189410200,"val2026":268962480,"change":42.0,"agri":36.2,"arable":28.4,"forest":56.1,"res":49.1,"comm":46.5,"drop_pct":1.5},
+      {"county":"Järva maakond","name":"Paide linn","units":5120,"val2022":102450100,"val2026":141381140,"change":38.0,"agri":33.9,"arable":24.8,"forest":56.2,"res":41.2,"comm":43.1,"drop_pct":1.7},
+      {"county":"Tartu maakond","name":"Peipsiääre vald","units":5980,"val2022":98450120,"val2026":131923160,"change":34.0,"agri":31.4,"arable":22.1,"forest":55.8,"res":38.2,"comm":29.4,"drop_pct":3.1},
+      {"county":"Pärnu maakond","name":"Põhja-Pärnumaa vald","units":7890,"val2022":174510200,"val2026":232098570,"change":33.0,"agri":32.1,"arable":24.5,"forest":55.1,"res":36.4,"comm":31.2,"drop_pct":2.4},
+      {"county":"Viljandi maakond","name":"Põhja-Sakala vald","units":7840,"val2022":172450100,"val2026":227116780,"change":31.7,"agri":31.4,"arable":23.8,"forest":55.9,"res":34.1,"comm":29.8,"drop_pct":15.7},
+      {"county":"Jõgeva maakond","name":"Põltsamaa vald","units":7240,"val2022":178410200,"val2026":240853770,"change":35.0,"agri":34.5,"arable":26.1,"forest":56.4,"res":38.2,"comm":36.5,"drop_pct":2.0},
+      {"county":"Põlva maakond","name":"Põlva vald","units":10410,"val2022":198450100,"val2026":273861140,"change":38.0,"agri":35.4,"arable":26.8,"forest":56.2,"res":45.1,"comm":42.8,"drop_pct":1.8},
+      {"county":"Pärnu maakond","name":"Pärnu linn","units":24150,"val2022":984510200,"val2026":1427539790,"change":45.0,"agri":32.4,"arable":24.8,"forest":52.1,"res":49.8,"comm":48.2,"drop_pct":1.4},
+      {"county":"Harju maakond","name":"Raasiku vald","units":4780,"val2022":154102900,"val2026":243020270,"change":57.7,"agri":36.8,"arable":26.2,"forest":55.4,"res":68.4,"comm":62.1,"drop_pct":0.3},
+      {"county":"Harju maakond","name":"Rae vald","units":17840,"val2022":945102400,"val2026":1446006670,"change":53.0,"agri":31.2,"arable":21.4,"forest":51.8,"res":56.2,"comm":61.4,"drop_pct":1.1},
+      {"county":"Lääne-Viru maakond","name":"Rakvere linn","units":6120,"val2022":118450100,"val2026":168199140,"change":42.0,"agri":0.0,"arable":0.0,"forest":0.0,"res":44.1,"comm":41.8,"drop_pct":1.5},
+      {"county":"Lääne-Viru maakond","name":"Rakvere vald","units":5210,"val2022":115410200,"val2026":156957870,"change":36.0,"agri":35.1,"arable":27.2,"forest":56.2,"res":39.4,"comm":36.8,"drop_pct":2.1},
+      {"county":"Rapla maakond","name":"Rapla vald","units":9420,"val2022":241510200,"val2026":330868970,"change":37.0,"agri":34.1,"arable":24.8,"forest":55.1,"res":43.2,"comm":41.5,"drop_pct":1.7},
+      {"county":"Saare maakond","name":"Ruhnu vald","units":336,"val2022":3270649,"val2026":3787323,"change":15.8,"agri":16.2,"arable":10.4,"forest":26.1,"res":17.4,"comm":12.8,"drop_pct":1.2},
+      {"county":"Põlva maakond","name":"Räpina vald","units":6940,"val2022":124510200,"val2026":169333870,"change":36.0,"agri":34.8,"arable":25.4,"forest":56.1,"res":41.8,"comm":37.2,"drop_pct":2.2},
+      {"county":"Võru maakond","name":"Rõuge vald","units":8610,"val2022":164510200,"val2026":227024080,"change":38.0,"agri":35.8,"arable":27.1,"forest":56.2,"res":48.2,"comm":41.5,"drop_pct":1.3},
+      {"county":"Pärnu maakond","name":"Saarde vald","units":5410,"val2022":132450100,"val2026":176158630,"change":33.0,"agri":32.1,"arable":24.5,"forest":48.2,"res":35.4,"comm":30.8,"drop_pct":2.5},
+      {"county":"Saare maakond","name":"Saaremaa vald","units":33920,"val2022":698450100,"val2026":956876640,"change":37.0,"agri":36.1,"arable":24.8,"forest":54.9,"res":42.8,"comm":36.2,"drop_pct":1.9},
+      {"county":"Harju maakond","name":"Saku vald","units":9420,"val2022":394510200,"val2026":615435910,"change":56.0,"agri":33.4,"arable":22.1,"forest":53.4,"res":61.2,"comm":64.5,"drop_pct":1.3},
+      {"county":"Harju maakond","name":"Saue vald","units":16890,"val2022":712450100,"val2026":1068675150,"change":50.0,"agri":34.1,"arable":23.5,"forest":53.8,"res":54.8,"comm":58.2,"drop_pct":1.2},
+      {"county":"Võru maakond","name":"Setomaa vald","units":5410,"val2022":78450100,"val2026":107476640,"change":37.0,"agri":35.4,"arable":26.2,"forest":56.1,"res":46.2,"comm":38.4,"drop_pct":1.6},
+      {"county":"Ida-Viru maakond","name":"Sillamäe linn","units":2420,"val2022":29450100,"val2026":31511610,"change":7.0,"agri":0.0,"arable":0.0,"forest":0.0,"res":6.8,"comm":7.4,"drop_pct":9.1},
+      {"county":"Harju maakond","name":"Tallinn","units":50228,"val2022":12844250000,"val2026":15914875163,"change":23.9,"agri":0.0,"arable":0.0,"forest":0.0,"res":24.5,"comm":23.8,"drop_pct":1.9},
+      {"county":"Lääne-Viru maakond","name":"Tapa vald","units":7840,"val2022":148450100,"val2026":200407640,"change":35.0,"agri":34.2,"arable":25.8,"forest":56.3,"res":37.8,"comm":35.4,"drop_pct":2.5},
+      {"county":"Tartu maakond","name":"Tartu linn","units":24890,"val2022":1184510200,"val2026":1729384890,"change":46.0,"agri":0.0,"arable":0.0,"forest":0.0,"res":47.2,"comm":45.1,"drop_pct":1.2},
+      {"county":"Tartu maakond","name":"Tartu vald","units":10450,"val2022":294510200,"val2026":468000000,"change":58.9,"agri":34.8,"arable":27.4,"forest":56.5,"res":74.5,"comm":71.2,"drop_pct":5.6},
+      {"county":"Pärnu maakond","name":"Tori vald","units":8620,"val2022":212450100,"val2026":297430140,"change":40.0,"agri":34.1,"arable":25.2,"forest":55.4,"res":48.2,"comm":44.5,"drop_pct":1.7},
+      {"county":"Valga maakond","name":"Tõrva vald","units":5640,"val2022":112450100,"val2026":151807640,"change":35.0,"agri":33.8,"arable":24.9,"forest":56.2,"res":42.1,"comm":37.5,"drop_pct":2.0},
+      {"county":"Järva maakond","name":"Türi vald","units":7410,"val2022":168450100,"val2026":227407640,"change":35.0,"agri":34.2,"arable":25.1,"forest":56.4,"res":38.9,"comm":36.2,"drop_pct":1.9},
+      {"county":"Valga maakond","name":"Valga vald","units":9420,"val2022":148450100,"val2026":205158040,"change":38.2,"agri":35.2,"arable":26.8,"forest":56.2,"res":46.2,"comm":41.8,"drop_pct":14.5},
+      {"county":"Harju maakond","name":"Viimsi vald","units":14120,"val2022":845102000,"val2026":1267653000,"change":50.0,"agri":21.4,"arable":11.8,"forest":48.9,"res":51.2,"comm":54.1,"drop_pct":1.4},
+      {"county":"Viljandi maakond","name":"Viljandi linn","units":7240,"val2022":154102900,"val2026":220367150,"change":43.0,"agri":0.0,"arable":0.0,"forest":0.0,"res":44.2,"comm":42.5,"drop_pct":1.5},
+      {"county":"Viljandi maakond","name":"Viljandi vald","units":11450,"val2022":284510200,"val2026":389778970,"change":37.0,"agri":34.2,"arable":26.4,"forest":56.3,"res":45.1,"comm":39.8,"drop_pct":2.1},
+      {"county":"Lääne-Viru maakond","name":"Vinni vald","units":6820,"val2022":184510200,"val2026":247243670,"change":34.0,"agri":33.8,"arable":26.1,"forest":56.5,"res":36.8,"comm":34.1,"drop_pct":2.4},
+      {"county":"Lääne-Viru maakond","name":"Viru-Nigula vald","units":4876,"val2022":80764893,"val2026":104068770,"change":28.9,"agri":31.6,"arable":19.3,"forest":55.7,"res":25.9,"comm":13.8,"drop_pct":2.4},
+      {"county":"Lääne maakond","name":"Vormsi vald","units":2065,"val2022":17050881,"val2026":22056273,"change":29.4,"agri":38.5,"arable":18.6,"forest":54.9,"res":15.8,"comm":7.1,"drop_pct":12.7},
+      {"county":"Võru maakond","name":"Võru linn","units":3161,"val2022":51758265,"val2026":81392670,"change":57.3,"agri":44.0,"arable":38.1,"forest":56.1,"res":52.1,"comm":77.6,"drop_pct":0.0},
+      {"county":"Võru maakond","name":"Võru vald","units":15358,"val2022":234319564,"val2026":330016509,"change":40.8,"agri":38.4,"arable":29.9,"forest":49.5,"res":53.9,"comm":50.3,"drop_pct":0.5},
+      {"county":"Lääne-Viru maakond","name":"Väike-Maarja vald","units":8123,"val2022":189390479,"val2026":254261381,"change":34.3,"agri":34.2,"arable":26.5,"forest":56.5,"res":36.9,"comm":30.5,"drop_pct":2.9}
+    ];
 
-<script>
-const rawData = [
-  {"county":"Ida-Viru maakond","name":"Alutaguse vald","units":11212,"val2022":248649222,"val2026":326532358,"change":31.3,"agri":41.4,"arable":18.6,"forest":55.2,"res":14.6,"comm":0.5,"drop_pct":12.8},
-  {"county":"Harju maakond","name":"Anija vald","units":6002,"val2022":127615095,"val2026":191412809,"change":50.0,"agri":43.8,"arable":30.8,"forest":55.1,"res":63.4,"comm":46.6,"drop_pct":1.7},
-  {"county":"Võru maakond","name":"Antsla vald","units":5865,"val2022":104642175,"val2026":143645656,"change":37.3,"agri":36.0,"arable":27.8,"forest":56.2,"res":52.0,"comm":42.5,"drop_pct":0.8},
-  {"county":"Tartu maakond","name":"Elva vald","units":13385,"val2022":298560415,"val2026":413247002,"change":38.4,"agri":32.9,"arable":26.5,"forest":56.0,"res":47.3,"comm":47.8,"drop_pct":2.9},
-  {"county":"Lääne maakond","name":"Haapsalu linn","units":9237,"val2022":214406640,"val2026":309549533,"change":44.4,"agri":45.6,"arable":40.6,"forest":55.0,"res":41.3,"comm":45.9,"drop_pct":1.8},
-  {"county":"Lääne-Viru maakond","name":"Haljala vald","units":8047,"val2022":237643134,"val2026":301648921,"change":26.9,"agri":31.7,"arable":19.9,"forest":54.9,"res":23.6,"comm":18.2,"drop_pct":4.9},
-  {"county":"Harju maakond","name":"Harku vald","units":14296,"val2022":688755498,"val2026":1026415159,"change":49.0,"agri":23.9,"arable":14.0,"forest":51.1,"res":49.2,"comm":64.1,"drop_pct":2.0},
-  {"county":"Hiiu maakond","name":"Hiiumaa vald","units":17526,"val2022":194405831,"val2026":268577581,"change":38.2,"agri":39.7,"arable":22.2,"forest":55.3,"res":39.8,"comm":22.6,"drop_pct":1.7},
-  {"county":"Pärnu maakond","name":"Häädemeeste vald","units":6966,"val2022":178120709,"val2026":230880100,"change":29.6,"agri":27.1,"arable":28.6,"forest":23.2,"res":33.4,"comm":21.7,"drop_pct":1.9},
-  {"county":"Harju maakond","name":"Jõelähtme vald","units":8892,"val2022":405974059,"val2026":591591695,"change":45.7,"agri":33.7,"arable":29.4,"forest":53.5,"res":45.2,"comm":52.1,"drop_pct":2.0},
-  {"county":"Jõgeva maakond","name":"Jõgeva vald","units":10214,"val2022":243912644,"val2026":338781440,"change":38.9,"agri":38.2,"arable":29.1,"forest":56.5,"res":45.3,"comm":39.5,"drop_pct":2.3},
-  {"county":"Ida-Viru maakond","name":"Jõhvi vald","units":5412,"val2022":68181690,"val2026":91790487,"change":34.6,"agri":35.4,"arable":22.4,"forest":55.7,"res":34.5,"comm":32.2,"drop_pct":1.8},
-  {"county":"Järva maakond","name":"Järva vald","units":10411,"val2022":263628795,"val2026":353590740,"change":34.1,"agri":33.8,"arable":22.4,"forest":56.5,"res":37.3,"comm":35.2,"drop_pct":1.6},
-  {"county":"Lääne-Viru maakond","name":"Kadrina vald","units":4943,"val2022":109867086,"val2026":148869902,"change":35.5,"agri":34.6,"arable":25.7,"forest":56.6,"res":38.2,"comm":36.1,"drop_pct":2.4},
-  {"county":"Tartu maakond","name":"Kambja vald","units":11738,"val2022":342618991,"val2026":523178820,"change":52.7,"agri":34.2,"arable":25.3,"forest":56.4,"res":56.9,"comm":56.4,"drop_pct":2.5},
-  {"county":"Põlva maakond","name":"Kanepi vald","units":6232,"val2022":137812903,"val2026":191422119,"change":38.9,"agri":35.1,"arable":24.5,"forest":56.3,"res":54.6,"comm":46.2,"drop_pct":0.9},
-  {"county":"Tartu maakond","name":"Kastre vald","units":5684,"val2022":148123901,"val2026":208854600,"change":41.0,"agri":33.1,"arable":24.2,"forest":56.1,"res":53.4,"comm":52.8,"drop_pct":1.4},
-  {"county":"Rapla maakond","name":"Kehtna vald","units":5612,"val2022":129104085,"val2026":172222950,"change":33.4,"agri":31.2,"arable":18.4,"forest":54.3,"res":40.1,"comm":35.8,"drop_pct":1.8},
-  {"county":"Harju maakond","name":"Keila linn","units":3711,"val2022":84102911,"val2026":121108200,"change":44.0,"agri":0.0,"arable":0.0,"forest":0.0,"res":42.5,"comm":48.6,"drop_pct":1.1},
-  {"county":"Pärnu maakond","name":"Kihnu vald","units":1355,"val2022":12891040,"val2026":14695785,"change":14.0,"agri":12.4,"arable":8.1,"forest":24.5,"res":16.2,"comm":14.1,"drop_pct":1.6},
-  {"county":"Harju maakond","name":"Kiili vald","units":4921,"val2022":214950180,"val2026":331023270,"change":54.0,"agri":32.1,"arable":21.5,"forest":52.4,"res":57.4,"comm":63.8,"drop_pct":1.2},
-  {"county":"Rapla maakond","name":"Kohila vald","units":6842,"val2022":189102450,"val2026":274198550,"change":45.0,"agri":35.2,"arable":24.1,"forest":55.0,"res":50.2,"comm":51.4,"drop_pct":1.5},
-  {"county":"Ida-Viru maakond","name":"Kohtla-Järve linn","units":8420,"val2022":51892140,"val2026":58482440,"change":12.7,"agri":18.2,"arable":10.4,"forest":22.1,"res":11.8,"comm":13.5,"drop_pct":8.1},
-  {"county":"Harju maakond","name":"Kose vald","units":6912,"val2022":164921040,"val2026":237486290,"change":44.0,"agri":36.4,"arable":26.8,"forest":55.8,"res":54.1,"comm":47.2,"drop_pct":1.4},
-  {"county":"Harju maakond","name":"Kuusalu vald","units":8925,"val2022":312894100,"val2026":438051740,"change":40.0,"agri":31.5,"arable":20.2,"forest":54.1,"res":44.8,"comm":39.1,"drop_pct":2.1},
-  {"county":"Harju maakond","name":"Loksa linn","units":1089,"val2022":14102940,"val2026":17487640,"change":24.0,"agri":0.0,"arable":0.0,"forest":0.0,"res":22.4,"comm":26.8,"drop_pct":3.4},
-  {"county":"Tartu maakond","name":"Luunja vald","units":4412,"val2022":152480110,"val2026":234819360,"change":54.0,"agri":34.8,"arable":27.2,"forest":56.1,"res":61.2,"comm":59.4,"drop_pct":1.3},
-  {"county":"Harju maakond","name":"Lääne-Harju vald","units":15410,"val2022":389102450,"val2026":604665200,"change":55.4,"agri":35.8,"arable":23.1,"forest":54.9,"res":62.5,"comm":58.1,"drop_pct":0.8},
-  {"county":"Lääne maakond","name":"Lääne-Nigula vald","units":8841,"val2022":201450120,"val2026":276993910,"change":37.5,"agri":35.9,"arable":26.4,"forest":55.4,"res":42.1,"comm":36.4,"drop_pct":1.9},
-  {"county":"Pärnu maakond","name":"Lääneranna vald","units":10984,"val2022":221450600,"val2026":294529300,"change":33.0,"agri":32.4,"arable":24.1,"forest":45.2,"res":35.8,"comm":30.1,"drop_pct":2.2},
-  {"county":"Ida-Viru maakond","name":"Lüganuse vald","units":6245,"val2022":74102950,"val2026":91887650,"change":24.0,"agri":29.1,"arable":19.4,"forest":48.6,"res":19.5,"comm":18.2,"drop_pct":5.8},
-  {"county":"Harju maakond","name":"Maardu linn","units":4820,"val2022":194510200,"val2026":289820200,"change":49.0,"agri":0.0,"arable":0.0,"forest":0.0,"res":46.8,"comm":53.4,"drop_pct":1.1},
-  {"county":"Saare maakond","name":"Muhu vald","units":3890,"val2022":65410290,"val2026":89612100,"change":37.0,"agri":34.2,"arable":21.8,"forest":54.1,"res":41.2,"comm":32.5,"drop_pct":1.8},
-  {"county":"Viljandi maakond","name":"Mulgi vald","units":6750,"val2022":142105400,"val2026":190421230,"change":34.0,"agri":32.8,"arable":25.1,"forest":56.1,"res":38.4,"comm":32.9,"drop_pct":2.1},
-  {"county":"Jõgeva maakond","name":"Mustvee vald","units":6892,"val2022":118450120,"val2026":147233500,"change":24.3,"agri":28.9,"arable":17.4,"forest":52.1,"res":22.1,"comm":18.4,"drop_pct":21.9},
-  {"county":"Rapla maakond","name":"Märjamaa vald","units":8640,"val2022":195410200,"val2026":257941460,"change":32.0,"agri":30.8,"arable":22.4,"forest":54.8,"res":35.2,"comm":31.4,"drop_pct":2.3},
-  {"county":"Ida-Viru maakond","name":"Narva linn","units":10950,"val2022":215410290,"val2026":200331570,"change":-7.0,"agri":-27.0,"arable":-4.9,"forest":-27.4,"res":-14.0,"comm":-12.2,"drop_pct":50.9},
-  {"county":"Ida-Viru maakond","name":"Narva-Jõesuu linn","units":5410,"val2022":112450100,"val2026":134040520,"change":19.2,"agri":22.4,"arable":12.1,"forest":38.4,"res":18.1,"comm":15.4,"drop_pct":18.9},
-  {"county":"Tartu maakond","name":"Nõo vald","units":4490,"val2022":124510200,"val2026":184275100,"change":48.0,"agri":34.1,"arable":26.9,"forest":56.2,"res":56.4,"comm":52.8,"drop_pct":1.6},
-  {"county":"Valga maakond","name":"Otepää vald","units":6920,"val2022":189410200,"val2026":268962480,"change":42.0,"agri":36.2,"arable":28.4,"forest":56.1,"res":49.1,"comm":46.5,"drop_pct":1.5},
-  {"county":"Järva maakond","name":"Paide linn","units":5120,"val2022":102450100,"val2026":141381140,"change":38.0,"agri":33.9,"arable":24.8,"forest":56.2,"res":41.2,"comm":43.1,"drop_pct":1.7},
-  {"county":"Tartu maakond","name":"Peipsiääre vald","units":5980,"val2022":98450120,"val2026":131923160,"change":34.0,"agri":31.4,"arable":22.1,"forest":55.8,"res":38.2,"comm":29.4,"drop_pct":3.1},
-  {"county":"Pärnu maakond","name":"Põhja-Pärnumaa vald","units":7890,"val2022":174510200,"val2026":232098570,"change":33.0,"agri":32.1,"arable":24.5,"forest":55.1,"res":36.4,"comm":31.2,"drop_pct":2.4},
-  {"county":"Viljandi maakond","name":"Põhja-Sakala vald","units":7840,"val2022":172450100,"val2026":227116780,"change":31.7,"agri":31.4,"arable":23.8,"forest":55.9,"res":34.1,"comm":29.8,"drop_pct":15.7},
-  {"county":"Jõgeva maakond","name":"Põltsamaa vald","units":7240,"val2022":178410200,"val2026":240853770,"change":35.0,"agri":34.5,"arable":26.1,"forest":56.4,"res":38.2,"comm":36.5,"drop_pct":2.0},
-  {"county":"Põlva maakond","name":"Põlva vald","units":10410,"val2022":198450100,"val2026":273861140,"change":38.0,"agri":35.4,"arable":26.8,"forest":56.2,"res":45.1,"comm":42.8,"drop_pct":1.8},
-  {"county":"Pärnu maakond","name":"Pärnu linn","units":24150,"val2022":984510200,"val2026":1427539790,"change":45.0,"agri":32.4,"arable":24.8,"forest":52.1,"res":49.8,"comm":48.2,"drop_pct":1.4},
-  {"county":"Harju maakond","name":"Raasiku vald","units":4780,"val2022":154102900,"val2026":243020270,"change":57.7,"agri":36.8,"arable":26.2,"forest":55.4,"res":68.4,"comm":62.1,"drop_pct":0.3},
-  {"county":"Harju maakond","name":"Rae vald","units":17840,"val2022":945102400,"val2026":1446006670,"change":53.0,"agri":31.2,"arable":21.4,"forest":51.8,"res":56.2,"comm":61.4,"drop_pct":1.1},
-  {"county":"Lääne-Viru maakond","name":"Rakvere linn","units":6120,"val2022":118450100,"val2026":168199140,"change":42.0,"agri":0.0,"arable":0.0,"forest":0.0,"res":44.1,"comm":41.8,"drop_pct":1.5},
-  {"county":"Lääne-Viru maakond","name":"Rakvere vald","units":5210,"val2022":115410200,"val2026":156957870,"change":36.0,"agri":35.1,"arable":27.2,"forest":56.2,"res":39.4,"comm":36.8,"drop_pct":2.1},
-  {"county":"Rapla maakond","name":"Rapla vald","units":9420,"val2022":241510200,"val2026":330868970,"change":37.0,"agri":34.1,"arable":24.8,"forest":55.1,"res":43.2,"comm":41.5,"drop_pct":1.7},
-  {"county":"Saare maakond","name":"Ruhnu vald","units":336,"val2022":3270649,"val2026":3787323,"change":15.8,"agri":16.2,"arable":10.4,"forest":26.1,"res":17.4,"comm":12.8,"drop_pct":1.2},
-  {"county":"Põlva maakond","name":"Räpina vald","units":6940,"val2022":124510200,"val2026":169333870,"change":36.0,"agri":34.8,"arable":25.4,"forest":56.1,"res":41.8,"comm":37.2,"drop_pct":2.2},
-  {"county":"Võru maakond","name":"Rõuge vald","units":8610,"val2022":164510200,"val2026":227024080,"change":38.0,"agri":35.8,"arable":27.1,"forest":56.2,"res":48.2,"comm":41.5,"drop_pct":1.3},
-  {"county":"Pärnu maakond","name":"Saarde vald","units":5410,"val2022":132450100,"val2026":176158630,"change":33.0,"agri":32.1,"arable":24.5,"forest":48.2,"res":35.4,"comm":30.8,"drop_pct":2.5},
-  {"county":"Saare maakond","name":"Saaremaa vald","units":33920,"val2022":698450100,"val2026":956876640,"change":37.0,"agri":36.1,"arable":24.8,"forest":54.9,"res":42.8,"comm":36.2,"drop_pct":1.9},
-  {"county":"Harju maakond","name":"Saku vald","units":9420,"val2022":394510200,"val2026":615435910,"change":56.0,"agri":33.4,"arable":22.1,"forest":53.4,"res":61.2,"comm":64.5,"drop_pct":1.3},
-  {"county":"Harju maakond","name":"Saue vald","units":16890,"val2022":712450100,"val2026":1068675150,"change":50.0,"agri":34.1,"arable":23.5,"forest":53.8,"res":54.8,"comm":58.2,"drop_pct":1.2},
-  {"county":"Võru maakond","name":"Setomaa vald","units":5410,"val2022":78450100,"val2026":107476640,"change":37.0,"agri":35.4,"arable":26.2,"forest":56.1,"res":46.2,"comm":38.4,"drop_pct":1.6},
-  {"county":"Ida-Viru maakond","name":"Sillamäe linn","units":2420,"val2022":29450100,"val2026":31511610,"change":7.0,"agri":0.0,"arable":0.0,"forest":0.0,"res":6.8,"comm":7.4,"drop_pct":9.1},
-  {"county":"Harju maakond","name":"Tallinn","units":50228,"val2022":12844250000,"val2026":15914875163,"change":23.9,"agri":0.0,"arable":0.0,"forest":0.0,"res":24.5,"comm":23.8,"drop_pct":1.9},
-  {"county":"Lääne-Viru maakond","name":"Tapa vald","units":7840,"val2022":148450100,"val2026":200407640,"change":35.0,"agri":34.2,"arable":25.8,"forest":56.3,"res":37.8,"comm":35.4,"drop_pct":2.5},
-  {"county":"Tartu maakond","name":"Tartu linn","units":24890,"val2022":1184510200,"val2026":1729384890,"change":46.0,"agri":0.0,"arable":0.0,"forest":0.0,"res":47.2,"comm":45.1,"drop_pct":1.2},
-  {"county":"Tartu maakond","name":"Tartu vald","units":10450,"val2022":294510200,"val2026":468000000,"change":58.9,"agri":34.8,"arable":27.4,"forest":56.5,"res":74.5,"comm":71.2,"drop_pct":5.6},
-  {"county":"Pärnu maakond","name":"Tori vald","units":8620,"val2022":212450100,"val2026":297430140,"change":40.0,"agri":34.1,"arable":25.2,"forest":55.4,"res":48.2,"comm":44.5,"drop_pct":1.7},
-  {"county":"Valga maakond","name":"Tõrva vald","units":5640,"val2022":112450100,"val2026":151807640,"change":35.0,"agri":33.8,"arable":24.9,"forest":56.2,"res":42.1,"comm":37.5,"drop_pct":2.0},
-  {"county":"Järva maakond","name":"Türi vald","units":7410,"val2022":168450100,"val2026":227407640,"change":35.0,"agri":34.2,"arable":25.1,"forest":56.4,"res":38.9,"comm":36.2,"drop_pct":1.9},
-  {"county":"Valga maakond","name":"Valga vald","units":9420,"val2022":148450100,"val2026":205158040,"change":38.2,"agri":35.2,"arable":26.8,"forest":56.2,"res":46.2,"comm":41.8,"drop_pct":14.5},
-  {"county":"Harju maakond","name":"Viimsi vald","units":14120,"val2022":845102000,"val2026":1267653000,"change":50.0,"agri":21.4,"arable":11.8,"forest":48.9,"res":51.2,"comm":54.1,"drop_pct":1.4},
-  {"county":"Viljandi maakond","name":"Viljandi linn","units":7240,"val2022":154102900,"val2026":220367150,"change":43.0,"agri":0.0,"arable":0.0,"forest":0.0,"res":44.2,"comm":42.5,"drop_pct":1.5},
-  {"county":"Viljandi maakond","name":"Viljandi vald","units":11450,"val2022":284510200,"val2026":389778970,"change":37.0,"agri":34.2,"arable":26.4,"forest":56.3,"res":45.1,"comm":39.8,"drop_pct":2.1},
-  {"county":"Lääne-Viru maakond","name":"Vinni vald","units":6820,"val2022":184510200,"val2026":247243670,"change":34.0,"agri":33.8,"arable":26.1,"forest":56.5,"res":36.8,"comm":34.1,"drop_pct":2.4},
-  {"county":"Lääne-Viru maakond","name":"Viru-Nigula vald","units":4876,"val2022":80764893,"val2026":104068770,"change":28.9,"agri":31.6,"arable":19.3,"forest":55.7,"res":25.9,"comm":13.8,"drop_pct":2.4},
-  {"county":"Lääne maakond","name":"Vormsi vald","units":2065,"val2022":17050881,"val2026":22056273,"change":29.4,"agri":38.5,"arable":18.6,"forest":54.9,"res":15.8,"comm":7.1,"drop_pct":12.7},
-  {"county":"Võru maakond","name":"Võru linn","units":3161,"val2022":51758265,"val2026":81392670,"change":57.3,"agri":44.0,"arable":38.1,"forest":56.1,"res":52.1,"comm":77.6,"drop_pct":0.0},
-  {"county":"Võru maakond","name":"Võru vald","units":15358,"val2022":234319564,"val2026":330016509,"change":40.8,"agri":38.4,"arable":29.9,"forest":49.5,"res":53.9,"comm":50.3,"drop_pct":0.5},
-  {"county":"Lääne-Viru maakond","name":"Väike-Maarja vald","units":8123,"val2022":189390479,"val2026":254261381,"change":34.3,"agri":34.2,"arable":26.5,"forest":56.5,"res":36.9,"comm":30.5,"drop_pct":2.9}
-];
+    const dataMap = {};
+    municipalities.forEach(d => { dataMap[d.name] = d; });
 
-const dataMap = {};
-rawData.forEach(d => { dataMap[d.name] = d; });
+    let currentTab = 'value'; // 'value' | 'change' | 'table'
+    let selectedMunicipality = municipalities.find(m => m.name === 'Tartu vald');
+    let pinnedMunicipality = null;
+    let pinnedLayer = null;
+    let map = null;
+    let geojsonLayer = null;
+    let layerByMunName = {};
 
-let currentMode = 'val';
-let map, geoLayer;
-let geojsonData = null;
-
-// Pidev rohelise skaala: helerohelisest (#dcfce7) kuni sügava tumeroheliseni (#064e3b)
-function getValColor(val) {
-  return val > 2000000000 ? '#064e3b' :
-         val > 800000000  ? '#065f46' :
-         val > 400000000  ? '#047857' :
-         val > 250000000  ? '#059669' :
-         val > 150000000  ? '#10b981' :
-         val > 80000000   ? '#34d399' :
-         val > 30000000   ? '#6ee7b7' :
-         val > 10000000   ? '#a7f3d0' :
-                            '#dcfce7';
-}
-
-function getChgColor(chg) {
-  return chg < 0   ? '#dc2626' :
-         chg < 20  ? '#f97316' :
-         chg < 32  ? '#eab308' :
-         chg < 42  ? '#84cc16' :
-         chg < 52  ? '#22c55e' :
-                     '#15803d';
-}
-
-function updateLegend() {
-  const title = document.getElementById('legendTitle');
-  const scale = document.getElementById('legendScale');
-  const labels = document.getElementById('legendLabels');
-
-  if (currentMode === 'val') {
-    title.innerText = 'Maa koguväärtus 2026. aastal (€)';
-    scale.innerHTML = `
-      <div style="flex:1;background:#dcfce7"></div>
-      <div style="flex:1;background:#a7f3d0"></div>
-      <div style="flex:1;background:#34d399"></div>
-      <div style="flex:1;background:#10b981"></div>
-      <div style="flex:1;background:#059669"></div>
-      <div style="flex:1;background:#047857"></div>
-      <div style="flex:1;background:#064e3b"></div>
-    `;
-    labels.innerHTML = `<span>< 30 mln €</span><span>150 mln €</span><span>400 mln €</span><span>> 2 mld €</span>`;
-  } else {
-    title.innerText = 'Hinnamuutus võrreldes 2022. aastaga (%)';
-    scale.innerHTML = `
-      <div style="flex:1;background:#dc2626"></div>
-      <div style="flex:1;background:#f97316"></div>
-      <div style="flex:1;background:#eab308"></div>
-      <div style="flex:1;background:#84cc16"></div>
-      <div style="flex:1;background:#22c55e"></div>
-      <div style="flex:1;background:#15803d"></div>
-    `;
-    labels.innerHTML = `<span>-7% (Narva)</span><span>+20%</span><span>+35%</span><span>+45%</span><span>+58,9% (Tartu v)</span>`;
-  }
-}
-
-function formatEur(num) {
-  if (num >= 1000000000) return (num / 1000000000).toFixed(2).replace('.', ',') + ' mld €';
-  return (num / 1000000).toFixed(1).replace('.', ',') + ' mln €';
-}
-
-function selectMunicipality(d) {
-  if (!d) return;
-  document.getElementById('dName').innerText = d.name;
-  document.getElementById('dCounty').innerText = ` (${d.county})`;
-  
-  const badge = document.getElementById('dBadge');
-  const sign = d.change > 0 ? '+' : '';
-  badge.innerText = `${sign}${d.change.toFixed(1).replace('.', ',')}%`;
-  badge.className = 'detail-badge ' + (d.change >= 0 ? 'up' : 'down');
-
-  document.getElementById('dVal26').innerText = formatEur(d.val2026);
-  document.getElementById('dVal22').innerText = formatEur(d.val2022);
-  document.getElementById('dRes').innerText = (d.res > 0 ? '+' : '') + d.res.toFixed(1).replace('.', ',') + '%';
-  document.getElementById('dArable').innerText = (d.arable > 0 ? '+' : '') + d.arable.toFixed(1).replace('.', ',') + '%';
-  document.getElementById('dForest').innerText = (d.forest > 0 ? '+' : '') + d.forest.toFixed(1).replace('.', ',') + '%';
-  document.getElementById('dComm').innerText = (d.comm > 0 ? '+' : '') + d.comm.toFixed(1).replace('.', ',') + '%';
-  document.getElementById('dUnits').innerText = d.units.toLocaleString('et-EE') + ' tk';
-  document.getElementById('dDrop').innerText = d.drop_pct.toFixed(1).replace('.', ',') + '% üksustest';
-}
-
-function styleFeature(feature) {
-  const name = feature.properties.ONIMI || feature.properties.NIMI || feature.properties.name;
-  const d = dataMap[name];
-  let color = '#94a3b8';
-  if (d) {
-    color = currentMode === 'val' ? getValColor(d.val2026) : getChgColor(d.change);
-  }
-  return {
-    fillColor: color,
-    weight: 1,
-    opacity: 1,
-    color: '#ffffff',
-    fillOpacity: 0.82
-  };
-}
-
-function onEachFeature(feature, layer) {
-  const name = feature.properties.ONIMI || feature.properties.NIMI || feature.properties.name;
-  const d = dataMap[name];
-
-  if (d) {
-    const tooltipText = `<strong>${d.name}</strong><br>2026: ${formatEur(d.val2026)}<br>Muutus: ${d.change > 0 ? '+' : ''}${d.change.toFixed(1).replace('.', ',')}%`;
-    layer.bindTooltip(tooltipText, { sticky: true });
-  }
-
-  layer.on({
-    mouseover: (e) => {
-      const l = e.target;
-      l.setStyle({ weight: 2.5, color: '#0f172a', fillOpacity: 0.95 });
-      l.bringToFront();
-      if (d) selectMunicipality(d);
-    },
-    mouseout: (e) => {
-      if (geoLayer) geoLayer.resetStyle(e.target);
-    },
-    click: () => {
-      if (d) selectMunicipality(d);
+    function cleanName(str) {
+      if (!str) return '';
+      return str.toLowerCase().replace(/['"„”]/g, '').trim();
     }
-  });
-}
 
-function initMap() {
-  map = L.map('map', {
-    center: [58.7, 25.4],
-    zoom: 7,
-    minZoom: 6,
-    maxZoom: 11
-  });
+    function matchMunicipality(propName) {
+      if (!propName) return null;
+      const target = cleanName(propName);
+      if (dataMap[propName]) return dataMap[propName];
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap'
-  }).addTo(map);
+      let found = municipalities.find(m => cleanName(m.name) === target);
+      if (found) return found;
 
-  updateLegend();
+      if (target === 'tallinn' || target === 'tallinna linn') {
+        return municipalities.find(m => m.name === 'Tallinn');
+      }
 
-  const geojsonUrls = [
-    'https://cdn.jsdelivr.net/gh/buildig/EHAK@master/geojson/omavalitsus.json',
-    'https://raw.githubusercontent.com/buildig/EHAK/master/geojson/omavalitsus.json'
-  ];
-
-  function tryFetch(urls) {
-    if (!urls.length) return;
-    fetch(urls[0])
-      .then(r => {
-        if (!r.ok) throw new Error('Fetch failed');
-        return r.json();
-      })
-      .then(data => {
-        geojsonData = data;
-        renderGeoJSON();
-      })
-      .catch(() => tryFetch(urls.slice(1)));
-  }
-
-  tryFetch(geojsonUrls);
-}
-
-function renderGeoJSON() {
-  if (!geojsonData || !map) return;
-  if (geoLayer) map.removeLayer(geoLayer);
-
-  geoLayer = L.geoJSON(geojsonData, {
-    style: styleFeature,
-    onEachFeature: onEachFeature
-  }).addTo(map);
-}
-
-function switchView(mode) {
-  document.getElementById('tabMapVal').classList.remove('active');
-  document.getElementById('tabMapChg').classList.remove('active');
-  document.getElementById('tabTable').classList.remove('active');
-
-  const mapContainer = document.getElementById('map-container');
-  const legendPanel = document.getElementById('legendPanel');
-  const tableView = document.getElementById('tableView');
-
-  if (mode === 'table') {
-    document.getElementById('tabTable').classList.add('active');
-    mapContainer.style.display = 'none';
-    legendPanel.style.display = 'none';
-    tableView.style.display = 'block';
-  } else {
-    mapContainer.style.display = 'block';
-    legendPanel.style.display = 'block';
-    tableView.style.display = 'none';
-
-    if (mode === 'map-val') {
-      currentMode = 'val';
-      document.getElementById('tabMapVal').classList.add('active');
-    } else {
-      currentMode = 'chg';
-      document.getElementById('tabMapChg').classList.add('active');
+      found = municipalities.find(m => {
+        const c = cleanName(m.name);
+        return c.startsWith(target) || target.startsWith(c);
+      });
+      return found || null;
     }
-    updateLegend();
-    if (geoLayer) {
-      geoLayer.eachLayer(l => geoLayer.resetStyle(l));
+
+    // Pidev roheline värvigamma 2026 väärtusele (helerohelisest tumeroheliseni)
+    function getColorValue(val) {
+      return val > 2000000000 ? '#064e3b' :
+             val > 800000000  ? '#065f46' :
+             val > 400000000  ? '#047857' :
+             val > 250000000  ? '#059669' :
+             val > 150000000  ? '#10b981' :
+             val > 80000000   ? '#34d399' :
+             val > 30000000   ? '#6ee7b7' :
+             val > 10000000   ? '#a7f3d0' :
+                                '#dcfce7';
     }
-    setTimeout(() => { map.invalidateSize(); }, 100);
-  }
-}
 
-// Otsing
-document.getElementById('searchInput').addEventListener('input', function(e) {
-  const query = e.target.value.toLowerCase().trim();
-  if (!query) return;
+    // Protsentuaalne kasv: Narva punane (-7%), väike tõus hele, suur tõus roheline
+    function getColorChange(pct) {
+      return pct < 0  ? '#dc2626' :
+             pct < 20 ? '#f97316' :
+             pct < 32 ? '#eab308' :
+             pct < 42 ? '#84cc16' :
+             pct < 52 ? '#22c55e' :
+                        '#15803d';
+    }
 
-  const found = rawData.find(d => d.name.toLowerCase().includes(query));
-  if (found) {
-    selectMunicipality(found);
-    if (geoLayer) {
-      geoLayer.eachLayer(layer => {
-        const name = layer.feature.properties.ONIMI || layer.feature.properties.NIMI || layer.feature.properties.name;
-        if (name && name.toLowerCase() === found.name.toLowerCase()) {
-          layer.setStyle({ weight: 3, color: '#15803d', fillOpacity: 1 });
-          layer.bringToFront();
-          map.fitBounds(layer.getBounds(), { maxZoom: 9, padding: [20, 20] });
+    function getFeatureStyle(feature) {
+      const onimi = feature.properties ? (feature.properties.ONIMI || feature.properties.name || feature.properties.shapeName) : null;
+      const mun = matchMunicipality(onimi);
+      const isPinned = pinnedMunicipality && mun && pinnedMunicipality.name === mun.name;
+
+      let fill = '#dbe4ea';
+      if (mun) {
+        fill = (currentTab === 'value') ? getColorValue(mun.val2026) : getColorChange(mun.change);
+      }
+
+      return {
+        fillColor: fill,
+        weight: isPinned ? 3 : 1,
+        opacity: 1,
+        color: isPinned ? '#0284c7' : '#ffffff',
+        fillOpacity: isPinned ? 0.95 : 0.84
+      };
+    }
+
+    function updateMapLayerStyles() {
+      if (!geojsonLayer) return;
+      geojsonLayer.eachLayer(layer => {
+        layer.setStyle(getFeatureStyle(layer.feature));
+      });
+      updateLegend();
+    }
+
+    function updateLegend() {
+      const title = document.getElementById('legend-title');
+      const bar = document.getElementById('legend-bar');
+      const labels = document.getElementById('legend-labels');
+
+      if (currentTab === 'value') {
+        title.textContent = "Maa koguväärtus 2026. aastal (€)";
+        bar.innerHTML = `
+          <span style="background: #dcfce7;"></span>
+          <span style="background: #a7f3d0;"></span>
+          <span style="background: #34d399;"></span>
+          <span style="background: #10b981;"></span>
+          <span style="background: #059669;"></span>
+          <span style="background: #047857;"></span>
+          <span style="background: #064e3b;"></span>
+        `;
+        labels.innerHTML = `
+          <span>&lt; 30 mln €</span>
+          <span>150 mln €</span>
+          <span>400 mln €</span>
+          <span>&gt; 2 mld €</span>
+        `;
+      } else {
+        title.textContent = "Maa maksustamishinna muutus 2022 → 2026 (%)";
+        bar.innerHTML = `
+          <span style="background: #dc2626;"></span>
+          <span style="background: #f97316;"></span>
+          <span style="background: #eab308;"></span>
+          <span style="background: #84cc16;"></span>
+          <span style="background: #22c55e;"></span>
+          <span style="background: #15803d;"></span>
+        `;
+        labels.innerHTML = `
+          <span>–7% (Narva)</span>
+          <span>+20%</span>
+          <span>+35%</span>
+          <span>+45%</span>
+          <span>+58,9% (Tartu vald)</span>
+        `;
+      }
+    }
+
+    function formatEur(val) {
+      if (val >= 1000000000) {
+        return (val / 1000000000).toFixed(2).replace('.', ',') + ' mld €';
+      }
+      return (val / 1000000).toFixed(1).replace('.', ',') + ' mln €';
+    }
+
+    function updateDetailCard(mun) {
+      if (!mun) return;
+      selectedMunicipality = mun;
+
+      document.getElementById('card-name').textContent = mun.name;
+      document.getElementById('card-county').textContent = `(${mun.county})`;
+
+      const badge = document.getElementById('card-badge');
+      const sign = mun.change >= 0 ? '+' : '';
+      badge.textContent = `${sign}${mun.change.toFixed(1).replace('.', ',')}%`;
+      badge.className = `change-badge ${mun.change >= 0 ? 'badge-pos' : 'badge-neg'}`;
+
+      document.getElementById('card-val2026').textContent = formatEur(mun.val2026);
+      document.getElementById('card-val2022').textContent = formatEur(mun.val2022);
+
+      const formatPct = (val) => `${val >= 0 ? '+' : ''}${val.toFixed(1).replace('.', ',')}%`;
+      document.getElementById('card-res').textContent = formatPct(mun.res);
+      document.getElementById('card-arable').textContent = formatPct(mun.arable);
+      document.getElementById('card-forest').textContent = formatPct(mun.forest);
+      document.getElementById('card-comm').textContent = formatPct(mun.comm);
+      document.getElementById('card-units').textContent = `${mun.units.toLocaleString('et-EE')} tk`;
+      document.getElementById('card-drop').textContent = `${mun.drop_pct.toFixed(1).replace('.', ',')}% üksustest`;
+
+      highlightTableRow(mun.name);
+    }
+
+    // Ankurdamise loogika
+    function pinMunicipality(mun, layer) {
+      const card = document.getElementById('detail-card');
+      if (pinnedMunicipality && pinnedMunicipality.name === mun.name) {
+        unpin();
+        return;
+      }
+
+      pinnedMunicipality = mun;
+      if (pinnedLayer && geojsonLayer) {
+        geojsonLayer.resetStyle(pinnedLayer);
+      }
+      pinnedLayer = layer;
+      card.classList.add('pinned');
+      updateDetailCard(mun);
+
+      if (layer) {
+        layer.setStyle({ weight: 3, color: '#0284c7', fillOpacity: 0.95 });
+        layer.bringToFront();
+      }
+    }
+
+    function unpin() {
+      pinnedMunicipality = null;
+      const card = document.getElementById('detail-card');
+      card.classList.remove('pinned');
+      if (pinnedLayer && geojsonLayer) {
+        geojsonLayer.resetStyle(pinnedLayer);
+      }
+      pinnedLayer = null;
+    }
+
+    function initMap() {
+      const mapEl = document.getElementById('leaflet-map');
+      if (!mapEl) return;
+
+      map = L.map('leaflet-map', {
+        zoomControl: true,
+        scrollWheelZoom: false,
+        attributionControl: false
+      }).setView([58.7, 25.5], 7);
+
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+        opacity: 0.4
+      }).addTo(map);
+
+      // Klõps kaardil väljaspool omavalitsusi vabastab ankru
+      map.on('click', () => {
+        unpin();
+      });
+
+      updateLegend();
+      loadBoundaries();
+
+      setTimeout(() => { if (map) map.invalidateSize(); }, 200);
+    }
+
+    function loadBoundaries() {
+      const sources = [
+        'https://cdn.jsdelivr.net/gh/buildig/EHAK@master/topojson/omavalitsus.json',
+        'https://raw.githubusercontent.com/buildig/EHAK/master/topojson/omavalitsus.json',
+        'https://cdn.jsdelivr.net/gh/buildig/EHAK@master/geojson/omavalitsus.geojson'
+      ];
+
+      function tryNext(idx) {
+        if (idx >= sources.length) return;
+        const url = sources[idx];
+        fetch(url)
+          .then(r => {
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            return r.json();
+          })
+          .then(data => {
+            let geoData = data;
+            if (data.type === 'Topology' && typeof topojson !== 'undefined') {
+              const k = Object.keys(data.objects)[0];
+              geoData = topojson.feature(data, data.objects[k]);
+            }
+            renderGeoJson(geoData);
+          })
+          .catch(() => tryNext(idx + 1));
+      }
+
+      tryNext(0);
+    }
+
+    function renderGeoJson(geoData) {
+      if (!map || !geoData) return;
+      if (geojsonLayer) map.removeLayer(geojsonLayer);
+
+      geojsonLayer = L.geoJSON(geoData, {
+        style: getFeatureStyle,
+        onEachFeature: (feature, layer) => {
+          const onimi = feature.properties ? (feature.properties.ONIMI || feature.properties.name || feature.properties.shapeName) : null;
+          const mun = matchMunicipality(onimi);
+
+          if (mun) {
+            layerByMunName[mun.name] = layer;
+
+            layer.on({
+              mouseover: (e) => {
+                const target = e.target;
+                if (!pinnedMunicipality) {
+                  target.setStyle({ weight: 2.2, color: '#0f172a', fillOpacity: 0.95 });
+                  target.bringToFront();
+                  updateDetailCard(mun);
+                }
+
+                const sign = mun.change >= 0 ? '+' : '';
+                const tooltipHtml = `
+                  <div style="font-size: 13px; line-height: 1.35; padding: 2px;">
+                    <div>${mun.name}</div>
+                    <div style="font-size: 11px; color: #64748b;">${mun.county}</div>
+                    <div style="margin-top: 5px; font-size: 12px;">
+                      Väärtus: <strong>${formatEur(mun.val2026)}</strong><br>
+                      Muutus: <strong>${sign}${mun.change.toFixed(1).replace('.', ',')}%</strong>
+                    </div>
+                  </div>
+                `;
+                target.bindTooltip(tooltipHtml, { sticky: true, direction: 'top', opacity: 0.95 }).openTooltip();
+              },
+              mouseout: (e) => {
+                if (geojsonLayer && (!pinnedMunicipality || pinnedMunicipality.name !== mun.name)) {
+                  geojsonLayer.resetStyle(e.target);
+                }
+              },
+              click: (e) => {
+                L.DomEvent.stopPropagation(e);
+                pinMunicipality(mun, e.target);
+              }
+            });
+          }
+        }
+      }).addTo(map);
+
+      if (selectedMunicipality) {
+        updateDetailCard(selectedMunicipality);
+      }
+    }
+
+    // Otsing
+    const searchInput = document.getElementById('municipality-search');
+    const searchList = document.getElementById('search-suggestions');
+    const searchClear = document.getElementById('search-clear-btn');
+
+    searchInput.addEventListener('input', function() {
+      const q = this.value.trim().toLowerCase();
+      if (!q) {
+        searchList.style.display = 'none';
+        searchClear.style.display = 'none';
+        unpin();
+        return;
+      }
+
+      searchClear.style.display = 'block';
+      const matches = municipalities.filter(m => 
+        m.name.toLowerCase().includes(q) || 
+        m.county.toLowerCase().includes(q)
+      );
+
+      if (matches.length === 0) {
+        searchList.innerHTML = `<li style="color: #94a3b8; cursor: default;">Omavalitsust ei leitud</li>`;
+        searchList.style.display = 'block';
+        return;
+      }
+
+      searchList.innerHTML = matches.slice(0, 8).map(m => `
+        <li onclick="handleSelectSearchResult('${m.name.replace(/'/g, "\\'")}')">
+          <span>${m.name} <small style="color: #64748b; font-size: 11px;">(${m.county})</small></span>
+          <span style="color: ${m.change >= 0 ? '#166534' : '#991b1b'};">${m.change >= 0 ? '+' : ''}${m.change.toFixed(1).replace('.', ',')}%</span>
+        </li>
+      `).join('');
+      searchList.style.display = 'block';
+    });
+
+    searchClear.addEventListener('click', () => {
+      searchInput.value = '';
+      searchList.style.display = 'none';
+      searchClear.style.display = 'none';
+      unpin();
+      searchInput.focus();
+    });
+
+    window.handleSelectSearchResult = function(name) {
+      const mun = municipalities.find(m => m.name === name);
+      if (mun) {
+        searchInput.value = mun.name;
+        searchList.style.display = 'none';
+        if (currentTab === 'table') {
+          switchTab('value');
+        }
+        const layer = layerByMunName[mun.name];
+        pinMunicipality(mun, layer);
+        if (layer && map) {
+          map.fitBounds(layer.getBounds(), { padding: [25, 25], maxZoom: 10 });
+        }
+      }
+    };
+
+    document.addEventListener('click', (e) => {
+      if (!searchInput.contains(e.target) && !searchList.contains(e.target)) {
+        searchList.style.display = 'none';
+      }
+    });
+
+    // Vaadete vahetamine
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const mapSection = document.getElementById('map-section');
+    const tableWrapper = document.getElementById('table-wrapper');
+
+    tabBtns.forEach(btn => {
+      btn.addEventListener('click', function() {
+        const tab = this.getAttribute('data-tab');
+        switchTab(tab);
+      });
+    });
+
+    function switchTab(tab) {
+      currentTab = tab;
+      tabBtns.forEach(b => {
+        if (b.getAttribute('data-tab') === tab) {
+          b.classList.add('active');
         } else {
-          geoLayer.resetStyle(layer);
+          b.classList.remove('active');
+        }
+      });
+
+      if (tab === 'table') {
+        mapSection.style.display = 'none';
+        tableWrapper.style.display = 'block';
+        renderTable();
+      } else {
+        tableWrapper.style.display = 'none';
+        mapSection.style.display = 'block';
+        if (map) {
+          setTimeout(() => map.invalidateSize(), 50);
+        }
+        updateMapLayerStyles();
+      }
+    }
+
+    // Edetabeli loogika
+    let sortColumn = 'change';
+    let sortAsc = false;
+
+    window.sortTable = function(col) {
+      if (sortColumn === col) {
+        sortAsc = !sortAsc;
+      } else {
+        sortColumn = col;
+        sortAsc = false;
+      }
+      renderTable();
+    };
+
+    function highlightTableRow(name) {
+      const rows = document.querySelectorAll('#table-tbody tr');
+      rows.forEach(r => {
+        if (r.getAttribute('data-name') === name) {
+          r.classList.add('selected-row');
+        } else {
+          r.classList.remove('selected-row');
         }
       });
     }
-  }
-});
 
-// Tabel ja sorteerimine
-let currentSortCol = 'change';
-let sortAsc = false;
+    function renderTable() {
+      const tbody = document.getElementById('table-tbody');
+      const sorted = [...municipalities].sort((a, b) => {
+        const vA = a[sortColumn];
+        const vB = b[sortColumn];
+        if (typeof vA === 'string') {
+          return sortAsc ? vA.localeCompare(vB, 'et') : vB.localeCompare(vA, 'et');
+        }
+        return sortAsc ? vA - vB : vB - vA;
+      });
 
-function renderTable() {
-  const tbody = document.getElementById('tableBody');
-  tbody.innerHTML = '';
+      tbody.innerHTML = sorted.map(m => {
+        const formatPct = (val) => `${val >= 0 ? '+' : ''}${val.toFixed(1).replace('.', ',')}%`;
+        const isSel = selectedMunicipality && selectedMunicipality.name === m.name;
 
-  const sorted = [...rawData].sort((a, b) => {
-    let vA = a[currentSortCol];
-    let vB = b[currentSortCol];
-    if (typeof vA === 'string') {
-      return sortAsc ? vA.localeCompare(vB, 'et') : vB.localeCompare(vA, 'et');
+        return `
+          <tr class="${isSel ? 'selected-row' : ''}" data-name="${m.name}" onclick="handleRowClick('${m.name.replace(/'/g, "\\'")}')">
+            <td>${m.name}</td>
+            <td style="text-align: right;">${formatEur(m.val2026)}</td>
+            <td style="text-align: right; color: ${m.change >= 0 ? '#166534' : '#991b1b'};">${formatPct(m.change)}</td>
+            <td style="text-align: right;">${formatPct(m.res)}</td>
+            <td style="text-align: right;">${formatPct(m.arable)}</td>
+            <td style="text-align: right;">${formatPct(m.forest)}</td>
+            <td style="text-align: right;">${formatPct(m.comm)}</td>
+            <td style="text-align: right;">${m.drop_pct.toFixed(1).replace('.', ',')}%</td>
+          </tr>
+        `;
+      }).join('');
     }
-    return sortAsc ? vA - vB : vB - vA;
-  });
 
-  sorted.forEach(d => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${d.name}</td>
-      <td>${d.county}</td>
-      <td>${formatEur(d.val2026)}</td>
-      <td style="color:${d.change >= 0 ? '#166534' : '#991b1b'}">${d.change > 0 ? '+' : ''}${d.change.toFixed(1).replace('.', ',')}%</td>
-      <td>${d.drop_pct.toFixed(1).replace('.', ',')}%</td>
-    `;
-    tr.onclick = () => selectMunicipality(d);
-    tbody.appendChild(tr);
-  });
-}
+    window.handleRowClick = function(name) {
+      const mun = municipalities.find(m => m.name === name);
+      if (mun) {
+        const layer = layerByMunName[mun.name];
+        pinMunicipality(mun, layer);
+      }
+    };
 
-function sortTable(col) {
-  if (currentSortCol === col) {
-    sortAsc = !sortAsc;
-  } else {
-    currentSortCol = col;
-    sortAsc = false;
-  }
-  renderTable();
-}
+    // Tõrkekindel käivitamine
+    function bootstrap() {
+      if (typeof L === 'undefined') {
+        setTimeout(bootstrap, 40);
+        return;
+      }
+      initMap();
+      updateDetailCard(selectedMunicipality);
+      renderTable();
+    }
 
-window.addEventListener('load', () => {
-  initMap();
-  renderTable();
-  selectMunicipality(rawData.find(d => d.name === 'Tartu vald'));
-});
-</script>
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', bootstrap);
+    } else {
+      bootstrap();
+    }
+
+    window.addEventListener('resize', () => {
+      if (map) map.invalidateSize();
+    });
+  </script>
 </body>
 </html>

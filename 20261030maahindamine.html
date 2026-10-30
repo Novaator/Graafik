@@ -29,14 +29,14 @@
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     }
     h1 {
-      font-size: 22pt;
+      font-size: 20pt;
       font-weight: 400;
       margin: 0 0 6px 0;
       line-height: 1.2;
       color: #0f172a;
     }
     .subtitle {
-      font-size: 20pt;
+      font-size: 18pt;
       font-weight: 400;
       color: #475569;
       margin: 0 0 16px 0;
@@ -208,7 +208,7 @@
     }
     .source-footer {
       margin-top: 16px;
-      font-size: 14pt;
+      font-size: 12pt;
       font-weight: 400;
       color: #64748b;
       line-height: 1.4;
@@ -396,7 +396,7 @@ let geojsonData = null;
 
 // Pidev rohelise skaala: helerohelisest (#dcfce7) kuni sügava tumeroheliseni (#064e3b)
 function getValColor(val) {
-  return val > 2000000000 ? '#064e3b' : // Tallinna tase
+  return val > 2000000000 ? '#064e3b' :
          val > 800000000  ? '#065f46' :
          val > 400000000  ? '#047857' :
          val > 250000000  ? '#059669' :
@@ -404,7 +404,7 @@ function getValColor(val) {
          val > 80000000   ? '#34d399' :
          val > 30000000   ? '#6ee7b7' :
          val > 10000000   ? '#a7f3d0' :
-                            '#dcfce7';  // Madalaim tase (Ruhnu jne)
+                            '#dcfce7';
 }
 
 function getChgColor(chg) {

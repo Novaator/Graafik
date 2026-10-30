@@ -432,7 +432,7 @@ function updateLegend() {
       <div style="flex:1;background:#047857"></div>
       <div style="flex:1;background:#064e3b"></div>
     `;
-    labels.innerHTML = `<span>< 30 mln € (heleroheline)</span><span>150 mln €</span><span>400 mln €</span><span>> 2 mld € (tumeroheline)</span>`;
+    labels.innerHTML = `<span>< 30 mln €</span><span>150 mln €</span><span>400 mln €</span><span>> 2 mld €</span>`;
   } else {
     title.innerText = 'Hinnamuutus võrreldes 2022. aastaga (%)';
     scale.innerHTML = `
@@ -560,108 +560,4 @@ function renderGeoJSON() {
 }
 
 function switchView(mode) {
-  document.getElementById('tabMapVal').classList.remove('active');
-  document.getElementById('tabMapChg').classList.remove('active');
-  document.getElementById('tabTable').classList.remove('active');
-
-  const mapContainer = document.getElementById('map-container');
-  const legendPanel = document.getElementById('legendPanel');
-  const tableView = document.getElementById('tableView');
-
-  if (mode === 'table') {
-    document.getElementById('tabTable').classList.add('active');
-    mapContainer.style.display = 'none';
-    legendPanel.style.display = 'none';
-    tableView.style.display = 'block';
-  } else {
-    mapContainer.style.display = 'block';
-    legendPanel.style.display = 'block';
-    tableView.style.display = 'none';
-
-    if (mode === 'map-val') {
-      currentMode = 'val';
-      document.getElementById('tabMapVal').classList.add('active');
-    } else {
-      currentMode = 'chg';
-      document.getElementById('tabMapChg').classList.add('active');
-    }
-    updateLegend();
-    if (geoLayer) {
-      geoLayer.eachLayer(l => geoLayer.resetStyle(l));
-    }
-    setTimeout(() => { map.invalidateSize(); }, 100);
-  }
-}
-
-// Otsing
-document.getElementById('searchInput').addEventListener('input', function(e) {
-  const query = e.target.value.toLowerCase().trim();
-  if (!query) return;
-
-  const found = rawData.find(d => d.name.toLowerCase().includes(query));
-  if (found) {
-    selectMunicipality(found);
-    if (geoLayer) {
-      geoLayer.eachLayer(layer => {
-        const name = layer.feature.properties.ONIMI || layer.feature.properties.NIMI || layer.feature.properties.name;
-        if (name && name.toLowerCase() === found.name.toLowerCase()) {
-          layer.setStyle({ weight: 3, color: '#15803d', fillOpacity: 1 });
-          layer.bringToFront();
-          map.fitBounds(layer.getBounds(), { maxZoom: 9, padding: [20, 20] });
-        } else {
-          geoLayer.resetStyle(layer);
-        }
-      });
-    }
-  }
-});
-
-// Tabel ja sorteerimine
-let currentSortCol = 'change';
-let sortAsc = false;
-
-function renderTable() {
-  const tbody = document.getElementById('tableBody');
-  tbody.innerHTML = '';
-
-  const sorted = [...rawData].sort((a, b) => {
-    let vA = a[currentSortCol];
-    let vB = b[currentSortCol];
-    if (typeof vA === 'string') {
-      return sortAsc ? vA.localeCompare(vB, 'et') : vB.localeCompare(vA, 'et');
-    }
-    return sortAsc ? vA - vB : vB - vA;
-  });
-
-  sorted.forEach(d => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${d.name}</td>
-      <td>${d.county}</td>
-      <td>${formatEur(d.val2026)}</td>
-      <td style="color:${d.change >= 0 ? '#166534' : '#991b1b'}">${d.change > 0 ? '+' : ''}${d.change.toFixed(1).replace('.', ',')}%</td>
-      <td>${d.drop_pct.toFixed(1).replace('.', ',')}%</td>
-    `;
-    tr.onclick = () => selectMunicipality(d);
-    tbody.appendChild(tr);
-  });
-}
-
-function sortTable(col) {
-  if (currentSortCol === col) {
-    sortAsc = !sortAsc;
-  } else {
-    currentSortCol = col;
-    sortAsc = false;
-  }
-  renderTable();
-}
-
-window.addEventListener('load', () => {
-  initMap();
-  renderTable();
-  selectMunicipality(rawData.find(d => d.name === 'Tartu vald'));
-});
-</script>
-</body>
-</html>
+  document.getElementById('tabMapVal').classList

@@ -1,0 +1,1419 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Akadeemikukandidaadid – ERR Novaator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Sans:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after {
+    box-sizing: border-box;
+    font-family: 'Fira Sans', sans-serif;
+    font-weight: 400 !important;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    background-color: #f7f9fa;
+    color: #1a1a1a;
+    line-height: 1.45;
+    padding: 14px 8px;
+  }
+
+  /* Nõue 3: Maksimumlaius 900 px, loetav ka 670 px juures */
+  .err-graphic-container {
+    max-width: 900px;
+    width: 100%;
+    margin: 0 auto;
+    background: #ffffff;
+    border: 1px solid #e2e6ea;
+    border-radius: 6px;
+    padding: 16px;
+    position: relative;
+    user-select: none;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+  }
+
+  /* Päis ja sissejuhatus */
+  .err-header {
+    margin-bottom: 14px;
+    border-bottom: 1px solid #e6e9ed;
+    padding-bottom: 12px;
+  }
+
+  .err-title {
+    font-size: 22pt;
+    line-height: 1.2;
+    color: #111111;
+    margin-bottom: 6px;
+    letter-spacing: -0.2px;
+  }
+
+  .err-subtitle {
+    font-size: 13pt;
+    color: #4b5563;
+    line-height: 1.38;
+    margin-bottom: 12px;
+  }
+
+  /* Filtreerimise jaotus */
+  .filter-section {
+    background: #f8fafc;
+    border: 1px solid #e5e9ee;
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin-bottom: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .filter-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .filter-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: #64748b;
+    min-width: 82px;
+    flex-shrink: 0;
+  }
+
+  .filter-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    flex: 1;
+  }
+
+  .filter-pill {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    color: #334155;
+    font-size: 11.5px;
+    padding: 3px 9px;
+    border-radius: 14px;
+    cursor: pointer;
+    line-height: 1.25;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.18s ease;
+  }
+
+  .filter-pill:hover {
+    background: #eef2f6;
+    border-color: #94a3b8;
+    transform: translateY(-1px);
+  }
+
+  .filter-pill.active {
+    background: #1e293b;
+    color: #ffffff;
+    border-color: #1e293b;
+  }
+
+  .color-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+  }
+
+  .filter-pill.active .color-dot {
+    box-shadow: 0 0 0 1px #ffffff;
+  }
+
+  /* Nõue 2: Reset nupp allparemas nurgas */
+  .filter-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 4px;
+    padding-top: 6px;
+    border-top: 1px dashed #e2e8f0;
+  }
+
+  .reset-filters-btn {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    color: #475569;
+    font-size: 11.5px;
+    padding: 4px 11px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    line-height: 1.2;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
+  }
+
+  .reset-filters-btn:hover {
+    background: #f1f5f9;
+    color: #0f172a;
+    border-color: #94a3b8;
+    transform: translateY(-1px);
+  }
+
+  .reset-filters-btn:active {
+    transform: translateY(0);
+  }
+
+  /* Põhipaigutus */
+  .err-layout {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    margin-top: 12px;
+  }
+
+  /* Vasakpoolne püstine menüütulp */
+  .side-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 94px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 12px;
+    z-index: 20;
+  }
+
+  .menu-btn {
+    position: relative;
+    width: 100%;
+    min-height: 40px;
+    padding: 8px 6px;
+    background: #f3f5f7;
+    color: #222222;
+    border: 1px solid #d5dbe0;
+    border-radius: 5px;
+    font-size: 12px;
+    letter-spacing: 0.3px;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.22s ease, color 0.22s ease, transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+  }
+
+  .menu-btn:hover,
+  .menu-btn:focus-visible {
+    background: #e2e8f0;
+    border-color: #94a3b8;
+    transform: translateX(2px);
+    outline: none;
+  }
+
+  .menu-btn.active {
+    background: #1e293b;
+    color: #ffffff;
+    border-color: #1e293b;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  }
+
+  /* Menüünupu hõljuv tooltip */
+  .menu-tooltip {
+    position: absolute;
+    left: calc(100% + 8px);
+    top: 50%;
+    transform: translateY(-50%) translateX(-6px);
+    background: #1e293b;
+    color: #ffffff;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
+    z-index: 50;
+  }
+
+  .menu-tooltip::before {
+    content: "";
+    position: absolute;
+    left: -5px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-width: 5px 5px 5px 0;
+    border-style: solid;
+    border-color: transparent #1e293b transparent transparent;
+  }
+
+  .menu-btn:hover .menu-tooltip,
+  .menu-btn:focus-visible .menu-tooltip,
+  .menu-btn.touch-preview .menu-tooltip {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+  }
+
+  /* Parem sisuala */
+  .main-stage {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .stage-transition {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.24s ease, transform 0.24s ease;
+  }
+
+  .stage-transition.fading {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  .question-banner {
+    background: #f8fafc;
+    border-left: 3px solid #1e293b;
+    border-radius: 4px;
+    padding: 10px 12px;
+    margin-bottom: 12px;
+  }
+
+  .question-tag {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #64748b;
+    margin-bottom: 4px;
+    letter-spacing: 0.4px;
+  }
+
+  .question-text {
+    font-size: 13.5px;
+    line-height: 1.42;
+    color: #111827;
+  }
+
+  /* Fotovõrgustik */
+  .photo-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    position: relative;
+    min-height: 240px;
+  }
+
+  .candidate-card {
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    position: relative;
+    outline: none;
+    transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.28s ease, opacity 0.3s ease;
+    border-radius: 6px;
+    background: #ffffff;
+    will-change: transform, opacity;
+  }
+
+  /* Nõue 1: Sujuv üles äärde liikumine (peidetud kaardid võetakse voost välja, nähtavad voolavad üles) */
+  .candidate-card.is-hidden {
+    display: none !important;
+  }
+
+  /* Pildile liikumisel väljatõste */
+  .candidate-card:hover,
+  .candidate-card:focus-visible {
+    transform: translateY(-8px) scale(1.035);
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.16);
+    z-index: 5;
+  }
+
+  /* Valitud kandidaadi esiletõste */
+  .candidate-card.selected {
+    transform: translateY(-8px) scale(1.04);
+    box-shadow: 0 0 0 3px var(--inst-color, #1e293b), 0 14px 28px rgba(0, 0, 0, 0.22);
+    z-index: 10;
+  }
+
+  .candidate-card.selected .candidate-name {
+    color: #0f172a;
+    font-weight: 500 !important;
+  }
+
+  .photo-frame {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 4.45;
+    border-style: solid;
+    border-width: 3px;
+    border-radius: 5px;
+    overflow: hidden;
+    background: #eef2f6;
+  }
+
+  .photo-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    display: block;
+    transition: transform 0.28s ease;
+  }
+
+  .candidate-card:hover .photo-frame img,
+  .candidate-card.selected .photo-frame img {
+    transform: scale(1.05);
+  }
+
+  .inst-badge {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 3.5px 5px;
+    font-size: 9.5px;
+    line-height: 1.15;
+    color: #ffffff;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.78);
+  }
+
+  .candidate-name {
+    margin-top: 6px;
+    font-size: 12px;
+    line-height: 1.25;
+    color: #111111;
+    text-align: center;
+    text-decoration: underline;
+    text-underline-offset: 2.5px;
+  }
+
+  /* Popover infokaart */
+  .candidate-popover {
+    position: fixed;
+    z-index: 9999;
+    width: 380px;
+    max-width: calc(100vw - 24px);
+    max-height: min(540px, calc(100vh - 36px));
+    display: flex;
+    flex-direction: column;
+    border-radius: 8px;
+    border: 1.5px solid #888888;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.25);
+    opacity: 0;
+    transform: scale(0.96) translateY(6px);
+    pointer-events: none;
+    transition: opacity 0.22s ease, transform 0.22s ease;
+    overflow: hidden;
+  }
+
+  .candidate-popover.visible {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    pointer-events: auto;
+  }
+
+  .popover-header {
+    padding: 12px 14px 10px 14px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .popover-title-group {
+    min-width: 0;
+  }
+
+  .popover-name {
+    font-size: 16px;
+    line-height: 1.25;
+    margin-bottom: 2px;
+  }
+
+  .popover-role {
+    font-size: 12px;
+    line-height: 1.3;
+    opacity: 0.9;
+  }
+
+  .popover-meta-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 6px;
+  }
+
+  .popover-pill {
+    font-size: 10.5px;
+    padding: 2px 7px;
+    border-radius: 3px;
+    border: 1px solid rgba(0, 0, 0, 0.18);
+  }
+
+  .popover-close {
+    background: transparent;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    width: 26px;
+    height: 26px;
+    font-size: 17px;
+    line-height: 1;
+    cursor: pointer;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.18s ease;
+  }
+
+  .popover-close:hover {
+    background: rgba(0, 0, 0, 0.08);
+  }
+
+  /* Täispikk vastus, skrollitav aken */
+  .popover-body {
+    padding: 14px 16px;
+    overflow-y: auto;
+    font-size: 13.5px;
+    line-height: 1.55;
+    user-select: text;
+    flex: 1;
+  }
+
+  .popover-body::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .popover-body::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+  }
+
+  .popover-body::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 3px;
+  }
+
+  .popover-body p {
+    margin-bottom: 11px;
+    text-align: left;
+  }
+
+  .popover-body p:last-child {
+    margin-bottom: 0;
+  }
+
+  .popover-footer {
+    padding: 8px 14px;
+    font-size: 11px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    flex-shrink: 0;
+    opacity: 0.88;
+  }
+
+  .err-footer {
+    margin-top: 14px;
+    padding-top: 8px;
+    border-top: 1px solid #e6e9ed;
+    font-size: 14pt;
+    color: #555555;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .scroll-hint {
+    font-size: 11px;
+    color: #64748b;
+    margin-top: 8px;
+  }
+
+  /* Kohanduvus 670 px ja mobiilsete seadmete jaoks */
+  @media (max-width: 680px) {
+    .photo-grid {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    .side-menu {
+      width: 82px;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .photo-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    .side-menu {
+      width: 74px;
+    }
+    .err-title {
+      font-size: 18pt;
+    }
+    .err-footer {
+      font-size: 12pt;
+    }
+    .candidate-popover {
+      width: calc(100vw - 20px);
+    }
+    .filter-label {
+      min-width: 100%;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="err-graphic-container" id="errGraphic">
+  <header class="err-header">
+    <h1 class="err-title">Eesti Teaduste Akadeemia akadeemikukandidaadid</h1>
+    <p class="err-subtitle">Vali vasakust tulbast küsimus või liigu teemade vahel hiirerulliku ja puutežestiga. Kandidaadi täismahus vastuse lugemiseks klõpsa tema fotol.</p>
+
+    <!-- Nõue 1, 2, 4: Valdkonna ja asutuse filtrid koos allparemas nurgas asuva lähtestusnupuga -->
+    <div class="filter-section">
+      <div class="filter-row">
+        <span class="filter-label">Valdkond:</span>
+        <div class="filter-pills" id="fieldFilters">
+          <button type="button" class="filter-pill active" data-field="all">Kõik valdkonnad</button>
+          <button type="button" class="filter-pill" data-field="Astrofüüsika"><span class="color-dot" style="background:#0033cc"></span>Astrofüüsika</button>
+          <button type="button" class="filter-pill" data-field="Elektroonika"><span class="color-dot" style="background:#33cccc"></span>Elektroonika</button>
+          <button type="button" class="filter-pill" data-field="Filosoofia"><span class="color-dot" style="background:#ff9900"></span>Filosoofia</button>
+          <button type="button" class="filter-pill" data-field="Geomaatika"><span class="color-dot" style="background:#009900"></span>Geomaatika</button>
+          <button type="button" class="filter-pill" data-field="Haridusuuringud"><span class="color-dot" style="background:#ffcc00"></span>Haridusuuringud</button>
+          <button type="button" class="filter-pill" data-field="Keemia"><span class="color-dot" style="background:#ff5050"></span>Keemia</button>
+        </div>
+      </div>
+      <div class="filter-row">
+        <span class="filter-label">Asutus:</span>
+        <div class="filter-pills" id="instFilters">
+          <button type="button" class="filter-pill active" data-inst="all">Kõik asutused</button>
+          <button type="button" class="filter-pill" data-inst="Tallinna Tehnikaülikool"><span class="color-dot" style="background:#850045"></span>Tallinna Tehnikaülikool</button>
+          <button type="button" class="filter-pill" data-inst="Tartu Ülikool"><span class="color-dot" style="background:#2E66A4"></span>Tartu Ülikool</button>
+          <button type="button" class="filter-pill" data-inst="Tallinna Ülikool"><span class="color-dot" style="background:#B20E10"></span>Tallinna Ülikool</button>
+          <button type="button" class="filter-pill" data-inst="KBFI"><span class="color-dot" style="background:#CD5C6E"></span>KBFI</button>
+        </div>
+      </div>
+      <div class="filter-footer">
+        <button type="button" class="reset-filters-btn" id="resetFiltersBtn" aria-label="Nulli filtrid">
+          <span style="font-size:13px; line-height:1;">↺</span> Nulli filtrid
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="err-layout">
+    <nav class="side-menu" id="sideMenu" aria-label="Küsimuste valik"></nav>
+
+    <main class="main-stage">
+      <div class="stage-transition" id="stageContainer">
+        <section class="question-banner" aria-live="polite">
+          <div class="question-tag" id="questionTag">TUTVUSTUS</div>
+          <div class="question-text" id="questionFullText"></div>
+        </section>
+
+        <section class="photo-grid" id="photoGrid"></section>
+      </div>
+      <div class="scroll-hint">Vihje: küsimusi saad vahetada ka hiire rullikuga või nutiseadmes pikalt üles-alla tõmmates.</div>
+    </main>
+  </div>
+
+  <footer class="err-footer">
+    <span>Allikas: Eesti Teaduste Akadeemia, ERR Novaator</span>
+  </footer>
+</div>
+
+<!-- Hüpikaken klõpsamisel -->
+<div class="candidate-popover" id="candidatePopover" role="dialog" aria-modal="false">
+  <div class="popover-header" id="popoverHeader">
+    <div class="popover-title-group">
+      <div class="popover-name" id="popoverName"></div>
+      <div class="popover-role" id="popoverRole"></div>
+      <div class="popover-meta-pills">
+        <span class="popover-pill" id="popoverInst"></span>
+        <span class="popover-pill" id="popoverField"></span>
+      </div>
+    </div>
+    <button type="button" class="popover-close" id="popoverClose" aria-label="Sulge infokaart">×</button>
+  </div>
+  <div class="popover-body" id="popoverBody"></div>
+  <div class="popover-footer" id="popoverFooter">
+    <span id="popoverPhotoCredit"></span>
+  </div>
+</div>
+
+<script>
+const QUESTIONS = [
+  {
+    "id": "tutvustus",
+    "btnLabel": "TUTVUSTUS",
+    "tooltip": "Tutvustus",
+    "fullText": "Tutvu 13 akadeemikukandidaadi teadustöö fookuse, seniste saavutuste ja ühiskondliku tegevusega. Klõpsa teadlase fotol, et avada tema täismahus tutvustus ja ankeedivastused."
+  },
+  {
+    "id": "k1",
+    "btnLabel": "1",
+    "tooltip": "Tipphetked",
+    "fullText": "1. Mis on teie jaoks olnud elu tipphetked? Ja kui aus olla, siis kui paljud neist on seotud teie tööga ja kui paljud on juhtunud vaatamata sellele?"
+  },
+  {
+    "id": "k2",
+    "btnLabel": "2",
+    "tooltip": "Suured probleemid",
+    "fullText": "2. Kui raha ja bürokraatia poleks probleem, mis oleks see üks asi, mille te oma valdkonnas Eestis kohe ära lahendaksite? Ja mis on maailmas see teema, millest teie kolleegid räägivad liiga palju, ja millest liiga vähe?"
+  },
+  {
+    "id": "k3",
+    "btnLabel": "3",
+    "tooltip": "Eetikadilemmad",
+    "fullText": "3. Avastate, et teie hea kolleegi laialt tsiteeritud artikkel sisaldab teadlikult varjatud, ent kriitilist viga. Tõe avalikustamine kahjustaks rängalt nii kolleegi karjääri kui ka avalikku usaldust teie valdkonna vastu. Vaikimine laseks aga teaduslikul valel püsima jääda. Kuidas käitute ja millest lähtute?"
+  },
+  {
+    "id": "k4",
+    "btnLabel": "4",
+    "tooltip": "Akadeemiku roll",
+    "fullText": "4. Kui suur osa 21. sajandil elava akadeemiku tööst peaks olema suunatud kolleegidele ja kui suur osa ühiskonnale, kes teid lõppeks üleval peab? Millal saab teadlasest lihtsalt arvamusliider?"
+  },
+  {
+    "id": "k5",
+    "btnLabel": "5",
+    "tooltip": "Isiklik tähendus",
+    "fullText": "5. Mida akadeemiku tiitel teile isiklikult annaks? Kui palju kaasneks sellega sisetunnetuslikult kohustusi, mida te juba ei täida?"
+  }
+];
+const CANDIDATES = [
+  {
+    "id": 1,
+    "nimi": "Gert Hütsi",
+    "amet": "vanemteadur",
+    "valdkond": "Astrofüüsika",
+    "valdkonnaToon": "#0033cc",
+    "asutus": "KBFI",
+    "asutuseToon": "#CD5C6E",
+    "pilt": "https://s.err.ee/photo/orig/2026/11/02/3868975h2d3e.png",
+    "autor": "Krista Tamm",
+    "vastused": {
+      "tutvustus": "Gert Hütsi uurib universumi suuremastaabilise struktuuri teket ja arengut. Tema teadustöö katab astro- ja osakestefüüsika piirialasid ning varase universumi ja fundamentaalfüüsika aspekte.\n\nViimastel aastatel uurib ta lisaks reliktkiirgusele ja ürgsetele mustadele aukudele ka gravitatsioonilaineid ning tumedat energiat. Uued spektroskoopilised taevaülevaated näitavad, et tume energia on ilmselt ajas muutuv, mis nõuaks kosmoloogilises standardmudelis fundamentaalseid muudatusi. Samuti kirjutas Hütsi 2025. aastal ilmunud kosmoloogiaõpikule \"Spinning the Cosmic Web\" tumeainet ja -energiat käsitleva osa. \n\nHütsi pälvis 2021. aastal ürgsete mustade aukude teemalise teadustöö eest täppisteaduste valdkonnas riikliku teaduspreemia. Ta on Keemilise ja Bioloogilise Füüsika Instituudi vanemteadur, teaduste akadeemia uurija-professor  ning arendab teadusteemasid kolmes astro- ja osakestefüüsikat, tumeainet ja fundamentaalset universumit uurivas Eesti tippkeskuses.",
+      "k1": "Sellele küsimusele olen vastanud ka ühel varasemal aastal ning seis on endiselt sama: esikohal on kindlasti perekond – lapsed ja abikaasa.\n\nTeaduslikus plaanis pean kõige olulisemaks doktoritöö käigus tehtud barüon-akustiliste ostsillatsioonide mõõtmisi Universumi suuremastaabilises struktuuris. Olin tol ajal üks esimestest, kes rakendas neid tulemusi Universumi koostist kirjeldavate kosmoloogiliste parameetrite määramiseks. Meetodist on tänaseks saanud üks täppiskosmoloogia põhitööriistu.",
+      "k2": "Kui raha ja bürokraatia poleks probleem, lahendaksin esmalt minu koduinstituudi – Keemilise ja Bioloogilise Füüsika Instituudi (KBFI) – baasrahastuse küsimuse. Instituut elatub peamiselt vaid grantirahadest, mis ei ole pikas perspektiivis jätkusuutlik. Praegusel kujul on KBFI jäänud süsteemi hammasrataste vahele: väikese ja eeskätt teadustööle keskenduva uurimisinstituudi puhul ei ole mõistlik rakendada sama baasrahastuse valemit, mis on välja töötatud ülikoole silmas pidades. Tegemist on täiesti teistsuguse profiiliga teadusasutusega, mis vajab teistsugust lähenemist.\n\nMis aga kolleegidesse puutub, siis nad on igati adekvaatsed ja räägivad parajasti nii palju, kui vaja, ning sellest, millest vaja. Vahel muidugi tekib ka ajutisi „mullistusi”, kus mõni teema puhutakse oodatust suuremaks, ent enamasti on sellel täiesti selged põhjused – näiteks uus ootamatu mõõtmistulemus või huvipakkuv vaatlus. Üldiselt on aga valdkond tervemõistuslik ning end hästi korrigeeriv.",
+      "k3": "Minu valdkonnas – teoreetiline astrofüüsika/kosmoloogia – on selline situatsioon sisuliselt välistatud. Tööks vajalikud sisendandmed on avalikud, mudeli detailid ning eeldused tuleb teadustöödes nii ehk naa kõik ära tuua. Valdkond on ka piisavalt konkurentsitihe – iga vähegi olulist kaalu omav tulemus kontrollitakse kindlasti üle teiste töörühmade poolt\n\nLoomulikult tuleb töödes arvutuslikke ja muid vigu ette – eksimine on inimlik! – ent need, tänu süsteemile, mis on isekorrigeeruv, tulevad üsna pea ilmsiks. Eksperimentaalsetes valdkondades on see probleem palju keerukam. Kuidas garanteerida mõõtmistulemuse usaldusväärsust? Tulemuste kontrollimine on siin oluliselt aja- ja ressursimahukam.",
+      "k4": "Minu arvates on akadeemiku esmane roll olla ikkagi oma ala tippspetsialist. Avalikkuse ees nähtav olemine on kindlasti tore lisa, aga see ei tohiks kunagi olla esmaseks eesmärgiks. Loomulikult sõltub see valdkonnast: näiteks sotsiaalteadustes on loogiline, et side ühiskonnaga on tihedam kui fundamentaalfüüsikas. Küll aga arvan, et akadeemik ei peaks aktiivselt avalikult sõna võtma teemadel, mis jäävad väljapoole tema kompetentsi.",
+      "k5": "Akadeemikuks saamine oleks minu ja ka minu koduinstituudi KBFI jaoks oluline tunnustus – märk, et teadus, millega olen tegelenud, omab tähtsust ka väljaspool koduinstituudi seinu. Samas loodan, et see ei muuda liialt minu igapäevaelu: tahaksin endiselt keskenduda peamiselt teaduse tegemisele. Loomulikult kaasneks sellega ka mõneti kõrgendatud vastutus – teadmine, et sinu sõna ja tegevus omab suuremat kaalu – aga usun, et see ei ole midagi, millega ma ei suudaks toime tulla."
+    }
+  },
+  {
+    "id": 2,
+    "nimi": "Jaan Raik",
+    "amet": "usaldusväärsete arvutisüsteemide keskuse juhataja",
+    "valdkond": "Elektroonika",
+    "valdkonnaToon": "#33cccc",
+    "asutus": "Tallinna Tehnikaülikool",
+    "asutuseToon": "#850045",
+    "pilt": "https://s.err.ee/photo/orig/2026/11/02/3868978ha320.png",
+    "autor": "Heiki Laan",
+    "vastused": {
+      "tutvustus": "Jaan Raik arendab usaldusväärseid, turvalisi ja energiatõhusaid arvutisüsteeme ning pooljuhttehnoloogiaid. Tema teadustöö fookuses on kiipide projekteerimine, testimine, riistvaraturve ning tehisintellekti kiipide ja arhitektuuride töökindlus.\n\nViimastel aastatel laiendab ta uurimistööd tehisintellekti riistvarale, RISC-V protsessorisüsteemidele ja neurovõrkude kiirenditele. Raik juhib ja panustab mitmetesse rahvusvahelistesse innovatsiooniprojektidesse ning koordineerib Eesti kiibikompetentsi keskuse projekti KIIP. Lisaks algatas ta Tallinna Tehnikaülikoolis Eesti elektroonikatööstusele suunatud kiibidisaini mikrokraadiprogrammi.\n\nRaik pälvis 2007. aastal teaduste akadeemia Bernhard Schmidti preemia ning 2016. aastal Valgetähe IV klassi teenetemärgi. Ta on Tallinna Tehnikaülikooli tenuuriprofessor, usaldusväärsete arvutisüsteemide keskuse juht ning rahvusvahelise arvutisüsteemide võrgustiku HiPEAC liige.",
+      "k1": "Elus on iga hetk eriline. Väga paljud hetked on seotud lähedaste ja sõpradega. Kuid väga oluline on seejuures, et on põnev ja väljakutseid pakkuv töö, milles saab end pidevalt edasi arendada. Olen tegelenud tänaseks rohkem kui 30 aastat teadustööga mikroelektroonika disaini ja testimise vallas ja seda on rohkem kui pool mu senisest elust.\n\nTööga seoses on karjääri tipphetkedeks olnud minu poolt koordineeritavad Euroopa teadusprojektid DIAMOND, IMMORTAL ja TUTORIAL. See on tähendanud sisuliselt rahvusvaheliste konsortsiumide loomist uudse teadusliku idee ümber ning nende töö juhtimist. Saavutuse teeb väärtuslikuks fakt, et konkursisõela läbib üldjuhul vaid 2–4 projektitaotlust üle kontinendi.\n\nKäesoleva akadeemikukandidatuuri teemaga seonduvaks tipphetkeks on minu jaoks üks jõuluüritus 2024. aastal, kus mitmed ministeeriumi ja EISi juhtisikut rõhutasid kiibitööstuse ülesehitamise olulisust Eesti riigile. Sellele eelnes minu poolt mitme aasta pikkune selgitustöö avalikkusele ning minu koordineeritava Eesti kiibikompetentsi keskuse KIIP taotluse rahastusotsus majandus- ja kommunikatsiooniministeeriumi poolt 2024. aasta oktoobris. See nihe on tõenäoliselt üheks põhjuseks, miks näeme tänavusel Akadeemia konkursil teemat \"elektroonika\".",
+      "k2": "Väga suurt muret tekitab meie rahvusliku teadusgrandi paneelide silmatorkavalt madal kvaliteet, mis väljendub kohati mitteadekvaatses tagasisides taotlejaile. Leian, et välisretsensente tuleks hoolikamalt valida, paremini tasustada ning selgitada neile põhjalikumalt, mida ühelt rühmagrandilt üldse oodatakse!\n\nMillest räägivad kolleegid liiga palju või vähe? Minu meelest liiga palju räägitakse teemadest, mis on täna popid ja mille tööstus on tegelikult juba lahendanud. Vähe on tulevikku vaatavat, visioone. Teaduse eesmärk on siiski olla arengu eesliinil ja näha ette muutusi, mis on valdkonnas toimumas.",
+      "k3": "Siin põrkuvad mitu eetilist kaalutlust. Ühest küljest teaduslik tõde, teiselt poolt isiku karjäär ja elu. Kindlasti ei läheks ma kolleegi avalikult ja kiirustades tühistama. Esimese asjana prooviks ma asjaosalise ja kolleegidega konsulteerida, et jõuda selgusele, mis selle vale põhjustas ning seejärel veenda kolleegi parandama oma vea tuleviku publikatsiooni näol.",
+      "k4": "See on väga individuaalne ja sõltub teadlasest. Ma arvan, et samaväärselt väärtuslikud on teadlased, kes töötavad kitsalt oma eriala sees kui ka need, kes suhtlevad avalikkusega. Ühiskond vajab mõlemaid. Akadeemik peab aga kindlasti olema teadlane, kes lisaks teadustööle kõnetab laiemat üldsust.\n\nMinu meelest teadlasest, ka akadeemikust, ei peaks saama arvamusliidrit. Ma usun, et minu arvamus näiteks rahvastikupoliitikast on sama palju väärt kui ükskõik millise teise eriala esindaja arvamus, kes antud valdkonnaga süvitsi seotud pole. Küll aga peaks akadeemik konsulteerima ühiskonda oma valdkonda puudutavatel teemadel.",
+      "k5": "See oleks kindlasti väga suureks isiklikuks tunnustuseks. Kuid see võimaldaks mul ka paremini koordineerida oma tegevusi Eesti teiste teadusvaldkondade eestvedajatega. See oleks omamoodi tunnustuseks ka elektroonika valdkonnale, millest ju otseselt sõltub riigi konkurentsi- ja kaitsevõime ning tehnoloogiline suveräänsus."
+    }
+  },
+  {
+    "id": 3,
+    "nimi": "Margit Sutrop",
+    "amet": "praktilise filosoofia professor",
+    "valdkond": "Filosoofia",
+    "valdkonnaToon": "#ff9900",
+    "asutus": "Tartu Ülikool",
+    "asutuseToon": "#2E66A4",
+    "pilt": "https://s.err.ee/photo/orig/2026/11/02/3868981h0650.png",
+    "autor": "Veikko Somerpuro",
+    "vastused": {
+      "tutvustus": "Margit Sutrop uurib moraalifilosoofiat, rakenduseetikat ja Eesti filosoofia mõistet. Tema teadustöö analüüsib väärtuskonflikte, eetilist otsustusvõimet ning usaldust teaduse ja tehnoloogiate, sealhulgas tehisintellekti vastu.\n\nViimastel aastatel juhib ta tehisintellekti eetika ning teaduseetika uurimissuundi, vedades eest Eesti Tehisintellekti Tippkeskuse rahvusvahelist eetikanõukogu ja Euroopa Komisjoni teaduse usaldusväärsust käsitlevaid projekte. Lisaks koostab ta teaduseetika käsiraamatut ning töötas muu hulgas juhtivautorina välja 2025. aastal ilmunud OECD eetilise kompetentsuse raamistiku peatüki.\n\nSutrop on Tartu Ülikooli praktilise filosoofia professor, eetikakeskuse juhataja ning riigikogu liige. Ta valiti 2004. aastal Academia Europaea liikmeks ning nõustab eksperdina üle paarikümne aasta Euroopa Komisjoni eetikaküsimustes.",
+      "k1": "Kõige erilisemad on olnud hetked, mil midagi juhtub esimest korda. Laste ja hiljem lapselaste sünd. Esimene välisreis – doktoristipendiumi saamine ja õppima asumine Oxfordi ülikoolis 1991. aastal. Olin õppinud Miina Härma Gümnaasiumis süvendatult inglise keelt, aga polnud kunagi Inglismaale saanud. Londonisse saabudes tiirutas lennuk nii madalalt linna kohal, et oli tunne nagu saaksin katsuda Big Beni ning lugeda kokku tuvid Trafalgari väljakul. Raske oli uskuda, et näen oma silmaga seni vaid raamatutest tuttavaid paiku.\n\nEesti iseseisvuse taastamine. Doktoritöö kaitsmine Konstanzi Ülikoolis. Tartu Ülikooli professoriks valimine – seisime koos teiste Eesti stipendiaatidega Konstanzi Ülikooli rõdul, kust avanes vaade Bodenseele ja Alpidele, ning ootasime telefonikõnet, kas Tartu Ülikooli nõukogu valis mu ära. Esimene päev riigikogus – ametivande andmine, pühalik lubadus teenida oma riiki ja jääda ustavaks Eesti Vabariigile ning tema põhiseaduslikule korrale.\n\nNeed on väga erinevad hetked, kuid kõiki ühendab tunne, et algab midagi uut ja olulist. Osa neist on seotud minu tööga, osa isikliku eluga, osa meie kõigi ühise ajalooga. Töö ja elu on tihedalt läbi põimunud, peamine väljakutse on olnud leida nende vahel tasakaal.",
+      "k2": "Tagaksin Eesti teadusele piisava ja stabiilse rahastuse ning muudaksin teaduse rahastamise põhimõtteid. Rahastamise aluseks peaks olema usaldus, millega kaasneb vastutus. Kui teadlane on näidanud oma töö rahvusvaheliselt kõrget taset ja jätkuvat aktiivsust, peaks tal olema kindel baasrahastus teadustöö jätkamiseks. Ta ei peaks pidevalt kirjutama uusi projektitaotlusi lihtsalt selleks, et oma uurimisrühma elus hoida. Lisaraha võiks taotleda vaid uute suurte projektide käivitamiseks, uute inimeste töölevõtmiseks ja teadustaristu arendamiseks.\n\nSenisest enam tuleks teadlaste hindamisel arvestada teadusvaldkondade eripära. Füüsika, matemaatika, arstiteaduse, põllumajandusteaduse, sotsiaal- ja humanitaarteaduste tulemusi ei saa mõõta sama mõõdupuuga. Alusteadustelt ei saa nõuda kohese ühiskondliku kasu näitamist, kuid ilma nendeta ei sünni ka tulevased rakendused.\n\nTeaduse rahastamine peab tagama ka akadeemilise järelkasvu. Tuleks jälgida, millistes valdkondades on tekkimas lünk, ning just nende erialade andekaid noori saata stipendiumidega maailma parimatesse ülikoolidesse. Sama oluline on toetada nende tagasitulekut ja oma uurimisrühma loomist Eestis.\n\nOsalen Teaduste Akadeemia teaduse ja kõrghariduse komisjonis, mis tegi hiljuti avaliku pöördumise „Eesti teadus on suurem kui Eesti”. Tegime ettepaneku luua Eestis ja välismaal tegutsevaid Eestiga seotud teadlasi ühendav võrgustik ning koostöö- ja naasmisgrandid. Me ei peaks kartma, et meie noored lähevad maailma. Peaksime hoolitsema selle eest, et neil oleks põhjust tagasi tulla – ja et ka välismaalased tahaksid siia tulla. Kõik eestlased ei pea Eestisse tagasi tulema, et Eesti teaduse arengusse panustada. Oma panuse saab anda ka rahvusvaheliste koostööprojektide algatamise, ühiste uurimisgrantide ning doktorantide ja järeldoktorite juhendamise kaudu.\n\nMaailmas räägitakse praegu palju sellest, mida tehisaru suudab, kuid liiga vähe sellest, kuidas tehisaru muudab inimest ennast – meie mõtlemisvõimet, autonoomiat, eetikat, suhteid ja enesemõistmist. Küsimus pole ainult selles, mida masinad meie eest ära teevad, vaid ka selles, milliseks me ise nende kasutamise käigus muutume ja mis väärtused on ohus.",
+      "k3": "Ma ei vaikiks. Vea avalikustamine võib usaldust teaduse vastu ajutiselt kõigutada, kuid selle teadlik varjamine kahjustaks usalduse aluseid palju sügavamalt.\n\nKõigepealt räägiksin kolleegiga, püüaksin aru saada, mis on juhtunud, ning annaksin talle võimaluse viga ise parandada. Eksimine on inimlik. Kuid teadlikult vea varjamine on midagi muud – see on väärkäitumine, teaduseetika rikkumine.\n\nKui kolleeg keeldub viga parandamast, tuleks pöörduda ajakirja toimetuse või teadusasutuse poole, järgides hea teaduse põhimõtteid ja menetlusreegleid. Oluline on nii teadusliku vea parandamine kui ka sellest ajakirja lugejate teavitamine. Tänavu mais Vancouveris toimunud 9. teaduseetika maailmakonverentsil rõhutasid mitmed ettekandjad, et karistamisest tähtsam on motiveerida teadlasi oma vigu parandama ja vajadusel avaldatud artikleid tagasi võtma. Vigased tulemused viivad teisi teadlasi eksiteele ja võivad kaasa tuua väga raskeid tagajärgi, näiteks meditsiinis või inseneerias.\n\nTegemist on raske väärtuskonfliktiga, sest korraga on mängus nii lojaalsus kolleegile kui ka lojaalsus teadusele ja iseendale. Selle lahendamine nõuab julgust, aga ka hoolivust ja vastutustunnet.",
+      "k4": "Esmalt vaidlustaksin küsimuse eelduse, et teadust tehakse kas kolleegidele või ühiskonnale. Teaduse esimene ülesanne on luua uut ja usaldusväärset teadmist.\n\nSamas ei saa teadlane jääda elevandiluust torni. Teadlastel on vastutus aidata inimestel mõista, mida me teame, mida me veel ei tea ja millised valikuvõimalused meie ees seisavad. Filosoofide ülesanne on aidata küsimusi õigesti püstitada, et neile saaks vastata, tuua nähtavale varjatud eeldusi ja väärtuskonflikte ning luua võimalusi mõistlikuks aruteluks.\n\nTeaduse ühiskondlikku väärtust ei saa mõõta sellega, kui palju teadlane avalikkuses sõna võtab. Samas ei näe ma midagi halba selles, kui teadlasest saab ka arvamusliider. Praeguses tõejärgses ühiskonnas on väga oluline, et avalikus arutelus kõlaksid teadmistel, uurimistulemustel ja teaduskirjandusel põhinevad seisukohad. Oluline on lükata ümber väärinfo ja seista vastu populismile ja vandenõuteooriate levikule.\n\nTeadlase autoriteet peab aga põhinema argumentide kvaliteedil, mitte tema tuntusel. Ta peab suutma eristada, millal ta räägib oma uurimistöö põhjal ja millal väljendab kodanikuna oma väärtuseelistusi. Samas on see ka ajakirjanduse vastutus aidata arutelu sobivalt raamistada, et inimestel oleks võimalik aru saada, mis positsioonilt teadlane sõna võtab, kas eksperdi või kodanikuna.",
+      "k5": "Akadeemikuks valimine tähendaks mulle võimalust ja kohustust jätkata tipptasemel teadustööd ning aidata kaasa akadeemia ülesandele nõustada riiki ja ühiskonda.\n\nMinu jaoks tähendaks valimine suurt tunnustust Tartu Ülikooli filosoofiale, mille arendamine rahvusvaheliselt konkurentsivõimeliseks teadusvaldkonnaks on olnud minu südameasi Konstanzi ülikoolist tagasitulekust saadik. Pärast pikka vaheaega oleksid Teaduste Akadeemias taas esindatud ka filosoofid. Praktilise filosoofi ja eetikaeksperdi kaasamine võiks aidata akadeemial tõsta nii teadlaskonna kui ka kogu ühiskonna eetilist teadlikkust.\n\nMinu praegused uurimisteemad – usaldus teaduse vastu, moraalsete lahkarvamuste ja väärtuskonfliktidega toimetulek ning tehisaru kooskõlla viimine inimlike väärtustega – on suure ühiskondliku kõlapinnaga. Teaduse ja tehnoloogia kiire areng toob pidevalt kaasa uusi eetilisi küsimusi, mille lahendamine nõuab eri teadusalade koostööd. Olen interdistsiplinaarse koostöö usku ja osalenud paljudes rahvusvahelistes projektides, kus erinevate erialade teadlased uurivad sama probleemi. Hiljuti analüüsisime TÜ eetikakeskuse projektis koos andmeteadlaste, juristide ja sotsioloogidega TI-Hüppe haridusprogrammi ja tehisintellektipõhise õpirakenduse eetilisi riske, võttes aluseks Eesti Teaduste Akadeemia küberturvalisuse töörühma metoodika.\n\nOlen olnud riigikogu ja Teaduste Akadeemia kohtumiste „Vaimu ja võimu dialoog Toompeal” sünni juures ja tahan kaasa aidata, et nad jätkuvad ka tulevikus. Pean oluliseks, et saaksime paremini tööle teadmispõhise poliitikakujundamise, et teadlased tahaks nõu anda ja poliitikud oskaks seda küsida ja kasutada. 18. novembril riigikogus konverents ning minu koostatav kogumik teadlaste ja otsustajate koostöökogemustest.\n\nOlen juba üle paarikümne aasta Euroopa tippteadlasi ühendava Academia Europaea liige ning üle paarikümne aasta tegutsenud Euroopa Komisjoni eetikaeksperdina. Mul on lai rahvusvaheline koostöövõrgustik ja tunnen Euroopa teaduspoliitika kitsaskohti. Eesti Teaduste Akadeemia liikmena saaksin tõhusamalt edendada rahvusvahelist koostööd ja seista Eesti teaduse huvide eest Brüsselis. Samal ajal köidab mind võimalus osaleda Eesti tippteadlaste aruteludes, õppida tundma erinevaid lähenemisi ning otsida ühiselt lahendusi maailma ees seisvatele probleemidele.\nAkadeemikuks valimine annaks mulle uusi võimalusi ehitada sildu nii teadusalade vahel kui ka teaduse ja ühiskonna vahel."
+    }
+  },
+  {
+    "id": 4,
+    "nimi": "Tõnu Viik",
+    "amet": "teenekas professor",
+    "valdkond": "Filosoofia",
+    "valdkonnaToon": "#ff9900",
+    "asutus": "Tallinna Ülikool",
+    "asutuseToon": "#B20E10",
+    "pilt": "https://s.err.ee/photo/orig/2026/11/02/3868984h3062.png",
+    "autor": "Raul Mee",
+    "vastused": {
+      "tutvustus": "Tõnu Viik uurib fenomenoloogiat, kultuurifilosoofiat ja filosoofia ajalugu. Tema teadustöö peamine panus on kultuurisõltelise tähendusloome fenomenoloogiline käsitlus, mis analüüsib, kuidas kollektiivsed struktuurid osalevad individuaalse kogemuse kujunemisel.\n\nViimastel aastatel on ta arendanud kollektiivsete emotsioonide, tehnoloogia ja populistliku poliitika fenomenoloogilisi käsitlusi ning uurinud inimeste emotsionaalseid suhteid robotitega. Samuti teeb ta tehnoloogia ja inimsuhete uurimisel koostööd Kyoto Ülikooli Inimkonna Tuleviku Instituudiga.\n\nViik on Tallinna Ülikooli filosoofia teenekas professor ning rahvusvahelise teadusorganisatsiooni Society for Phenomenology and Media juhatuse liige. Aastatel 2021–2026 oli ta Tallinna Ülikooli rektor, panustades laiemalt Eesti teadus- ja kõrghariduspoliitika kujundamisse.",
+      "k1": "Oleks kurb küll, kui elu tipphetkede puhul ainult tööelu meelde tuleks, aga see \"tööks\" nimetatu on mulle tõesti väga palju tähenduslikke hetki pakkunud. Olen ajanud kahte üsnagi erinevat asja ja käinud nii õpetlase kui ka organisatsiooni juhi radu pidi, mille rõõmud ja mured on üsna erinevad.\n\nEsimese juures tuleb ette selliseid kogemusi, mis vaimustavad selle sõna otseses tähenduses – panevad elama, inspireerivad ja ergutavad mõtlemist. On olnud palju kolleege, kohtumisi ja sellist pühendumust üliõpilaste poolt, mis mulle selles tähenduses on vaimustavalt mõjunud. Ja muidugi kuuluvad siia ka oma mõtete loomise ja sõnastamise hetked – need vaiksed hommikud rohelise teega kui väljas tasapisi valgemaks läheb ja mõtted peas pöörasena keerlevad. Mõnikord mõtlen, et nende hommikute pärast ma üldse filosoofia juures olen.\n\nJuhi elu on hoopis teistsugune, – raske koorma tundega, alandlik ja erakordselt õpetlik eluviis, kus vaikseid hommikuid on harva. Selle positsiooni rõõmud on minu jaoks seotud eneseületamise, ühise ürituse õnnestumise ja eesmärkide saavutamisega ning uhkusetundega oma inimeste üle.",
+      "k2": "Kui valdkonna all pidada silmas Eesti teaduse ja kõrghariduse institutsionaalset organiseerimist, siis selle üks suurimaid probleeme on projektipõhise teadusrahastuse kasutamine valedel eesmärkidel. Oleme hakanud projektide abil rahastama püsiinstitutsioonide tööd ning tänu sellele toonud teadusesse rohkem raha, kui me seda riigieelarve kaudu suudaksime, aga teadusrahastuse projektipõhisus võimendab sellise kasutuse puhul hulka negatiivseid järelmeid, alates teadlaste asjatust ajakulust ning eesmärkide hägustumisest kuni väga suurte kaudsete aja- ja ressursikuludeni, mis asutuste vaatest alati projektide majandamisega kaasas käivad.\n\nVäärtõlgenduste vältimiseks kordan üle, et projektipõhine teadusrahastus on igati hea ja vajalik instrument, aga selle eest võiks tõesti ajutise iseloomuga ettevõtmisi, mitte rahastada Eestile vajalike institutsioonide ja töökohtade püsimist.\n\nPoliitikutega lähedalt kokku puutunud inimesena ütleksin, et Eesti poliitilise välja suurim probleem on lõhe selle vahel, mida enamik meie erakondi deklareerib – et nad usuvad teadusesse ja haridusse, ning mida nad reaalselt teevad. Näiteks selle aasta eelarvet koostades ei suutnud praegune valitsus ülikoolide rahastust nii palju tõsta, kui suureneva gümnaasiumilõpetajate arvu tõttu vaja oleks. Ja ometigi oleks see samm aidanud ära kasutada meie lähemate aastakümnete ainsat positiivset demograafilist trendi. See näitab, et usk relvastusse ja transporditaristusse on tegelikult suurem kui usk teadusesse, haridusse ja selle abil meie riigi tugevdamisse.\n\nKui aga filosoofia juurde tulla, siis meenub ühe hea näitena kohe president Ülle Madise esimene kõne, mida põhjusega on kiidetud. Head ja tarmukad mõtted ja üleskutsed, hea atmosfääriloome, aga sisaldab ühte levinud eesti kultuuri mõistega seotud ebakõla, mis selle tähendust pisendab. Kuna see puudutab ühte minu teadustöö põhisuunda, milleks on kultuuri teoreetiline mõtestamine, siis hakkab see mulle silma. Ta ütleb, et kultuuri ei saa pidada millekski, mis tuleb pärast kõike muud, ning jõuab seejärel üleskutseni külastada kultuurisündmusi ja hinnata meie kunstiloojaid. \n\nSelle üleskutsega olen ma muidugi nõus, aga just siin tulebki nähtavale kultuuri mõiste tähenduse kitsendamine. Nimelt, kui me räägime kultuurist põhiseaduse mõttes ja riigi kohustusest eesti keele ja kultuuri eest hoolt kanda, siis peaksime me kultuuri all silmas pidama eesti rahva eluviisi või \"komberuumi\", kuid nii sageli libiseme me sellelt tähenduselt endale seda teadvustamata kultuuri kitsa tähenduse – kultuuri kui kunstiloome ühisnimetaja juurde. See tähenduse libisemine kultuuri laialt määratluselt kitsale ei ole pelgalt teoreetiline ebakõla mõiste määratlemisel, vaid juhib meid ekslikule arusaamale sellest, mida me riigina oma kultuuri kaitseks ja hoidmiseks tegema peaksime. Seetõttu tahaksin, et see filosoofiline arusaam kultuurist ja mõisteselgus oleks oluliselt levinum, kui see täna on.",
+      "k3": "Seni kuni eetilised dilemmad on hüpoteetilised, on neile kerge vastata ning küllap lähtuvad vastused alati hoiakust, mida väljendab keskajal Aristotelesele omistatud ütlus oma õpetaja kohta: Amicus Plato, sed magis amica veritas. Ja tõepoolest, kui keegi peaks oma nime all tahtlikult valet avaldama, siis on ta reetnud põhimõtte, millele teaduslik tõetaotlus tugineb. See ei ole väike eksimus ning sellise sammuga astub inimene sisuliselt akadeemilisest kogukonnast välja.\n\nKuna teaduslik teadmine pole kunagi absoluutne ja võib põhimõtteliselt osutuda ekslikuks ning on alati ümberlükatav, kas või juba seetõttu, et avastatud tõed on alati piiratud kehtivusega, mis tuleneb kasutatud metodoloogiast, katsete või näidete hulgast jne, siis on tahtlik tõetaotlusest loobumine vaata et kõige halvem, mida üks õpetlane saab teha. Teha teadust tähendab muu hulgas ka olla teadlik teadmise ekslikkusest.\n\nPean ütlema, et ma vist ei ole kirjeldatud olukorda kogenud, ning minu kokkupuute järgi on teadlased enamasti väga pühendunud inimesed. Pühendumuse puudumisel vist teadusesse ei minda. See ei tähenda, et õpetlaste elu oleks eksimustest ja pahedest prii, aga need väljenduvad enamasti muudes kiusatustes ja teistes eetilistes dilemmades kui otsene tahtlik valetamine oma teadustöös.",
+      "k4": "Võime vist niisuguse ajaloolise üldistuse teha, et pärast seda, kui teadusele pühendumise võimalus on laienenud ka neile, kes pole aristokraatideks sündinud, on alati olnud vaja teaduse vajalikkust ja kasulikkust kuidagi selgitada. Muidugi on ka valitsejad ise aeg-ajalt ühte või teist uurimistegevust omal initsiatiivil rahastanud, näiteks Putin ja Xi olevat huvitatud elu pikendamisele pühendatud uuringutest. Ning peaaegu kõik valitsused on huvitatud kaitsevõime ja majandusliku rikkuse suurendamisest.\n\nAga asjale rahastamise nurga alt lähenedes on teadustegevuse põhjendamine pigem väline, tehnilist laadi instrumentaalne probleem, mis tänapäeval on enamasti asutuste juhtkondade ja projektitaotluste kirjutajate ülesandeks delegeeritud. Ning me näeme, et ega see selgitustöö delegeerituna hästi ei tööta.\n\nMe võiksime läheneda samale küsimusele hoopis teise nurga alt ja mõtelda selle peale, kas ühiskonnale suunatud selgitustöö võiks midagi teaduslikule edenemisele endale heuristiliselt juurde anda. Kas võime oma uurimisküsimus üldmõistetavaks teha võiks viia ka suurema teadusselguseni, näiteks?\n\nMa muidugi möönan, et teadlase vaatest on küsimus pigem motivatsioonis ja ajas, sest \"arvamusliidriks\" olemises ei ole midagi lihtsat. See on sõnaseade poolest üsna nõudlik žanr, mis eeldab head auditooriumitunnetust, ülevaadet ühiskonnas levinud seisukohtadest, mida \"arvajal\" tuleb kõnetada, nendega pidevat kursisolekut, head loomuliku keele taju ja väga selget mõtlemist. Ning sellega kaasnevad omad ohud: on oht muutuda ühte või teist tüüpi poliitilise tellimuse täitjaks ja sõnastajaks või siis ajakirjanduse teenriks, kes kõikidel teemadel sõna võtab ja vabastab ajakirjaniku vajadusest erialaspetsialiste otsida.",
+      "k5": "Võtaksin seda väga suure tunnustusena ning Akadeemia liikmena panustaksin ma kindlasti ka selle käekäiku ja kujunemisse. Kui ma seni olen pannud palju rõhku kõrghariduse vajalikkuse selgitamisele, siis küllap paneks liikmelisus mind rohkem ka teaduse vajalikkusest rääkima. Ma usun, et Teaduste Akadeemia muutub igal juhul aina mõjukamaks, sest mida kiiremini ja keerulisemaks ühiskond muutub, seda rohkem ta ka teaduspõhist häält oma korraldamiseks ja eduks vajab. Teaduste Akadeemia peab tegema nii, et just tema oleks selle hääle üks Eesti jaoks olulisemaid kandjaid.\n\nMa tunnen kaasa poliitikutele, kes tahavad kasvavaid kulusid teadusele ja haridusele kuidagi kärpida või kontrolli alla saada. Paraku elame me aegadel, mil ühiskond vajab täna rohkem teaduspõhist sisendit kui eile ja homme veel rohkem kui täna."
+    }
+  },
+  {
+    "id": 5,
+    "nimi": "Artu Ellmann",
+    "amet": "teedeehituse ja geodeesia uurimisrühma juht",
+    "valdkond": "Geomaatika",
+    "valdkonnaToon": "#009900",
+    "asutus": "Tallinna Tehnikaülikool",
+    "asutuseToon": "#850045",
+    "pilt": "https://s.err.ee/photo/orig/2026/11/02/3868987h03e4.png",
+    "autor": "Erakogu",
+    "vastused": {
+      "tutvustus": "Artu Ellmann uurib füüsikalist geodeesiat, keskendudes Maa gravitatsioonivälja ja geoidi modelleerimisele nii maismaal kui ka merel. Tema teadustöö ühendab gravimeetria, satelliidiandmed ja loodud mudelid, et teisendada ellipsoidilised kõrgused täpseteks merepinna suhtes mõõdetud kõrgusteks.\n\nViimastel aastatel kasutab ta satelliitaltimeetriat ja masinõpet mere dünaamiliste protsesside prognoosimiseks, optimeerides meresõidu ohutust ja autonoomsete laevade liikumist. Samuti osales ta tuumikgrupi liikmena Läänemere riikide ühtse merekaardistusdaatumi BSCD2000 loomises ning panustas Eesti ametlike geoidimudelite (sh EST-GEOID2017) väljatöötamisse. Maa-ameti peadirektori asetäitjana vedas ta eest riikliku Geo3D strateegia loomist, et hõlbustada elukeskkonna 3D-modelleerimist ja ruumiandmeteenuste arengut.\n\nEllmann on Tallinna Tehnikaülikooli geodeesia tenuuriprofessor ja teedeehituse uurimisrühma juht. Ta esindab Eestit Rahvusvahelises Geodeesia Assotsiatsioonis ja Põhjamaade Geodeesiakomisjonis ning osaleb Euroopa Kosmoseagentuuri koostööprojektides.",
+      "k1": "Esimesena tulevad meelde hetked, mil pikalt keerulisena tundunud probleem muutub arusaadavaks. Veel suurem rõõm on siis, kui saadud teadmist hakkavad teised kasutama. Et geodeesia tegeleb Maa kuju ja suuruse määratlemise, võib selleks kuluda aastaid. Esmalt tuleb mõista Maa ja selle gravitatsioonivälja seaduspärasusi, teha asjakohast andmehõivet, kohandada ja optimeerida teooriat ning seda valideerida. Tihti tuleb arvutusi korrata, kuni tulemus (minu puhul on selleks Maa kuju ehk geoidi täpne mudel, mida kasutatakse kõrguste määramise lähtepinnana) läbib kaasteadlaste kvaliteedikontrolli. Teadustööd motiveerib jätkama, kui teadustöö tulemusena väljatöötatud kasulik mudel võetakse laialdaselt kasutusse.\n\nTipphetkede kõrval meenub, mis mind seda põnevat teekonda ette võtma ajendas. See oli endale teadvustamine, et magistritasemel haridus ning sellele järgnenud seitse aastat inseneritöö kogemust uurimisinstituudis ja avalikus sektoris ei ole enam piisavad mulle huvipakkuva järgmise eesmärgi saavutamiseks. Soovisin nimelt 1990. aastatel teada saada, kuidas oleks võimalik toona alles levima hakanud GPS-tehnoloogiat lisaks asukohamäärangule kasutada ka täpseks kõrgusmääranguks, et asendada ajamahukas ja kallis traditsiooniline nivelleerimine. Äratundmishetk saabus siis, kui tõdesin varasemate mõtlejate eeskujul, et pole midagi praktilisemat kui hea teooria. Selleks ajaks oli selgeks saanud ka see, et toonane geoidi modelleerimise teooria vajas ajakohastamist, et tagada senisest suurusjärgu võrra täpsemate tulemuste saavutamine.\n\nNii oligi üks minu elu määranud otsuseid 2000. aastal Stockholmi Kuninglikku Tehnikaülikooli (KTH) doktorantuuri astumine. See tähendas kodumaal väljakujunenud elust-olust lahkumist ja uuesti koolipinki  asumist. Doktoriõpingud Rootsis ja väitekirja kaitsmine 2004. aastal ning sellele järgnenud teadustöö Kanadas avardasid arusaama sellest, kuidas head teadust tehakse. Vähemalt sama oluline oli Eestisse naasmine 2006. aastal: välismaal õpitu ja kogetu põhjal sai hakata kujundama kodumaist teadustööd ja õpetamist.\n\nÜhe esimese tipphetkena tooksin esile teoreetiliste geoidiuuringute jõudmise Eesti kõrgusmääramise praktikasse. Tulemusena 2011 a ja 2017 a valminud riiklikud geoidimudelid seovad moodsa satelliitpositsioneerimise tulemused kõrgustega, mida on vaja näiteks ehitatud keskkonna planeerimisel ja loomisel. See andis lõpuks lahenduse probleemile, mis oli mind aastaid varem doktorantuuri viinud.\n\nViimati pakkus samasugust rahulolu osalemine Läänemere riikide merekaardistamise ja navigeerimise jaoks ühtse kõrgussüsteemi BSCD2000 (Baltic Sea Chart Datum 2000) loomises. See võimaldab viia eri riikide hüdrograafilised sügavusmõõtmised ühisesse referentssüsteemi. Paarisentimeetrise täpsusega meregeoidi kasutamine võimaldab rakendada GNSS-põhist täppispositsioneerimist ka hüdrograafias, pakkudes usaldusväärseid sügavusandmeid ja parendades seega navigatsiooniohutust. See on pikaajalise ja jätkuva rahvusvahelise koostöö tulemus, millesse minu teadusrühm panustas oluliselt.\n\nPraegu olen aga Eesti Teadusagentuuri rühmagrandi toel uurimas võimalust käsitleda kõrgusreferentsi dünaamilisena, mis kirjeldab paremini merepinna ruumilis-ajalist dünaamikat. See võimaldab merepinna muutuste kirjeldamist ja prognoosimist masinõppe meetoditega, ühendades geodeesia, satelliitaltimeetria, okeanograafia ja andmeteaduse võimalusi. Sellel on otsene rakendus  meresõidu ohutuse ja tõhususe parandamisel, võimaldades täpsemalt hinnata mereolusid, optimeerida laevade teekondi ning toetada avamere energiataristu asukoha, tehniliste lahenduste ja majandusliku tasuvuse hindamist. See loob ka vajalikud eeldused autonoomsete laevade kasutuselevõtuks Läänemere veeteedel. \n\n\nVõrdleksin teadusteed mäestikus järk-järgult kõrgemale kulgemisega. Teekonna alguses tulevad ette madalamad tipud. Nende vallutamisest saab innustust ja oskusi kõrgemate eesmärkide poole püüdlemiseks. Praegugi paistab ees veel kõrgemaid tippe, mille saavutamist hindan seni kogutud teadmiste ja oskustega jõukohaseks ning huvitavaks. Nendeni jõudmiseks tuleb taotleda konkurentsipõhiseid rahalisi vahendeid, osaleda rahvusvahelistes uurimisprojektides ning teha teadus- ja arenduskoostööd ettevõtetega. Suurim väljakutse on aga õigete oskustega kaaslaste leidmine või väljaõpetamine. Üksi kõrgeid tippe ei valluta, ei mägedes ega teaduses. Abiks on see, et aastate jooksul on kolleegide, kaasamõtlejate, üliõpilaste ja doktorantidega kujunenud uurimisrühm, kus lahendame üheskoos erinevaid uurimisküsimusi ja esilekerkivaid teadusprobleeme. Koos kulgemine julgustab nooremaid järgmiste tippudeni püüdlema ning annab neile teekonna jätkamisel parema lähtepositsiooni.\n\nVäga isiklikud teadusalased tipphetked on juhendatud doktorantide kaitsmised, mida nüüdseks on ühtekokku kogunenud 12. Nende väljaõpe on küll aeganõudev, kuid vajalik, sest teadustööks juhatuse andmine aitab neil ühiselt kujundatud teadusmõtet teatepulgana edasi viia. Rõõmustav on näha, kui endine juhendatav leiab lahendusi olulistele küsimustele ja õpetab juba järgmist põlvkonda. Minu juhendatud või kaasjuhendatud doktoritest on kolm valitud professoriks kolmes Eesti kõrgkoolis. Küllap neid tuleb juurdegi, kuivõrd mõned on praegu veel välismaa teaduskeskustes ja ülikoolides järeldoktorid. See annab tehtule pikema vaate kui ühe artikli ilmumine.\n\nKui aus olla, on suur osa eespool kirjeldatud tipphetkedest tõesti seotud tööga. Sellest ei järeldu, et eraelu tähenduslikud sündmused oleksid vähem olulised. Neid ma teadussaavutustega ühte pingeritta ei paneks. Tean väga hästi, et töö võib võtta kogu olemasoleva aja, kui seda lasta lubada. Huvitav töö ei vabasta vajadusest valida, millele oma aega anda. Ka teadlase elus peab jääma ruumi sellele, mille väärtust ei mõõdeta publikatsioonide ega projektidega.",
+      "k2": "Geomaatika tegevusvaldkond tervikuna hõlmab erinevaid teaduslikke, administratiivseid, õiguslikke ja tehnilisi meetodeid ruumiinfo tootmiseks ja juhtimiseks vajalike ruumiandmete hõiveks ja haldamiseks. Teaduslikus plaanis on selleks vajalik ühtne koordinaat- ja kõrgussüsteem koos seda kinnistavate põhivõrkudega Eestis rajatud ning see on täpsuselt üks maailma parimaid. Meie jalge all olev maapind kerkib aga jääajajärgse maatõusu tõttu kuni 4 mm aastas ja ühtlasi liigub koos terve Euroopa kontinendiga kirdesuunaliselt 2,7 cm iga-aastaselt. Seetõttu tuleb neid liikumisi pidevalt teaduslikult jälgida ja arvesse võtta, et säilitada koordinaat- ja kõrgussüsteemi täpsus võimalikult pikaks ajaks. See annab võimaluse keskenduda ruumiandmete elukaart hõlmavate rakenduslike ülesannete lahendamisele, mis on geomaatika nähtav osa ühiskonnale. Teadus saab siin appi tulla – kuidas koguda, modelleerida ja ajakohastada suuremahulisi ruumiandmeid ning kuidas siduda heterogeensed vaatlusandmed ühtseks ruumiliseks infoks. \n\nSellest üldeesmärgist tulenevalt viiksin Eestis lõpuni ühtse, süsteemselt ja kindlate reeglite järgi ajas uuendatava kolmemõõtmelise (3D) ruumiandmestiku ning selle kasutamiseks vajalike digiteenuste väljaarendamise. Seda võib nimetada Eesti elu- ja looduskeskkonna digitaalseks kaksikuks.\n\nAvan seda vajadust pisut avaramalt, kuna geomaatika tegevusvaldkonna olulisus pole tavaliselt kuigi hästi paljude jaoks teadvustatud. Suur osa ühiskonnas ringlevast infost on otseselt või kaudselt asukohapõhine. Praktiline eesmärk on, et tee või sadama projekteerija, omavalitsuse planeerija ja üleujutusriski hindav spetsialist peaksid saama lähtuda samast kontrollitud ruumiandmestikust. Nii väheneks vajadus andmeid korduvalt koguda ning eri koordinaat- ja kõrgussüsteemidest pärinevaid andmeid käsitsi kokku sobitada. Eriti tähtsad on seni lahus käsitletud maismaa ja mere kokkupuutepiirkonnad: veetase, ranniku ja sadamarajatiste kõrgused ning mere sügavus peavad olema võrreldavad, kui tahame hinnata ranniku muutusi või kavandada turvalist taristut.\n\nSeega sõltuvad iga riigi majanduslik areng ning heaolu sotsiaal- ja keskkonnaküsimustes suuresti kvaliteetsetest ruumiandmetest. Transport, kaitse- ja päästevõimed, planeerimis- ja ehitustegevus, maaviljelus, metsatööstus – seda loetelu saab veelgi pikendada. Nendes valdkondades saab mõtestatult tegutseda vaid siis, kui on ligipääs usaldusväärsele ruumiinfole.\n\nDigitaalsete ruumiandmete ja GNSS-tehnoloogia üha paranev täpsus ning asjade interneti (IoT) areng võimaldavad juba üsna käegakatsutavas tulevikus juhita sõidukite laialdasemat kasutamist maanteedel. Samuti võimaldavad need edendada täppispõllumajandust ning droonide kasutamist suurt täpsust nõudvatel töödel. Ka tee-ehituses ja -hoolduses kasutatavad masinad vajavad kvaliteetset ja ajakohast ruumiinfot, tihtilugu reaalajas. Erisugused militaar- ja pakirobotid sõltuvad samuti suuresti ruumiandmete kvaliteedist. Nende ülesannete lahendamiseks tuleb jätkuvalt tagada kvaliteetsete ruumiandmete ja -teenuste kättesaadavus.\n\nVahendite tagamine keskse andmehõive läbiviimiseks on seega oluline. Nii saavad tekkida Eesti elu- ja looduskeskkonna arengut kajastavad aegread. Mida me täna ei mõõda, seda me ju homme ei tea.\n\nÜhiskonna jaoks on oluline, et eri allikatest ja ajastutest pärinevad ruumiandmed sobiksid omavahel kokku ning usaldusväärsete andmete põhjal saaks teha teadlikke majandus- ja arenguotsuseid. Oluline on terviku toimimine: maapind, hooned, tehnovõrgud, merepõhi ja nende muutused peaksid olema seotud ühise asukoha- ja kõrgussüsteemiga, mis võimaldab eri allikatest pärinevate andmete ristkasutamist ning andmeteenuste loomist.\n\nAndmete kuvamise ja allalaadimise teenused on samuti kriitiliselt vajalikud, sest nende kaudu jõuavad andmed süsteemsel kujul otsustajateni. Erinevad virtuaal- ja liitreaalsuse keskkonnad peaksid senisest rohkem võimaldama üheskoos kuvada 3D-hoonekujusid, taimestiku teisikuid ja maapinna kõrgusmudeleid koos muude asjakohaste andmekihtidega. See võimaldab anda sihtrühmadele realistliku ettekujutuse planeeringutega kavandatavatest muudatustest ning kiirendada otsuste vastuvõtmist.\n\nSelles osas on Eestis juba palju ära tehtud. Ligipääs ruumiandmetele võimaldab ka ääremaadel tegutsevatel ettevõtjatel, näiteks ehitus- ja hooldusettevõtetel ning taastuvenergeetika valdkonna ettevõtetel, teha konkurentsivõimelisi pakkumisi, ilma et paljudel juhtudel selleks peaks kohale sõitmagi. Asukohapõhiste teenuste areng nii avalikus kui ka erasektoris on olnud Eestis äärmiselt kiire ja edukas. Juba aastaid on välisriikide geomaatikud käinud meie kogemusi uurimas ja meetodeid üle võtmas.\n\nKuid loorberitele ei saa puhkama jääda. Hakkama tuleb saada ka üha suurenevate andmemahtudega, mida inimene enam töödelda ei suudagi. Seetõttu tuleb veelgi rohkem arendada tehisintellekti tööriistu ruumiandmete automatiseeritud tootmiseks ja otsinguks, aga ka maastikumuutuste tuvastamiseks kaardistamistöödes. Uute, eriti tehisarul põhinevate tärkavate tehnoloogiate juurutamine võib siin veel üllatavaid võimalusi pakkuda.\n\nSellise süsteemi kõige püsivam osa on pädevad inimesed, kes peaksid suunama ruumiandmete elukaare arenguid ja tegema erinevaid ruumianalüüse. Neid tuleb aga aastaid koolitada, seega tuleb geomaatika valdkonna spetsialistide järelkasvule tagada pikaajaline rahastus.\n\nMaailmas räägitakse minu meelest liiga palju sellest, mida tehisaru suudab andmete modelleerimise ja analüüsi juures automaatselt ära teha, ning liiga vähe sellest, kuidas tulemust sõltumatult kontrollida. Kasutan ka ise koos kolleegidega masinõpet meregeodeesia rakendustes merepinna muutuste ja veetaseme prognoosimisel ning näen selle võimalusi. Ent mudeli väljund ei näita veel veenvalt, et kui hästi see toimib ekstreemses olukorras või uues piirkonnas. Rohkem tähelepanu väärivad treening- ja lähteandmete päritolu, määramatus ja füüsikaline põhjendatus. Geomaatikas peab oskama vastata ka küsimusele, kui palju saadud tulemust võib usaldada ehk milline on selle täpsushinnang. See kipub tihti jääma tahaplaanile.\n\nKui nüüd Eestist kaugemale vaatamiseks läks, siis on viimastel aastatel hakanud järjest rohkem huvitama teadusprobleemid, mis kaasnevad Arktika võimaliku jääst vabanemise ning seal uute mereteede otsimise ja võimaliku kasutuselevõtuga. Globaalsete tarneahelate muutumisele kaasaaitamine tundub põneva teadusliku väljakutsena, mille lahendamiseks annab seni tehtud teadustöö tugeva aluse.",
+      "k3": "Lähtuda tuleb sellest, et kriitiline viga tuleb teaduskirjanduses parandada. Lähedane kollegiaalne suhe teeb selle inimlikult raskemaks, kuid ei õigusta vaikimist ega teiste teadlaste eksiteele jätmist. Usaldus teaduse vastu sõltub ka sellest, kuidas me vigu tunnistame ja parandame. Oleme ju praegu tunnistajaks sellele, et tuhandeid juba avaldatud publikatsioone kutsutakse tagasi, neist mõned on ka Nobeli preemia laureaatide omad.\n\nTuleb eristada eksimist ja teadlikku varjamist. Küsimuses eeldatakse tahtlust ning päriselus vajab ka see tõendamist. Kõigepealt tuleb kontrollida omaenda arusaama veast. Geodeesias võivad näiliselt vastuoluliste tulemuste taga olla näiteks erinev kõrgussüsteem, mõõtmisaeg või kirjeldamata eeldus. Tuleb selgeks teha vea olemus  ja mõju põhijäreldustele. Vajadusel võib paluda kolmanda kolleegi sõltumatut eksperdihinnangut. \n\nSeejärel tuleb pöörduda eksinud kolleegi poole otse ja konfidentsiaalselt ning anda talle võimaluse selgitusteks. Ta peab võtma ühendust artikli avaldanud ajakirjaga. Parandus peab selgelt näitama, mis oli valesti ja milliseid järeldusi see muudab. Kui keskne tulemus enam ei kehti, võib olla vajalik artikli tagasivõtmine. Kui kolleeg probleemi lahendamiseks samme ei astu, tuleb endal pöörduda ajakirja toimetuse poole. Teadliku varjamise kahtluse korral teavitaksin ka teadusasutuse pädevat üksust, et asjaolusid saaks erapooletult uurida.\n\nKolleegi karjääri säästmiseks ei saa jätta vea tagajärgi nende kanda, kes tema tulemusi usaldavad. Lühiajaline mainekahju võib olla valus, kuid teadliku varjamise jätkumine kahjustaks valdkonna usaldusväärsust veel sügavamalt. \n\nMul on ka konkreetne kogemus teadusliku vea käsitlemisest, kuigi see ei anna alust rääkida teadlikust varjamisest. Tänavu kevadel avaldasid ühe sõsardistsipliini teadlased tippajakirjas Nature artikli, mis tekitas minu uurimisteemaga tegelevate geodeetide seas üle maailma imestust. Meie hinnangul olid autorid jätnud arvestamata geodeetilised tõsiasjad, mis muudavad oluliselt esitatud tulemusi ja järeldusi. Need olid jäänud märkamata ka retsensentidel, kuid avaldatud artiklit oli juba hakatud tsiteerima.\n\nArutasime olukorda kolleegidega ja võtsime esmalt ühendust autoritega. Nad vastasid, kuid ei pidanud osutatud puudusi oluliseks. Seejärel pöördusime ajakirja toimetuse poole, kes küsis autoritelt täiendavaid selgitusi. Kuna need meid ei veennud, koostasime Nature-le vastusartikli. See on praeguseks läbinud retsenseerimise ja ootab toimetuse otsust. Nii saab erimeelsuse tuua teaduslikku arutellu, kus otsustavaks peavad jääma tõendid ja põhjendused.",
+      "k4": "Ma ei oskaks praegu geomaatika valdkonna akadeemiku tööd nende kahe sihtrühma vahel täpselt kaalutud osadeks jagada. Kui täpsustan ja optimeerin geoidi modelleerimise meetodeid, võib sellekohast teadusartiklit süvitsi lugeda üsna väike ring. Samale teadustulemusele toetuv kõrgusmääramine jõuab aga ehitajate ja projekteerijate igapäevatöösse. Osa teaduse ühiskondlikust mõjust sünnibki nii, et kasutaja ei pea teadma kõiki lahenduse taga olevaid võrrandeid, kuid rakendust peab tal olema võimalikult lihtne kasutada.\n\nTeadlasel peab säilima piisavalt aega süvenemiseks. Ka küsimused, millele kohe rakendust ei paista, väärivad uurimist. Füüsikalise geodeesia teoreetiline alus on võimaldanud luua praktilisi lahendusi, mille kasutusala ei pruukinud lähteülesannet püstitades veel nähtav olla. Sir George Gabriel Stokesi 1849. aastal avaldatud füüsikalise geodeesia fundamentaalne valem pidi oma rakendust ootama üle sajandi, enne kui selle kasutamiseks vajalikud sisendandmed üldse tekkisid. Ühiskonna teenimine hõlmab ka selliste teadmiste ja oskuste hoidmist, mida võib vaja minna alles tulevikus.\n\nAkadeemikult ootaksin tavalisest suuremat valmisolekut oma eriala tähendust selgitada ja ühiskonna küsimusi kuulata. Minu valdkonnas tähendab see näiteks arusaadavat vastust sellele, miks ei saa satelliitvastuvõtja näidatud kõrgust alati otse ehitustegevuses kasutada või millistel eeldustel saab hinnata merepinna tõusu mõju rannikule või meresügavustele. Teadusnõu peab aitama otsustajal mõista nii võimalusi kui ka piiranguid, ka vajaminevate ressursside osas.\n\nAvaliku suhtluse kõrval on väga konkreetne ühiskondlik panus õpetamine. Eestikeelne õpik, pädev insener ja iseseisvaks kasvanud teadusdoktor võivad mõjutada valdkonda kauem kui üks meediaesinemine. Olen pidanud oluliseks, et keerulistest tehnilistest küsimustest saaks Eestis täpselt rääkida ka eesti keeles. Nii osaleb teadmise loomises ja kasutamises laiem ring inimesi. Olen palju kordi tõdenud, et asja lihtne ja arusaadav selgitamine kõrvalisele inimesele nõuab lisaks väga põhjalikele teadmistele ka head üldistamisoskust.\n\nTeadlane võib olla ka arvamusliider. Piir muutub häguseks siis, kui teaduslik autoriteet hakkab asendama argumente või kui inimene esitab oma isikliku veendumuse uurimistulemuse pähe. Akadeemiku nimetus ei anna siiski pädevust kõigis küsimustes. Mõnikord on vastutustundlikum juhatada küsija paremini teadva kolleegi juurde.",
+      "k5": "teadusvaldkonnale, mille esindajaid pole varem Eesti Teaduste Akadeemia liikmeks valitud. Selle tähtsust ei saa kuidagi üle hinnata. Eriti tähenduslik oleks teadmine, et minu ja kolleegide töö väärtust nähakse ka väljaspool erialaringi. Tunnustus kuuluks sisuliselt ka neile, kellega olen koos töötanud ja kellelt õppinud: juhendajatele, kolleegidele, doktorantidele ning koostööpartneritele. Minu jaoks annaks valimine kinnitust, et meie ühisel tööl on püsiv väärtus.\n\nÜhiskonna vajaduste tunnetamine ning valupunktidele leevenduse otsimine peaksid olema ka geomaatikas uute teadusküsimuste allikaks. Geomaatika tulemused on sageli ühiskonna toimimise osa, mida märgatakse alles siis, kui mõni asukoht, kõrgus või andmestik osutub valeks. Akadeemikuna saaksin selle valdkonna teaduslikku sisu, saavutusi ja vajadusi paremini nähtavaks teha. Ühtlasi peaksin leidma rohkem aega ruumiandmete kasutamist puudutavate otsuste sisuliseks nõustamiseks.\n\nKõige praktilisem uus võimalus oleks tihedam läbikäimine teiste valdkondade teadlastega. Ruumiandmeid vajavad väga erinevad erialad, kuid vajadused ja võimalused ei kohtu alati õigel ajal. Näen siin võimalust tuua geodeesia, mereteaduse, ehituse ja andmeteaduse teadmised ühiste küsimuste juurde ning aidata riigil teha pikema vaatega otsuseid. Näiteks olen viimased 15 aastat osalenud Eesti teaduse teekaardi objekti Eesti Keskkonnaobservatoorium töös, kus teevad valdkondadevahelist koostööd eri liiki keskkonnaandmeid koguvad maismaa-, mere- ja atmosfääriteadlased, keda toetavad geomaatikud Keskkonnaobservatooriumis tegutseb praegu kaks Teaduste Akadeemia liiget. Kui ühine teadustöö pakub neile akadeemiku tasemel väljakutseid, siis küllap pakub neid ka eri allikatest kogutud keskkonnaandmete ruumilise võrreldavuse ja usaldusväärsuse tagamine. Olengi kogenud, et kõige huvitavam ongi interdistsiplinaarne teadustöö.\n\nSamuti tahaksin, et noortel oleks Eestis põhjust geomaatikat õppida ja selles valdkonnas teadustööd jätkata. Küllap suur osa senistest kohustustest jätkuks ka edaspidi. Teadustöö kvaliteedi eest vastutamine, juhendamine, eestikeelse erialakirjanduse arendamine ja praktiliste probleemide lahendamine kuuluvad mu senisesse töösse. Lisanduks teadlikum vastutus Eesti teaduse kui terviku eest: valmisolek süveneda ka teiste valdkondade vajadustesse ning anda oma panus akadeemia ühisesse töösse. See eeldab kuulamist ja koostööd sama palju kui oma eriala eest seismist.\n\nPeaksin selleks ka oma ajakasutuses valikuid tegema. Eelkõige on mul tahtmine oma teadushuvi rahuldades ühiskonnale kasulik olla. Kuna aeg on piiratud ressurss, siis tuleb seda huvi ka suunata, keskendumaks küsimustele, mille lahendamisel saan oma teadmiste ja võimalustega kõige rohkem ära teha. Akadeemiku roll vajab päriselt aega ning seda ei saa lihtsalt kõigele senisele juurde liita. Tahaksin siiski säilitada vahetu sideme teadustöö ja juhendamisega, sest sealt tuleb minu panuse sisu. Akadeemikuna tahaksin aidata kaasa sellele, et Eestis loodud geomaatikateadmised leiaksid laiemat kasutust ja nende edasiarendamiseks oleks siin ka tulevikus pädevaid inimesi."
+    }
+  },
+  {
+    "id": 6,
+    "nimi": "Tiit Kutser",
+    "amet": "kaugseire ja mereoptika professor",
+    "valdkond": "Geomaatika",
+    "valdkonnaToon": "#009900",
+    "asutus": "Tartu Ülikool",
+    "asutuseToon": "#2E66A4",
+    "pilt": "https://s.err.ee/photo/orig/2026/11/02/3868990h7790.png",
+    "autor": "EUMETSAT/Kaleidomania Bildproduktion",
+    "vastused": {
+      "tutvustus": "Tiit Kutser uurib veekogude kaugseiret, keskendudes optiliselt aktiivsete ainete kontsentratsiooni ja süsinikuringe analüüsile nii sisevetes kui ka rannikualadel. Ta töötas välja analüütilised meetodid madalate vete, sealhulgas korallriffide kaardistamiseks ning näitas, et järved on globaalses süsinikuringes olulised süsiniku töötlemise kuumkohad.\n\nViimastel aastatel arendab ta meetodeid erinevate süsinikufraktsioonide kaardistamiseks ning analüüsib järvede litoraalide rolli globaalses süsinikuringes. Samuti juhtis ta globaalset uuringut, mis tuvastas satelliidipiltide abil maailmas 117 miljonit vähemalt 50-meetrise läbimõõduga siseveekogu, ja on kaasatud sisevete uurimiseks mõeldud uue satelliidi GALENE arendusmeeskonda. Kutser esindab Eestit organisatsioonis Group on Earth Observations (GEO) ja osaleb NASA ning Euroopa Kosmoseagentuuri töörühmades, mis kujundavad tuleviku seireprogramme.\n\nKutser on Tartu Ülikooli Eesti mereinstituudi kaugseire osakonna juht ja professor. Ta pälvis 2008. aastal täppisteaduste valdkonnas Eesti riikliku teaduspreemia ning kuulub maateaduste valdkonnas maailma 1% enimtsiteeritavate teadlaste hulka.",
+      "k1": "Kandidaat ei esitanud sellele ankeediküsimusele vastust.",
+      "k2": "Kandidaat ei esitanud sellele ankeediküsimusele vastust.",
+      "k3": "Kandidaat ei esitanud sellele ankeediküsimusele vastust.",
+      "k4": "Kandidaat ei esitanud sellele ankeediküsimusele vastust.",
+      "k5": "Kandidaat ei esitanud sellele ankeediküsimusele vastust."
+    }
+  },
+  {
+    "id": 7,
+    "nimi": "Evelyn Uuemaa",
+    "amet": "geoinformaatika professor",
+    "valdkond": "Geomaatika",
+    "valdkonnaToon": "#009900",
+    "asutus": "Tartu Ülikool",
+    "asutuseToon": "#2E66A4",
+    "pilt": "https://s.err.ee/photo/orig/2026/11/02/3868993hb9e8.png",
+    "autor": "Merli Neito",
+    "vastused": {
+      "tutvustus": "Evelyn Uuemaa uurib suurte ruumiandmete analüüsi ja kvaliteeti, keskendudes uudsete ruumiandmemudelite ning ruumilise masinõppe arendamisele ja rakendamisele keskkonnaprotsessides. Ta ühendab oma teadustöös geoinformaatika, kaugseire ja masinõppe, et lahendada kliima- ja keskkonnaprobleeme.\n\nViimastel aastatel arendab ta 2023. aastal pälvitud Euroopa Teadusnõukogu (ERC) Consolidator Granti toel lahendusi intensiivpõllumajanduse keskkonnamõju vähendamiseks. Ta juhib kestliku maakasutuse tippkeskust, kus arendab ruumiandmete andmekuupi ning elurikkuse ja süsiniku sidumise ja emissiooni ruumilisi masinõppemudeleid. Uuemaa oli ka rahvusvaheliste geoinformaatika konverentside FOSS4G Europe (2024) ja AGILE (2026) Eestisse toomise peamine eestvedaja.\n\nUuemaa on Tartu Ülikooli geoinformaatika professor ja geoinformaatika ja kartograafia õppetooli juhataja. Teda on tunnustatud Tartu Ülikooli aumärgiga ning valitud ülikooli 100 silmapaistva teadlase hulka.",
+      "k1": "Tööalaselt on üks eredamaid hetki kindlasti Marie Skłodowska-Curie individuaalgrandi saamine 2015. aastal. Kuigi olen nüüdseks saanud ka ERC grandi, mis on teadlaskarjääris kahtlemata üks suurimaid saavutusi, on Marie Curie grant minu jaoks siiski kuidagi erilisem. See oli minu esimene iseseisvalt võidetud teadusgrant, mis võimaldas mul minna järeldoktorantuuri Uus-Meremaale. Seal saadud kogemused panid suuresti aluse minu edasisele teadlaskarjäärile, sealhulgas ERC grandi saamisele.\n\nTööväliselt on minu elu suurimaks rõõmuks ja saavutuseks kindlasti minu neli supertublit last. Eriti suurt hea meelt teeb asjaolu, et üks lastest soovib samuti teadlaseks saada hoolimata sellest, et ta näeb, kui palju tööd see amet tähendab.",
+      "k2": "Kui raha ja bürokraatia poleks probleem, siis looksin Eestis süsteemi, kus ühe valdkonna ruumiandmeid toodetakse ja hallatakse koordineeritult, ühes kohas ja kvaliteetselt. Praegu kulutatakse sageli palju ressursse samade või väga sarnaste andmete korduvale loomisele, kuid tulemused on erineva kvaliteedi, vormingu ja metoodikaga. Meil on küll palju andmeid juba keskselt koordineeritud maa- ja ruumiametis, aga on väga palju andmeid, mida toodetakse topelt erinevates asutustes, näiteks veekogude ja teede andmed. Kõige hullem on veel see, et erinevates asutustes toodetud andmed on erinevad, nt jõed ei ole samas kohas. See teeb andmete kooskasutamise keeruliseks, raiskab aega ja raha ning tekitab tihti segadust, et mis on siis õige versioon tegelikkusest.\n\nMaailmas räägitakse praegu minu meelest liiga palju tehisarust üldiselt ning minu valdkonnas eriti keerukatest masinõppemeetoditest. Mitmete ülesannete puhul on näidatud, et suhteliselt lihtsad klassikalised statistilised meetodid võivad anda sama häid või isegi paremaid tulemusi kui keerukad tehisarumudelid, mille arendamine ja kasutamine nõuab oluliselt rohkem arvutusressurssi. Vahel tundub, et oleme rohkem huvitatud sellest, kui uudne ja keeruline on kasutatav meetod, kui sellest, kas see aitab meil tegelikult midagi paremini mõista või lahendada.\n\nLiiga vähe räägime aga andmete kvaliteedist, mudelite usaldusväärsusest ja sellest, kas saadud tulemused ka looduses toimuvate protsessidega kooskõlas on. Minu jaoks on oluline, et me ei toodaks lihtsalt üha ilusamaid kaarte ja keerukamaid mudeleid, vaid mõistaksime ka, mida need näitavad ja kui palju saame neid usaldada.",
+      "k3": "Kõigepealt räägiksin kolleegiga ja püüaksin mõista, kuidas selline olukord tekkis. Seejärel üritaksin teda veenda, et ta võtaks ise ühendust ajakirjaga ja algataks artikli ametliku parandamise. Teaduses on vigade parandamine tavapärane ja vajalik osa teadusprotsessist ning vea tunnistamine on tegelikult pigem hea praktika. Vigu tuleb teaduses üsna sageli ette ja olen ise samuti pöördunud ajakirja poole, et mõni hiljem avastatud viga artiklis ära parandada.",
+      "k4": "Minu teadusvaldkond on väga praktiline ja seetõttu kipun arvama, et kogu teadus peaks ühel või teisel moel olema suunatud ühiskonna hüvanguks. See ei tähenda, et igal teadustööl peaks olema kohene praktiline väljund, kuid iga teadlane peaks suutma selgitada, miks tema uurimistöö on ühiskonnale oluline. Samuti leian, et teadlasena peame olema valmis oma eriala seisukohti avalikult selgitama, põhjendama ja vajadusel kaitsma. Selles mõttes võiks iga teadlane olla oma valdkonnas arvamusliider.\n\nOluline on muidugi, et teadlane jääks oma pädevuse piiridesse ning eristaks teaduspõhiseid seisukohti isiklikest arvamustest. Iseasi, kui palju on teadlastel selleks aega, oskusi ja julgust. Mulle tundub, et viimastel aastatel on Eestis üha rohkem teadlasi hakanud ühiskondlikku arutellu panustamist oluliseks pidama. Samas võiksime senisest rohkem tähelepanu pöörata ka noorteadlaste ettevalmistamisele, et nad oskaksid ja julgeksid oma valdkonna avalikes aruteludes kaasa lüüa.",
+      "k5": "Akadeemiku tiitel oleks mulle kindlasti suur au ja tunnustus, kuid see ei ole kunagi olnud minu jaoks eesmärk omaette. Mul on tegelikult väga hea meel juba selle üle, et minu valdkonda, geomaatikat, on peetud piisavalt oluliseks, et sellele Eesti Teaduste Akadeemias koht luua.\n\nAkadeemiku tiitel tähendab minu jaoks kindlasti suuremat vastutust oma valdkonna arengu ja ühiskonnas nähtavaks tegemise eest. Samas on need teemad mulle juba praegu olulised ning püüan neisse panustada nii palju kui võimalik."
+    }
+  },
+  {
+    "id": 8,
+    "nimi": "Eve Eisenschmidt",
+    "amet": "haridusjuhtimise juhtivprofessor",
+    "valdkond": "Haridusuuringud",
+    "valdkonnaToon": "#ffcc00",
+    "asutus": "Tallinna Ülikool",
+    "asutuseToon": "#B20E10",
+    "pilt": "https://s.err.ee/photo/orig/2026/11/02/3868996hab2d.png",
+    "autor": "Kadri Purje",
+    "vastused": {
+      "tutvustus": "Eve Eisenschmidt uurib õpetajaharidust, haridusjuhtimist ja kooliarendust, analüüsides professionaalse õppimise ja kultuurimuutuste kujunemist hariduses. Tema teadustöö mitmetasandiline lähenemine seob õpetajate professionaalse tegevuse, kooli juhtimise ja riikliku hariduskorralduse, pakkudes kontseptuaalseid lahendusi muutuste kinnistamiseks koolisüsteemis.\n\nViimastel aastatel juhib ta tõenduspõhise kooliarendusprogrammi \"Tulevikukool\" rakendamist Eestis ja rahvusvaheliselt ning veab eest äsja loodud Haridusjuhtimise Akadeemia tegevust. Samuti kujundab ta õpetajahariduse poliitikat Euroopas läbi võrgustike \"Newly Qualified Teachers in Northern Europe\" ja \"Teacher Education Policy in Europe\". Eisenschmidti teadustöö toel valmisid Euroopa Komisjoni soovitused alustavate õpetajate tugiprogrammide loomiseks.\n\nEisenschmidt on Tallinna Ülikooli haridusjuhtimise juhtivprofessor ning hariduse juhtimise ja innovatsiooni akadeemilise suuna juht. Ta osaleb OECD haridusalase tõenduspõhisuse võrgustiku (EWE) töös ning nõustab Euroopa Kõrghariduse Kvaliteedihindamise Assotsiatsiooni väliseksperdina riiklike haridusstrateegiate kujundamist.",
+      "k1": "Kandidaat ei esitanud sellele ankeediküsimusele vastust.",
+      "k2": "Kandidaat ei esitanud sellele ankeediküsimusele vastust.",
+      "k3": "Kandidaat ei esitanud sellele ankeediküsimusele vastust.",
+      "k4": "Kandidaat ei esitanud sellele ankeediküsimusele vastust.",
+      "k5": "Kandidaat ei esitanud sellele ankeediküsimusele vastust."
+    }
+  },
+  {
+    "id": 9,
+    "nimi": "Margus Pedaste",
+    "amet": "haridusinnovatsiooni professor",
+    "valdkond": "Haridusuuringud",
+    "valdkonnaToon": "#ffcc00",
+    "asutus": "Tartu Ülikool",
+    "asutuseToon": "#2E66A4",
+    "pilt": "https://s.err.ee/photo/orig/2026/11/02/3868999hcba3.png",
+    "autor": "Railo Adson",
+    "vastused": {
+      "tutvustus": "Margus Pedaste uurib haridusinnovatsiooni, keskendudes uurimuslikule õppele, tehnoloogiate rakendamisele ja digipädevuse hindamisele. Ta arendab e-õppekeskkondi ja robootika kasutusvõimalusi, pakkudes raamistikke vastutustundliku teaduse ning probleemipõhise õppimise integreerimiseks koolidesse.\n\nViimastel aastatel panustab ta haridusjuhtimisse ning analüüsib tehisaru, virtuaalreaalsuse ja personaalsete õpiteede rakendamist haridusmudelites. Samuti suunab ta riiklike tasemetööde arengut, osaleb õpetajate kutsestandardite uuendamisel ning tegutseb OECD ja ASEF-i hariduseksperdina. Pedaste koordineeris Euroopa Komisjoni projekti Ark of Inquiry ning tema 2015. aasta teadusartikkel on valdkonnas maailma üks viidatumaid.\n\nPedaste on Tartu Ülikooli haridusinnovatsiooni professor ja haridusteaduste instituudi juhataja. Ta pälvis Valgetähe IV klassi teenetemärgi ning tegutseb Eesti Teaduste Akadeemia hariduskomisjoni aseesimehena.",
+      "k1": "Tipphetki on mitut liiki.\n\nTööga seonduvalt on eriliselt hea tunne, kui järjekordne doktorant jõuab kaitmiseni. Läbi nende tõuseb meie ühine võimekus maailma muuta – nii Eestis kui ka rahvusvaheliselt. Supertunne on ka siis, kui endale väga südamelähedane ja oluline tunduv teadusartikkel võetakse avaldamisele või järjekordne teadusprojekti idee saab tihedas konkurentsis rahastuse. Näiteks eriti on meelde jäänud see, kui Hiinas Hainani saarel taifuuni tõttu kinni olles tuli teade, et saime Euroopa komisjoni rahastuse projektile \"Uuringulaegas\" – äralõigatuna tuli nädala jooksul saada kontakt ja kinnitused 13 partnerilt 12 Euroopa riigist.\n\nEraeluliselt on tipphetked seotud minu pere ja rahvaspordiga. Kes siis ei oleks õnne tipul, kui tütar või poeg lõpetab kooli ja neil läheb oma unistuste saavutamisel hästi? Ma olen õnnelik, et täna on mu tütar ja poeg mõlemad Tartu Ülikooli üliõpilased ja poeg on saanud ka väärtusliku kogemuse Ameerika Ühendriikide ülikoolis. Samas on endorfiinid selgelt laes ka iga kord, kui finišeerid täispika Ironmani võistlusel või oma kolleegidega koos ühel või teisel võistkonnavõistlusel. Näiteks sel suvel lõpetasime rasketes ilmaoludes edukalt Tallinna 70.3 Ironmani teatevõistluse.",
+      "k2": "Ma korraldaks koostöös kolleegidega Eestis koolivõrgu ja hariduse rahastamise oluliselt ümber nii, et iga õpilane saaks päriselt väga hea hariduse. See võimaldaks igas umbes 15–20-õpilasega klassiruumis toimetada kahel täiskasvanul, kes toetavad noorte kujunemist enesejuhtivatekse. See tähendab, et igaüks kujuneb agentseks inimeseks, kes mitte ainult ei kohane maailmaga, vaid kujundab ise ja teistega koos tuleviku maailma selliseks, kus hoolime iseendast, teistest ja keskkonnast.",
+      "k3": "Eetika, sh teaduseetika, on minu jaoks väga tähtsal kohal. Kui tegu on hea kolleegiga, siis otsustame ilmselt üheskoos, mida ja kuidas teha. Ju olen juba aru saanud, mis põhjustel viga tekkis, milles seisneb selle kriitilisus ja miks seda varjati.\n\nIgal juhul lähtun siingi minu jaoks olulisest väärtusest – hoolimisest. See tähendab hoolimist kõigist, kes on juba lugenud või võivad edasiselt lugeda artiklit või teha koostööd mu kolleegiga, aga hoolimist ka mu kolleegist. Viga on viga. Varajamine on ka viga. Seda ei saa eitada. Viga tuleb parandada ja asjakohastele osapooltele selle leidmisest teada anda. Samas õpime vigadest ja eksimine on inimlik. Usun, et ka mu kolleeg õpib sellest ja saame koos edasi liikuda.",
+      "k4": "On levinud ütlus, et pole midagi praktilisemat kui hea teadus. Seega iga akadeemiku töö peaks olema samaaegselt suunatud nii kolleegidele kui ka ühiskonnale. Akadeemikud on eelkõige teadlased, kes lahendavad probleeme. Haridusteadlasena lahendan hariduselu probleeme, mis on ühiskonnas tõusnud või tõusmas. Tõsi, iga probleemi lahendamiseks ei pea korraldama uut uuringut.\n\nTeadlase, sh akadeemiku, põhjendatud arutlusele tuginev arvamus on juba iseenesest oluline sisend otsuste tegemiseks. Omaette küsimus on see, kes kedagi üleval peab. Mina väldiks oma ökoloogi hariduse taustast tulenevalt üldse sellist kõnepruuki. Loodusökosüsteemiga samamoodi on ka ühiskonnas kui ökosüsteemis kõik omavahel seotud. Keegi ei pea kedagi üleval, vaid igaühel on oma tähtis nišš. Vaid üheskoos suudame hoida maailmas tasakaalu.",
+      "k5": "Akadeemia roll on tõstatada ühiskonnas olulisi küsimusi, innustada nende arutelu, uurimist ja lahenduste leidmist. Haridusteaduste valdkonnas ei ole sel sajandil olnud Eestis ühtegi akadeemikut. Seega annaks sellesse rolli valimine mulle või ükskõik kellele valitutest võimaluse ja vastutuse tõstatada haridusteaduste küsimusi veelgi tugevamalt Eesti Teaduste Akadeemia interdistsiplinaarses kogukonnas ja seeläbi laiemalt kogu meie ühiskonnas.\n\nJah, olen seda rolli püüdnud praegugi täita, muuhulgas Eesti Teaduste Akadeemia hariduskomisjoni aseesimehena, kuid akadeemikuna on võimalik seda veelgi mõjusamalt teha."
+    }
+  },
+  {
+    "id": 10,
+    "nimi": "Riina Aav",
+    "amet": "täisprofessor tenuuris",
+    "valdkond": "Keemia",
+    "valdkonnaToon": "#ff5050",
+    "asutus": "Tallinna Tehnikaülikool",
+    "asutuseToon": "#850045",
+    "pilt": "https://s.err.ee/photo/orig/2026/11/02/3869005h3382.png",
+    "autor": "TTÜ",
+    "vastused": {
+      "tutvustus": "Riina Aav arendab keemilisi meetodeid ja ringmajanduslikke tehnoloogiaid, keskendudes supramolekulaarsele keemiale ja molekulide iseorganiseerumisele. Tema teadustöö edendab mehhanokeemilisi sünteesimeetodeid ning ressursisäästlikkust keemiatööstuses rakendatavates protsessides.\n\nViimastel aastatel juhib ta riiklikku ringmajanduse tippkeskust SOURCES ning edendab haruldaste muldmetallide väärindamist Ida-Virumaal koostöös kohaliku ettevõtlusega. Aav osaleb Euroopa Komisjoni projektides, kus tema uurimisrühm loob saasteaineid tuvastavaid sensormaterjale ja arendab mehhanokeemilisi protsesse roheliste ravimite tootmiseks. Samuti on ta kahe patentse leiutise autor ja juhendab Eesti Teadusagentuuri uurimisgrante.\n\nAav on Tallinna Tehnikaülikooli keemia tenuuri täisprofessor, kes valiti 2024. aastal ülikooli aasta teadlaseks ja 2023. aastal aasta õppejõuks. Teda tunnustati 2024. aastal Valgetähe IV klassi teenetemärgiga ning ta panustab aktiivselt Euroopa Keemiaseltsi mehhanokeemia erialavõrgustikus.",
+      "k1": "Elu tipphetked on midagi, kus emotsionaalne laeng on väga kõrge, on eneseuhkus ja tunne, et peale seda hetke algab elus uus ja põnev etapp. Üks esimestest oli kindlasti doktorandina Genfi ülikooli A. Alexakise teaduslaborisse minek 2000. aastal: tohutu hüpe teadustöö keskkonnas ja samas tunne, et Eestist kaasa saadud oskuste rakendamine on erakordselt lihtne. Mäletan, peale mu kokkuvõtvat seminari kõrvalgrupi professori kommentaari: \"... ja Sa tegid seda vaid nelja kuuga?\" Reaktsioonide sõelumine, kiraalse katalüsaatori kristallstruktuurini jõudmine, ringdikroismi spektrite abil planaarse kiraalsusega ühendite konformatsioonide lahustispetsiifilisuse leid –  kõik see oli väga põnev.\n\nJärgmine elu tipphetk oli perega seotud: mu esimene laps sündis mõned aastad peale Genfi reisi, teine varsti peale doktorikaitsmist ja kolmas peale järeldoktorantuuri. Peale suuremaid teadustöö pingutusi, milleks muidugi välisülikoolides viibimine ja doktorikraadi kaitsmiseks vajaliku materjali kokku kirjutamine ju olid, olen võtnud aja töölt eemal olemiseks ja oma koduse keskkonna loomiseks, iga järgneva lapse sünd lisas keerukust elukorraldusse, aga õnneks on mul suurepärane abikaasa kõrval.\n\nDoktorikraadi kaitsmine 2005. aastal Margus Lopi ja Tõnis Kangeri juhendamisel oli mulle äärmiselt oluline, ja 9,11-sekosterooli totaalsünteesist jäi puudu vaid viimase süsinik-süsinik sideme moodustamine. Järgmine tipphetk on seotud iseseisva uurimissuuna otsinguga, järeldoktorantuur UC Illinoisi ülikoolis Fulbright teadlasvahetuse grandiga 2008. aastal. See sai teoks küllaltki suunatud tegevuse tagajärjel, mille võimalikkusesse ma ei uskunud kuni USA lennukile suundumiseni. \n\nJäreldoktorantuur oli kindlasti mu edasist teadlastööd defineeriv ja uut kvaliteeditasandit võimaldav hüpe. Teaduse eesliinile jõudmiseks ei piisa uudishimust, on vaja ka väga süstemaatilist ja ambitsioonikat tööd teha ning seda ei saa teha üksi, keemiateaduses peab selleks olema efektiivne teadusrühm. Ääremärkusena, mu järeldoktorantuuri juhendaja S.E. Denmark panustas 2026. aasta Nobeli keemiapreemia saanud Kagan ja Soai avastatud mittelineaarse kiraalse autokatalüüsi mehhanismi mõtestamisse, olen jätkuvalt rõõmus ka oma kolleegide teadussaavutuste üle\n\nTeaduselu tippsündmusteks pean ka oma 2013. aasta hemikukurbituriilide sünteesi artikli ilmumist ning kutsutud ettekandjana 2023. aastal väga pika ajalooga supramolekulaarse keemia konverentsil esinemist. Ligi kolmveerandtuhandelise kuulajaskonnaga saalis sain jagada meie viimaseid teadustulemusi hemikukurbituriilide mehhanokeemilisest sünteesist ja iseorganiseerumisest, see oli uhke tunne.\n\nÜks viimasemaid tipphetki on olnud muidugi Eesti presidendilt auraha saamine – see tunnustus ju ei kuulu ainult mulle, vaid kannan seda tänu suurepärastele kolleegidele Tehnikaülikoolist.\n\nMulle tundub, et mu elus on rohkelt tipphetki, mu akadeemilist ja isiklikku elu määravad sündmused on olnud orgaaniliselt vahelduvad ja usun, et eredaid hetki tuleb veel.",
+      "k2": "Looksin eksperimentaalse keemia laborvõrgustiku, mis kataks teadustöö ja ka tööstusprotsesside eelpiloteerimise vajadusi ehk looks laborite võrgustiku, kus saaks teaduslaboriskaalast (milligramm kogused) sujuvalt keemilisi protsesse viia tootmisse ülekantavasse skaalasse.\n\nMeie ühiskonna õpimotivatsioon on väga kõrge, teadmishimu on olemas nii noortel kui ka vanematel. Samas vajame innovaatilisemat tööstust. See ei saa sündida olemasolevaid tootmisprotsesse optimeerides, selleks on vaja katsetada täiesti uusi reaktsioone ja protsesse ja seda ei saa teha põlveotsas, see vajab hästi varustatud laboreid. Miks räägin laborivõrgustikust? Osa laboreid on ülikoolides juba olemas, aga ülikoolist välja uued tehnoloogiad hästi ei jõua.\n\nMaailmas räägitakse palju ressursi taaskasutusest ja jätkusuutlikumatest tehnoloogiatest, aga sageli jäädakse protsessi monitoorimise, olemasolevate tootjate jälgimise või jäljendamise ja praeguste tehnoloogiate jalajälje hindamise etappi kinni. Realistlikku ettekujutust uutest keemilistest tehnoloogiatest ei teki ilma katset püsti panemata, see vajab füüsilist keskkonda. Sellises eelpiloteerimise laboris sündivad ebaõnnestumised ja ma väga loodan, et ka õnnestumised, vajavad päevavalgust ja loomulikult julgeid investeeringuid ja inimesi. Euroopa ja ka Eesti keemiatööstusega toimuvad praegu märgilised muutused tööstus- ja geopoliitiliste arengute tõttu ning minu arvates on Eestis võimalik selles vallas oma panus anda.\n\nPraegu räägitakse väga palju tehisarust ja sellest tingitud hariduse ja tootmise muutumisest. Tehisaru mudelid vajavad samas reaalsusega kooskõlas olevat andmestikku, uute ressursisäästlike tehnoloogiate arengu jaoks katseandmestiku loomiseks on vaja eel-piloteerimise laboreid, sellest minu meelest piisavalt ei räägita.",
+      "k3": "Mul tekkis seda olukorda lugedes kaks küsimust:\n    1. kuidas ma saan olla kindel, et viga artiklis on teadlikult varjatud?\n    2. miks peaks parema teadmise ilmnemisel valdkonna vastu avalikkuse usaldus langema?\n\nOlen nõus, et teadlaste tegutsemise jätkusuutlikkus sõltub nende mainest ja avalikuks tulnud ja teadlikult valeandmeid esitanud teadlased ei saavuta konkurentsipõhises teadustöö keskkonnas edu ja nii-öelda surevad teadusmaailmast välja. Olen eelretsenseerimisel küll avastanud manipuleeritud jooniseid ja tulemustes kahtlust äratanud seosetuid väljendeid ja saanud nii tahtlikult esitatud valeandmete ilmumist teaduskirjanduses vältida, sellest ise toimetajale teada andes.\n\nSellist olukorda, kus töö oleks juba ilmunud, tsiteeritud ning on tekkinud kahtlus, et tulemused on valed ja sellel alal tegutsevad teadlased sooviks seda tahtlikult varjata, ma hästi ette ei kujuta, sest teadusmaailm on globaalne ja kui mitte esimene märkaja, siis teine ikka veast avalikkusele märku annab.\n\nSamas seda juhtub ikka, et juba avaldatud töö sisaldab vigu ning need vead on tekkinud kas tähelepanematusest või teadmatusest, tavaliselt avaldatakse sellise artikli vastusena uue tõestusmaterjaliga teadustöö, mis eelneva vea parandab, või avaldavad autorid ise oma tulemustele paranduse. Vigu parandavad artiklites isegi Nobeli preemia laureaadid ja minu meelest ei juhtu nende mainega pikemas perspektiivis midagi, aga muidugi satuvad nad selles olukorras olles rambivalgusesse ja mõnigi kord peavad kolleegidele olukorda põhjendama.\n\nHüpoteetilises olukorras ja hea kolleegina võin sellise paranduse ilmumisele ka ise kaasa aidata. Keemiateaduses on muide katsete mittekorratavus väga asjakohane probleem ja tihti just mitte autorite pahatahtlikkuse, vaid protseduuride ebapiisava kirjelduse ning lähteühendite puhtuse kõikumise tõttu. Seetõttu jälgin ma oma laboris, et võtmereaktsioone teostaks mitu erinevat inimest, nii tulevad ebakõlad juba enne avaldamist ilmsiks. Mõiste “teaduslik vale” on mulle arusaamatu, sest kui uus teadmine on saadud, siis see tuleb varem või hiljem avalikuks.",
+      "k4": "Akadeemikud on Eestis teiste akadeemikute poolt välja valitud teadlased ehk Eesti Teaduste Akadeemia ise kujundab oma kogukonna mainet uute liikmete valimisega. Tegevteadlased peavad kindlasti osa oma tööst suunama oma kolleegidele, et toetada intellektuaalset väljakutset pakkuvat töökeskkonda, kasvatada teadlasjärelkasvu ning aidata kaasa teadmiste siirdele ka väljapoole uurimisasutuse seinu.\n\nEnamus Eestis töötavatest teadlastest on meie ühiskonna ülalpidamisel, väga väike osa teadus-arendustöödest –  ma ei oska isegi öelda kui väike – tehakse täiesti sõltumatult ülikoolidest ja riigi toel tegutsevatest teadusasutustest. See on olnud meie ühiskonna sisene kokkulepe, et haridus on meie riigis ühiskondlik hüve ja hea juurdepääsetavusega ja teadlased on need, kes hariduse kvaliteedi tagavad ja seetõttu ühiskonna järeltulevasse põlve panustavad. Lisaks muidugi saavad teadlased erialaekspertidena nõustada ka avalikku ja erasektorit. Meie ühiskonna konkurentsivõime ja edukus toetub riigi poolt rahastatud teadlaste panusele.\n\nAkadeemikud on üks osa teadlastest, kellest osa on tegevteadlased, osa emeriteerunud, igal juhul omavad nad suuremat elukogemust ja teadmisi kui keskmine Eesti elanik, see akadeemikute kompetentsi klaster on minu meelest vajalik, et kriitiliselt hinnata meie ühiskonnas ja teadusmaailmas toimuvaid protsesse.\n\nTeadlasest saab arvamusliider kui ta avalikult sõna võtma hakkab ja tema arvamus ka teistele korda läheb. Kuna teadlased on treenitud kriitiliselt mõtlema, siis võiks eeldada, et nende arvamus on suurema mõjuga ja väärt tähele panemist, seeläbi võiks akadeemikutest arvamusliidrite nõu ka ühiskonnale kasulik olla.",
+      "k5": "Eesti akadeemiku tiitel on tunnustus Eesti Teaduste Akadeemia liikmete poolt ja kutse kuuluda akadeemikute kogukonda. Arvan, et meie akadeemikutel on kohustusi nii üksteise ees kui ka riigi teiste asutuste ees ja neid kohustusi täidetakse individuaalselt ja vastavalt oma kompetentsile ja võimekusele. Arvan, et sooviksin olla aktiivne akadeemia liige. Seega ilmselgelt kaasneks sellega mulle lisakohustusi, milliseid täpselt, selle üle on hetkel ennatlik arutada."
+    }
+  },
+  {
+    "id": 11,
+    "nimi": "Ivo Leito",
+    "amet": "analüütilise keemia professor",
+    "valdkond": "Keemia",
+    "valdkonnaToon": "#ff5050",
+    "asutus": "Tartu Ülikool",
+    "asutuseToon": "#2E66A4",
+    "pilt": "https://s.err.ee/photo/orig/2026/11/02/3869008h72f8.png",
+    "autor": "Maarja Liiv",
+    "vastused": {
+      "tutvustus": "Ivo Leito uurib analüütilist keemiat, keskendudes happe-aluse tasakaaludele, keemilisele metroloogiale, kromatograafiale ja massispektromeetriale. Tema teadustöö kirjeldab täpselt kvantitatiivselt raskesti mõõdetavaid keemilisi nähtusi ja loob ulatuslikke happelisuse ning aluselisuse skaalasid mittevesikeskkondades.\n\nViimastel aastatel juhib ta Analüütilise keemia kvaliteedi infrastruktuuri (AKKI), mis pakub laboritele meetodiarendust ja analüüse, sidudes teaduse otseselt ravimi-, biotehnoloogia- ja toiduainetööstusega. Leito juhitud töörühm osales 2025. aastal avaldatud Rahvusvahelise Puhta ja Rakenduskeemia Liidu (IUPAC) tehnilise raporti koostamisel, mis süstematiseerib mittevesikeskkondades mõõdetud happelisuse andmeid, ja ta korraldas ka Eesti liitumist selle organisatsiooniga. Lisaks arendas ta rahvusvahelised veebikursused, mille on edukalt lõpetanud tuhanded õppijad ligi 150 riigist.\n\nLeito on Tartu Ülikooli analüütilise keemia professor ja õppetooli juhataja. Ta pälvis 2025. aastal Tartu Ülikooli suure medali ja Haridus- ja Teadusministeerium valis ta 2015. aastal aasta õppejõuks.",
+      "k1": "Tööalased tipphetked on suures osas kahte liiki. Ühed on seotud sellega, kui teised teadlased kasutavad meie tulemusi oma valdkondades oluliste edasiminekute saavutamiseks. Teised on seotud juhendatavate kraadiõppurite kraaditööde kaitsmistega. Eraelulised tipphetked on laste sünnid ning seejärel tipphetked laste elus.",
+      "k2": "Ma ei usu, et ma suudan tuua välja olulise probleemi, millest räägitakse liiga vähe. Pigem räägitakse enamikust probleemidest täiesti piisavalt, mõnikord ehk ka liiga palju. Pudelikaelaks pole mitte ebapiisav rääkimine, vaid ikka see, et rääkimisega ei kaasne otsused ja teod.\n\nKui unistada laiemalt, siis asi, mille ma ära lahendaksin, puudutab mitte minu teadusvaldkonda, vaid kogu ühiskonda ja on kokku võetav USA 33. presidendi Harry S. Truman’i öeldud lausega „It is amazing what you can accomplish if you do not care who gets the credit“, mis vabas tõlkes kõlab „On imeline, kui palju on võimalik saavutada, kui mitte hoolida sellest, kellele langeb tunnustus nende saavutuste eest“. Sellisest suhtumisest on meie (ja muidugi mitte ainult meie) ühiskonnas kindlasti puudus.",
+      "k3": "Teaduslikud vead teadusartiklites ja nende parandamine – kas siis samade autorite poolt või teiste poolt – on teaduse loomulik osa ja neid vigu parandades liigub teadus edasi.\n\nToon näite. Üks meie valdkonnas oluline tugiväärtus (2,4,6-trinitrofenooli happelisus atsetonitriilis) mõõdeti esmakordselt ühe analüütilise keemia alusepanija I. M. Kolthoffi grupi poolt. Mõne aja pärast nad avastasid, et olid oluliselt alahinnangud veesisalduse mõju lahustis ja seetõttu oli tõenäoline, et nende määratud väärtus on vale.\n\nTollal oli kogu see valdkond alles arengu alguses ja veesisalduse mõjud olid vähe uuritud. Nad viisid paremini kontrollitud tingimustes (ja erinevaid sõltumatuid eksperimendimeetodeid kasutades) läbi uue põhjaliku  uuringu, milles leidsid, et algselt määratud väärtus oli üle 2 logaritmilise ühiku (ehk üle 100 korra) nihkes. Nad avaldasid selle uuringu ja see ülihoolikalt määratud happelisuse väärtus on siiamaani kasutuses olulise tugiväärtusena hapete tugevuste mõõtmisel. Kolthoffi teaduslikku autoriteeti või karjääri see juhtum ei kahjustanud mitte kuidagi, pigem isegi vastupidi.\n\nSeega, ma ei usu, et vea parandamine oluliselt kahjustaks kolleegi karjääri, ja kui selline olukord tekib, siis annan kolleegile teada, et ma selle kriitilise vea leidsin ja lasen tal endal kavandada järgmised sammud.",
+      "k4": "Teadlane töötab lõppkokkuvõttes ikka ühiskonnale. See on nii, olenemata, kas töö toimub koostöös kolleegidega baasteaduste sfääris või on tegemist rakendusteadusega koostöös mõne ettevõttega. Teadustulemused baasteaduses võivad näiteks panustada suurte väljakutsete – kliima, elurikkus, efektiivne ressursside kasutus jne – alal. Innovatiivsed arendused ettevõtetes loovad töökohti, kasvatavad majanduse konkurentsivõimet ja lõppkokkuvõttes suurendavad ühiskonna rikkust. Ja iseenesest mõistetavalt, kui teadlane teeb õppetööd ning koolitab noori spetsialiste, ka siis on suund ühiskonnale väga selge.\n\nKui teadlane on oma erialal pädev, siis on tal head võimalused tõusta arvamusliidriks. Ja see on igati põhjendatud staatus sel juhul. „Lihtsalt arvamusliider“ või pigem isegi „lihtsalt arvaja“ võiks teadlasest saada ehk siis, kui ta esitaks seisukohti, mis on teadus- ja faktipõhise lähenemisega vastuolus. Aga selline asi on teadlaste puhul haruldane.",
+      "k5": "Akadeemiku tiitel oleks nii tunnustus kui ka vastutus ja aitaks kindlasti kaasa pühendunud tegutsemisele. Usun, et oluline ja igati õigustatud ootus akadeemikule on see, et ta panustaks riigi ja ühiskonna ees seisvate probleemide teaduspõhisesse lahendamisse."
+    }
+  },
+  {
+    "id": 12,
+    "nimi": "Monika Mortimer",
+    "amet": "vanemteadur",
+    "valdkond": "Keemia",
+    "valdkonnaToon": "#ff5050",
+    "asutus": "KBFI",
+    "asutuseToon": "#CD5C6E",
+    "pilt": "https://s.err.ee/photo/orig/2026/11/02/3869011h3083.png",
+    "autor": "Diana Unt",
+    "vastused": {
+      "tutvustus": "Monika Mortimer uurib keskkonnakeemiat, keskendudes uudsete saasteainete, sealhulgas nanokomposiitide ja PFAS-ühendite riskihindamisele ning bio-nano vastastikmõjudele. Ta ühendab materjaliteaduse, analüütilise keemia ja molekulaarse toksikoloogia, et arendada ennetavaid metodoloogiaid, millega hinnata saasteainete ohutust.\n\nViimastel aastatel juhib ta Keemilise ja Bioloogilise Füüsika Instituudis uut rahvusvahelist uurimisrühma ning rakendab materjalide loomisel ohutu ja kestliku disaini kontseptsiooni. Pärast pikaajalist teadustööd Šveitsi, USA ja Hiina ülikoolides naasis ta Eestisse, et töötada välja uusi meetodeid, millega kaasajastada kemikaaliohutuse standardeid.\n\nMortimer pälvis 2025. aastal Eesti Rahvuskultuuri Fondi Teaduste Akadeemia allfondi stipendiumi. Samuti nõustab ja hindab ta eksperdina Euroopa Komisjoni Marie Skłodowska-Curie doktorantide ning REACH-UPPA programmide teadusprojekte.",
+      "k1": "Kui vastata küsimusele, millised tipphetked on seotud minu tööga ja millised juhtunud sellele vaatamata, siis pean tõdema, et minu elus on need kaks poolt olnud teineteise võimendajaks. Minu isikliku elu vaieldamatuks tipphetkeks on kahe tütre sirgumine ja nende iseseisva tee leidmine – ühe edukas karjäär küberjulgeoleku eksperdina Microsoftis ja teise pühendumine meditsiiniõpingutele Californias. Nende õpingutes ja karjääris USAs mängis olulist rolli minu otsus siirduda järeldoktorantuuri California ülikooli Santa Barbaras, mis võimaldas neil saada haridus USA-s. Seega on minu rahvusvaheline teaduskarjäär seotud ka isiklikult oluliste hetkedega.\n\nTööalastest tipphetkedest rääkides on oluline olnud teadustöö jõudmine faasi, kus saan oma ideid ellu viia kodumaal. Eestisse naasmise järel pean viimase aja suurimaks kordaminekuks mahukate grantide pälvimist – olgu selleks ohutute ja keskkonnasõbralike nanomaterjalide disaini alane PRG-projekt või Eesti turba bioaktiivsusele keskenduv TEM-TA projekt. Need on andnud võimaluse luua Keemilise ja Bioloogilise Füüsika Instituudis (KBFI) oma uurimissuund ja töötada juhtivteadurina.\n\n2025. aastal oli suur au vastu võtta Eesti rahvuskultuuri fondi Eesti teaduste akadeemia allfondi stipendium, mis tunnustas rahvusvahelist teadlaskarjääri ja Eestis tehtud uurimistööd. Kõrghetkedeks on alati ka oma juhendatavate edu – näiteks kui minu doktorandi Katre Jugansoni doktoritöö pälvis riikliku peapreemia. Loomulikult on ka praegune akadeemikukandidaadiks esitamine üks mu senise karjääri vaieldamatuid tipphetki. See on kinnitus, et pikaajaline töö keskkonnakeemia, materjaliteaduse ja bioloogia valdkondade integreerimisel on läinud korda.",
+      "k2": "Kui raha ja bürokraatia poleks takistuseks, asutaksin Eestisse tipptasemel kestliku materjalitehnoloogia keskuse. Praegu näeme sageli, et teadlased loovad küll uusi materjale, kuid nende ohutusele ja kogu eluringile mõeldakse alles tootearenduse lõpus. Eesti võiks aga olla teerajaja uutmoodi keemias, kus juba uue molekuli või aine disainimisel võetakse arvesse selle ohutust, keskkonnasõbralikkust ja hilisemat taaskasutatavust.\n\nKBFI on siin oma paindlikkusega suurepärane eeskuju – see on unikaalne keskkond, kus füüsikud, keemikud ja bioloogid saavad interdistsiplinaarsete uuringutega hinnata materjalide ohutust juba disaini varases faasis. Just seda põhimõtet rakendame ka minu juhitavas PRG-projektis, kus arendame uudseid metall-fenoolseid võrgustikke spetsiaalselt selleks, et metalle keskkonnast jätkusuutlikult eraldada ja uuesti ringlusse võtta.\n\nMaailmas laiemalt räägitakse minu hinnangul liiga palju üha uute nanomaterjalide sünteesist, keskendudes eeskätt nende lühiajalisele tehnilisele tõhususele. Liiga vähe pööratakse aga tähelepanu materjalide saatusele reaalsetes tingimustes. Mis toimub tootega kogu selle kasutusaja jooksul ja eluea lõpus? Kas näiteks niiskuse või päikesekiirguse toimel võib sellest eralduda mürgiseid komponente? Me ei tohi luua uusi materjale, mis muutuvad looduses aja möödudes lihtsalt uuteks probleemseteks saasteaineteks. Peame juba eos, molekulaarsel tasandil mõistma, kuidas materjale ohutult algosadeks lagundada ja väärtusliku ressursina uuesti ringlusse suunata.",
+      "k3": "Kogu teadus püsib usaldusel – nii teadlaste omavahelisel kui ka ühiskonna usaldusel teaduse vastu. Kuna olen ka ise rahvusvaheliste teadusajakirjade toimetaja, on minu seisukoht ühene: teaduslik ausus on kompromissitu. Teadlikult varjatud kriitiline viga eksitab teisi uurijaid ning võib kemikaaliohutuse valdkonnas seada otseselt ohtu inimeste tervise ja looduse.\n\nSellises olukorras räägiksin esimese asjana kolleegiga otse ja omavahel, andes talle võimaluse viga tunnistada ning algatada ise artikli parandamine või tagasivõtmine. Eksimused on teaduses inimlikud, kuid teadlik varjamine mitte. Kui ta aga keeldub vastutust võtmast, on minu kohus teavitada eetikakomiteed ja ajakirja toimetust. Lühiajaline mainekahju on küll paratamatu, kuid pikas plaanis lõhuks vaikimine avalikku usaldust kordades rohkem.",
+      "k4": "Kolleegidele ja ühiskonnale suunatud tegevused peavad olema mõistlikus tasakaalus. Uute teadmiste loomine ja tulemuste tutvustamine rahvusvahelisele teadlaste kogukonnale on oluline osa akadeemiku tööst. Ilma tugeva teadusliku põhjata ei ole akadeemikul ühiskonnale midagi pakkuda. Kuid tänapäeva keemiku kohus on astuda ka laborist välja ning tõlkida oma teadmised inimestele ja riigile arusaadavasse keelde.\n\nEriti praegu, mil ühiskonnas on fookuses rohepööre, uued materjalid ja kemikaaliohutus, on teadlase roll aidata teha tarku otsuseid ning selgitada keerulisi protsesse lihtsalt. Olgu selleks siis riigi nõustamine, kemikaalide mõju lahtiseletamine meedias või noortes teadushuvi äratamine. Pakun, et see suhe võiks olla umbkaudu kaks kolmandikku ajast teaduse tegemisele ja kolmandik ühiskonnale suunatud tegevustele.\n\nLihtsalt arvamusliidriks muutub teadlane aga siis, kui ta unustab oma tegeliku ekspertiisi piirid. Kui andmepõhisus asendub isikliku veendumuse või emotsiooniga ning hakatakse võtma autoriteetseid seisukohti teemadel, mida pole ise teaduslikult uuritud ega analüüsitud. Teadlase sõna kaal ühiskonnas peab alati tuginema objektiivsetele ja mõõdetavatele tõenditele.",
+      "k5": "Isiklikult oleks see suur au ja tunnustus senitehtud tööle – kinnitus, et minu valitud suund siduda keemia, materjalidisain, toksikoloogia, ja keskkonnahoid on Eesti teadusele strateegiliselt oluline. Ühtlasi näen selles laiemat tunnustust ka meie instituudile, sest KBFI roll sõltumatu ja valdkondi ühendava tippteaduse asutusena on Eesti teadusmaastiku mitmekesisuse hoidmisel asendamatu.\n\nEesti Toksikoloogia Seltsi presidendi ja uurimisrühma juhina tunnen juba praegu vastutust oma eriala arengu ja noorte teadlaste järelkasvu tagamise ees. Akadeemiku staatus tooks aga kaasa laiema, riikliku vastutuse. See tähendab kohustust rääkida kaasa Eesti teaduspoliitika kujundamisel – seista hea fundamentaalteaduste rahastamise eest ning olla riigile sõltumatu ja usaldusväärne nõuandja uute materjalitehnoloogiate ja kemikaaliohutuse strateegilistes küsimustes. Samuti annaks see võimaluse seista laiemalt Eesti teaduspoliitika tasakaalu eest – et tugevate ülikoolide kõrval oleks tagatud ka autonoomsete teadusinstituutide elujõulisus. Seda esindusrolli võtaksin ma äärmise tõsidusega."
+    }
+  },
+  {
+    "id": 13,
+    "nimi": "Ago Samoson",
+    "amet": "spinnidisaini labori juhataja",
+    "valdkond": "Keemia",
+    "valdkonnaToon": "#ff5050",
+    "asutus": "Tallinna Tehnikaülikool",
+    "asutuseToon": "#850045",
+    "pilt": "https://s.err.ee/photo/orig/2026/11/02/3869014h79a4.png",
+    "autor": "Hanna Samoson",
+    "vastused": {
+      "tutvustus": "Ago Samoson uurib keemilist füüsikat ja tahkise tuumamagnetresonantsi (NMR) spektroskoopiat, keskendudes fundamentaalsete seaduspärasuste sidumisele tehnoloogiliste lahendustega ainete struktuuri ja molekulaarse dünaamika analüüsiks. Ta on töötanud välja mitmeid uusi mõõtemeetodeid (näiteks topeltpöörlemise ehk DOR-meetodi) ja ülikiire proovipöörlemise (MAS) tehnoloogia, mis laiendavad võimalusi silikaatide, tseoliitide ning vesinikutuumade uurimisel.\n\nViimastel aastatel juhib Samoson Tallinna Tehnikaülikoolis spinnidisaini laborit, arendades kompaktset püsimagnetil põhinevat NMR-seadet ja rakendades spektroskoopiat diagnostilises metaboloomikas ning energiasalvestuses. Tema arendatud DOR-meetodi patent litsentsiti UC Berkeley's, jõudes Brukeri spektromeetrite kaudu ülemaailmsesse tööstuskasutusse, ning tehnoloogilist innovatsiooni jätkab ta Eesti Teadusagentuuri rahastatud projektiga.\n\nSamoson pälvis 2026. aastal NMR-valdkonna tähtsaima tunnustuse, Günther Laukieni preemia. Teda on tunnustatud rahvusvahelise R&D 100 auhinnaga ning Eestis kahe riigi teaduspreemia ja Valgetähe III klassi teenetemärgiga.",
+      "k1": "Tuumaresonantsi kui elegantse loodusnähtuse ja väga võimsa analüütilise meetodi, millest on kujunenud terve teadusharu, valik oma huvialaks tundub hästi õnnestunud. Eks enne kutselist teadustööd oli ka medaleid ja diplome, nii nohikute kui ka füüsilise spordi aladelt. Nendel oli oma panus poolde tosinasse hetke, kus peas kõik pardid ritta asetusid. Emotsionaalse laengu annavad ka teated maailma tippülikoolidest meie tehtud aparatuuri eduka kasutamise kohta.",
+      "k2": "Meie enda laboris on vaatamata mainitud probleemidele käsil metaboolne diagnostika ning anioon-energiasalvestus. Liiga vähe toetust saab suuremas plaanis neutronvaba tuumasüntees, mis oleks ideaalne lahend energeetikas. Aga liiga palju on jutustamist poliitilise teaduspesu teemadel.",
+      "k3": "Teadlane on saanud ühiskonnalt suhteliselt palju toetust oma võimete arendamiseks. See kohustab teda neid ka rakendama, andma tagasi nii informatsiooni kui ka tulemusi talle teadaoleva tasemel.",
+      "k4": "Selle astme õpetlane peaks suutma ja saama ise otsustada, kas tema panus on parim laboritegevuse kaudu ja/või hästi treenitud tähelepanu- ja analüüsivõimega ühiskondlike võimaluste/probleemide kajastajana.",
+      "k5": "See tiitel ning kaasnevad kohustused/võimalused on akadeemilise ökosüsteemi osa rohkem kui sajas riigis, sisuliselt kannab neid endas iga õpetlane iga kell. Nominatsioon on juba väga kõrge hinnang teadustööle. Minu omale on seda saanud osaks juba kolm korda, nii iga kümne aasta tagant ja mõlemast Eesti teadusasutusest, kus olen töötanud. Nüüd siis ka akadeemia liikemetelt, sealhulgas presidendilt.\n\nValimine ise on pigem õunte, eelarvamuste, apelsinide ja suhete võrdlus. Formaliseerimine annab lootust, et väheneb aeg teema tõstmisest ühiskondlikku toimesse. Näiteks tõin 13 aastat tagasi välja strateegilised vead AECOM-i ja valitsuse hinnangus RB tasuvusele. Nüüd oleme sunnitud ühele rööpapaarile üleminekuga ja vastava läbilaske kahanemisega vähemalt 90 protsendi osas bluffi tunnistama. Või et e-valimised on meie demokraatia paralüüs, millest ikka veel ei soovita aru saada. \n\nKitsamalt mainiksin, et jätkuvalt töötab innovatsiooniprojektidele vastu omafinantseeringu nõue. Üldiselt arvan, et Akadeemia liikmed peaksid oma pea tööle panema ka probleemidega, millele meil ei ole spetsialistide katet või puudub selles sõltumatu objektiivsus."
+    }
+  }
+];
+
+let activeQuestionIndex = 0;
+let activeCandidateId = null;
+let activeFieldFilter = "all";
+let activeInstFilter = "all";
+let wheelCooldown = false;
+let isAnimatingFilter = false;
+
+const sideMenuEl = document.getElementById("sideMenu");
+const stageContainerEl = document.getElementById("stageContainer");
+const questionTagEl = document.getElementById("questionTag");
+const questionFullTextEl = document.getElementById("questionFullText");
+const photoGridEl = document.getElementById("photoGrid");
+
+const popoverEl = document.getElementById("candidatePopover");
+const popoverHeaderEl = document.getElementById("popoverHeader");
+const popoverNameEl = document.getElementById("popoverName");
+const popoverRoleEl = document.getElementById("popoverRole");
+const popoverInstEl = document.getElementById("popoverInst");
+const popoverFieldEl = document.getElementById("popoverField");
+const popoverBodyEl = document.getElementById("popoverBody");
+const popoverPhotoCreditEl = document.getElementById("popoverPhotoCredit");
+const popoverCloseBtn = document.getElementById("popoverClose");
+const resetFiltersBtn = document.getElementById("resetFiltersBtn");
+
+function computeDynamicTheme(hex) {
+  const clean = hex.replace("#", "").trim();
+  const r = parseInt(clean.substring(0, 2), 16) / 255;
+  const g = parseInt(clean.substring(2, 4), 16) / 255;
+  const b = parseInt(clean.substring(4, 6), 16) / 255;
+
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  let h = 0;
+  let s = 0;
+  const l = (max + min) / 2;
+
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+      case g: h = (b - r) / d + 2; break;
+      case b: h = (r - g) / d + 4; break;
+    }
+    h /= 6;
+  }
+
+  const deg = Math.round(h * 360);
+  const satPastel = Math.min(65, Math.max(38, Math.round(s * 70)));
+  const satDark = Math.min(85, Math.max(55, Math.round(s * 90)));
+
+  return {
+    bgPastel: `hsl(${deg}, ${satPastel}%, 95%)`,
+    headerPastel: `hsl(${deg}, ${satPastel}%, 89%)`,
+    textDark: `hsl(${deg}, ${satDark}%, 14%)`,
+    borderTone: `hsl(${deg}, ${satDark}%, 38%)`,
+    pillBg: `hsl(${deg}, ${satPastel}%, 97%)`
+  };
+}
+
+function createFallbackSvg(name, color) {
+  const initials = name
+    .split(" ")
+    .map(p => p[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="330" viewBox="0 0 300 330">
+    <rect width="300" height="330" fill="#f1f5f9"/>
+    <circle cx="150" cy="145" r="58" fill="${color}" opacity="0.18"/>
+    <text x="150" y="160" text-anchor="middle" fill="${color}" font-family="Fira Sans, sans-serif" font-size="40" font-weight="400">${initials}</text>
+  </svg>`;
+  return "data:image/svg+xml;utf8," + encodeURIComponent(svg);
+}
+
+function renderMenu() {
+  sideMenuEl.innerHTML = "";
+  QUESTIONS.forEach((q, idx) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "menu-btn" + (idx === activeQuestionIndex ? " active" : "");
+    btn.setAttribute("aria-label", `${q.btnLabel} – ${q.tooltip}`);
+    btn.innerHTML = `
+      <span>${q.btnLabel}</span>
+      <span class="menu-tooltip">${q.tooltip}</span>
+    `;
+    btn.addEventListener("click", () => switchQuestion(idx));
+    btn.addEventListener("touchstart", () => {
+      document.querySelectorAll(".menu-btn").forEach(b => b.classList.remove("touch-preview"));
+      btn.classList.add("touch-preview");
+      setTimeout(() => btn.classList.remove("touch-preview"), 1400);
+    }, { passive: true });
+    sideMenuEl.appendChild(btn);
+  });
+}
+
+function renderQuestionBanner() {
+  const q = QUESTIONS[activeQuestionIndex];
+  questionTagEl.textContent = q.id === "tutvustus" ? "TUTVUSTUS" : `KÜSIMUS ${q.btnLabel} • ${q.tooltip.toUpperCase()}`;
+  questionFullTextEl.textContent = q.fullText;
+}
+
+function isCandidateVisible(cand) {
+  const fieldMatches = (activeFieldFilter === "all" || cand.valdkond === activeFieldFilter);
+  const instMatches = (activeInstFilter === "all" || cand.asutus === activeInstFilter);
+  return fieldMatches && instMatches;
+}
+
+function renderGrid() {
+  photoGridEl.innerHTML = "";
+
+  CANDIDATES.forEach(cand => {
+    const card = document.createElement("div");
+    card.className = "candidate-card";
+    card.dataset.id = cand.id;
+    card.tabIndex = 0;
+    card.style.setProperty("--inst-color", cand.asutuseToon);
+
+    if (activeCandidateId === cand.id) {
+      card.classList.add("selected");
+    }
+
+    if (!isCandidateVisible(cand)) {
+      card.classList.add("is-hidden");
+    }
+
+    const frame = document.createElement("div");
+    frame.className = "photo-frame";
+    frame.style.borderColor = cand.asutuseToon;
+
+    const img = document.createElement("img");
+    img.src = cand.pilt;
+    img.alt = cand.nimi;
+    img.setAttribute("referrerpolicy", "no-referrer");
+    img.onerror = function () {
+      this.onerror = null;
+      this.src = createFallbackSvg(cand.nimi, cand.asutuseToon);
+    };
+
+    const badge = document.createElement("div");
+    badge.className = "inst-badge";
+    badge.style.backgroundColor = cand.asutuseToon;
+    badge.textContent = cand.asutus;
+
+    frame.appendChild(img);
+    frame.appendChild(badge);
+
+    const nameEl = document.createElement("div");
+    nameEl.className = "candidate-name";
+    nameEl.style.textDecorationColor = cand.asutuseToon;
+    nameEl.textContent = cand.nimi;
+
+    card.appendChild(frame);
+    card.appendChild(nameEl);
+
+    // Hüpikaken avaneb klõpsates
+    card.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (activeCandidateId === cand.id) {
+        closePopover();
+      } else {
+        openPopover(cand, card);
+      }
+    });
+
+    card.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        if (activeCandidateId === cand.id) {
+          closePopover();
+        } else {
+          openPopover(cand, card);
+        }
+      }
+    });
+
+    photoGridEl.appendChild(card);
+  });
+}
+
+function openPopover(cand, anchorCard) {
+  activeCandidateId = cand.id;
+
+  document.querySelectorAll(".candidate-card").forEach(c => {
+    c.classList.toggle("selected", parseInt(c.dataset.id, 10) === cand.id);
+  });
+
+  const q = QUESTIONS[activeQuestionIndex];
+  const theme = computeDynamicTheme(cand.valdkonnaToon);
+
+  popoverEl.style.backgroundColor = theme.bgPastel;
+  popoverEl.style.color = theme.textDark;
+  popoverEl.style.borderColor = theme.borderTone;
+
+  popoverHeaderEl.style.backgroundColor = theme.headerPastel;
+  popoverCloseBtn.style.color = theme.textDark;
+  popoverCloseBtn.style.borderColor = theme.borderTone;
+
+  popoverNameEl.textContent = cand.nimi;
+  popoverRoleEl.textContent = cand.amet;
+
+  popoverInstEl.textContent = cand.asutus;
+  popoverInstEl.style.backgroundColor = theme.pillBg;
+  popoverInstEl.style.color = theme.textDark;
+
+  popoverFieldEl.textContent = cand.valdkond;
+  popoverFieldEl.style.backgroundColor = theme.pillBg;
+  popoverFieldEl.style.color = theme.textDark;
+
+  const answerText = cand.vastused[q.id] || "Kandidaat ei esitanud sellele ankeediküsimusele vastust.";
+  popoverBodyEl.innerHTML = "";
+  answerText.split(/\n\n+/).forEach(para => {
+    const trimmed = para.trim();
+    if (trimmed) {
+      const p = document.createElement("p");
+      p.textContent = trimmed;
+      popoverBodyEl.appendChild(p);
+    }
+  });
+  popoverBodyEl.scrollTop = 0;
+
+  popoverPhotoCreditEl.textContent = `Foto: ${cand.autor}`;
+
+  popoverEl.classList.add("visible");
+  positionPopover(anchorCard);
+}
+
+function positionPopover(anchorCard) {
+  if (!anchorCard) return;
+  const rect = anchorCard.getBoundingClientRect();
+  const popRect = popoverEl.getBoundingClientRect();
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const margin = 12;
+
+  let left = rect.right + 10;
+  if (left + popRect.width > vw - margin) {
+    left = rect.left - popRect.width - 10;
+  }
+  if (left < margin) {
+    left = Math.max(margin, Math.min(vw - popRect.width - margin, (vw - popRect.width) / 2));
+  }
+
+  let top = rect.top - 10;
+  if (top + popRect.height > vh - margin) {
+    top = vh - popRect.height - margin;
+  }
+  if (top < margin) {
+    top = margin;
+  }
+
+  popoverEl.style.left = `${Math.round(left)}px`;
+  popoverEl.style.top = `${Math.round(top)}px`;
+}
+
+function closePopover() {
+  popoverEl.classList.remove("visible");
+  activeCandidateId = null;
+  document.querySelectorAll(".candidate-card").forEach(c => c.classList.remove("selected"));
+}
+
+popoverCloseBtn.addEventListener("click", (e) => {
+  e.stopPropagation();
+  closePopover();
+});
+
+document.addEventListener("click", (e) => {
+  if (popoverEl.classList.contains("visible") && !popoverEl.contains(e.target)) {
+    closePopover();
+  }
+});
+
+function switchQuestion(newIndex) {
+  if (newIndex < 0 || newIndex >= QUESTIONS.length || newIndex === activeQuestionIndex) return;
+  activeQuestionIndex = newIndex;
+
+  document.querySelectorAll(".menu-btn").forEach((btn, idx) => {
+    btn.classList.toggle("active", idx === activeQuestionIndex);
+  });
+
+  stageContainerEl.classList.add("fading");
+  setTimeout(() => {
+    renderQuestionBanner();
+
+    if (activeCandidateId) {
+      const activeCand = CANDIDATES.find(c => c.id === activeCandidateId);
+      const activeCard = photoGridEl.querySelector(`[data-id="${activeCandidateId}"]`);
+      if (activeCand && activeCard) {
+        openPopover(activeCand, activeCard);
+      }
+    }
+    stageContainerEl.classList.remove("fading");
+  }, 160);
+}
+
+// Nõue 1: FLIP animatsioon – kandidaadid liiguvad sujuvalt üles äärde vabadele kohtadele
+function applyFilterAnimation() {
+  if (isAnimatingFilter) return;
+  isAnimatingFilter = true;
+
+  const cards = Array.from(photoGridEl.querySelectorAll(".candidate-card"));
+
+  // 1. FIRST: Salvesta kõigi hetkel nähtavate kaartide asukohad
+  const firstRects = new Map();
+  cards.forEach(card => {
+    if (!card.classList.contains("is-hidden")) {
+      firstRects.set(card, card.getBoundingClientRect());
+    }
+  });
+
+  // 2. DOM OLEK: Peida väljafiltreeritud kaardid display: none abil,
+  // mis viib allesjäävad kaardid automaatselt kompaktsele kohale üles äärde
+  cards.forEach(card => {
+    const id = parseInt(card.dataset.id, 10);
+    const cand = CANDIDATES.find(c => c.id === id);
+    const visible = isCandidateVisible(cand);
+    card.classList.toggle("is-hidden", !visible);
+  });
+
+  // 3. LAST & INVERT: Mõõda uued asukohad ja rakenda inverteeriv nihe
+  cards.forEach(card => {
+    if (!card.classList.contains("is-hidden")) {
+      const first = firstRects.get(card);
+      const last = card.getBoundingClientRect();
+
+      if (first) {
+        const dx = first.left - last.left;
+        const dy = first.top - last.top;
+        if (dx !== 0 || dy !== 0) {
+          card.style.transform = `translate(${dx}px, ${dy}px)`;
+          card.style.transition = 'none';
+        }
+      } else {
+        // Uus kaart, mis enne oli peidus
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(18px) scale(0.96)';
+        card.style.transition = 'none';
+      }
+    }
+  });
+
+  // 4. Force reflow
+  photoGridEl.offsetHeight;
+
+  // 5. PLAY: Animeeri sujuvalt uude asukohta üles äärde
+  requestAnimationFrame(() => {
+    cards.forEach(card => {
+      if (!card.classList.contains("is-hidden")) {
+        card.style.transition = 'transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.35s ease, box-shadow 0.28s ease';
+        card.style.transform = '';
+        card.style.opacity = '1';
+      }
+    });
+  });
+
+  // Pärast animatsiooni lõppu taasta tavapärane hover-üleminek
+  setTimeout(() => {
+    cards.forEach(card => {
+      if (!card.classList.contains("is-hidden")) {
+        card.style.transition = '';
+      }
+    });
+    isAnimatingFilter = false;
+  }, 480);
+
+  // Kontrolli infokaardi olekut
+  if (activeCandidateId) {
+    const activeCand = CANDIDATES.find(c => c.id === activeCandidateId);
+    if (!isCandidateVisible(activeCand)) {
+      closePopover();
+    } else {
+      const activeCard = photoGridEl.querySelector(`[data-id="${activeCandidateId}"]`);
+      if (activeCard) {
+        setTimeout(() => positionPopover(activeCard), 260);
+      }
+    }
+  }
+}
+
+function setupFilters() {
+  const fieldBtns = document.querySelectorAll("#fieldFilters .filter-pill");
+  const instBtns = document.querySelectorAll("#instFilters .filter-pill");
+
+  fieldBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      fieldBtns.forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      activeFieldFilter = btn.dataset.field;
+      applyFilterAnimation();
+    });
+  });
+
+  instBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      instBtns.forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      activeInstFilter = btn.dataset.inst;
+      applyFilterAnimation();
+    });
+  });
+
+  // Nõue 2: Reset nupp lähtestab mõlemad filtrid "all" peale
+  resetFiltersBtn.addEventListener("click", () => {
+    if (activeFieldFilter === "all" && activeInstFilter === "all") return;
+
+    activeFieldFilter = "all";
+    activeInstFilter = "all";
+
+    fieldBtns.forEach(b => b.classList.toggle("active", b.dataset.field === "all"));
+    instBtns.forEach(b => b.classList.toggle("active", b.dataset.inst === "all"));
+
+    applyFilterAnimation();
+  });
+}
+
+// Hiire rullik
+document.getElementById("errGraphic").addEventListener("wheel", (e) => {
+  if (popoverEl.classList.contains("visible") && popoverEl.contains(e.target)) {
+    return;
+  }
+  if (Math.abs(e.deltaY) < 18) return;
+  e.preventDefault();
+  if (wheelCooldown) return;
+
+  wheelCooldown = true;
+  if (e.deltaY > 0 && activeQuestionIndex < QUESTIONS.length - 1) {
+    switchQuestion(activeQuestionIndex + 1);
+  } else if (e.deltaY < 0 && activeQuestionIndex > 0) {
+    switchQuestion(activeQuestionIndex - 1);
+  }
+  setTimeout(() => {
+    wheelCooldown = false;
+  }, 360);
+}, { passive: false });
+
+// Nutiseadme viiped
+let touchStartY = null;
+let touchStartX = null;
+
+document.getElementById("errGraphic").addEventListener("touchstart", (e) => {
+  if (popoverEl.classList.contains("visible") && popoverEl.contains(e.target)) {
+    touchStartY = null;
+    return;
+  }
+  if (e.touches.length === 1) {
+    touchStartY = e.touches[0].clientY;
+    touchStartX = e.touches[0].clientX;
+  }
+}, { passive: true });
+
+document.getElementById("errGraphic").addEventListener("touchend", (e) => {
+  if (touchStartY === null || e.changedTouches.length === 0) return;
+  const deltaY = touchStartY - e.changedTouches[0].clientY;
+  const deltaX = Math.abs(touchStartX - e.changedTouches[0].clientX);
+
+  if (Math.abs(deltaY) > 60 && Math.abs(deltaY) > deltaX * 1.5) {
+    if (deltaY > 0 && activeQuestionIndex < QUESTIONS.length - 1) {
+      switchQuestion(activeQuestionIndex + 1);
+    } else if (deltaY < 0 && activeQuestionIndex > 0) {
+      switchQuestion(activeQuestionIndex - 1);
+    }
+  }
+  touchStartY = null;
+}, { passive: true });
+
+window.addEventListener("resize", () => {
+  if (activeCandidateId && popoverEl.classList.contains("visible")) {
+    const activeCard = photoGridEl.querySelector(`[data-id="${activeCandidateId}"]`);
+    if (activeCard) positionPopover(activeCard);
+  }
+});
+
+// Alglaadimine
+renderMenu();
+renderQuestionBanner();
+renderGrid();
+setupFilters();
+</script>
+</body>
+</html>

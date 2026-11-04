@@ -8,6 +8,18 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
 <style>
+  :root {
+    --nov-green: #28902d;
+    --nov-green-dark: #195e1d;
+    --nov-green-deep: #142e17;
+    --nov-green-tint: #f5f9f5;
+    --nov-green-tint-hover: #ebf5ec;
+    --nov-green-subtle: #dbeadc;
+    --nov-green-border: #e3ede4;
+    --nov-text-main: #142918;
+    --nov-text-muted: #526f55;
+  }
+
   *, *::before, *::after {
     box-sizing: border-box;
     font-family: 'Fira Sans', sans-serif;
@@ -17,58 +29,115 @@
   }
 
   body {
-    background-color: #f7f9fa;
-    color: #1a1a1a;
+    background-color: #ffffff;
+    color: var(--nov-text-main);
     line-height: 1.45;
-    padding: 14px 8px;
+    padding: 16px 8px;
   }
 
-  /* Nõue 3: Maksimumlaius 900 px, loetav ka 670 px juures */
+  /* Maksimumlaius 900 px, loetav ka 670 px ja mobiilis */
   .err-graphic-container {
     max-width: 900px;
     width: 100%;
     margin: 0 auto;
     background: #ffffff;
-    border: 1px solid #e2e6ea;
-    border-radius: 6px;
-    padding: 16px;
+    padding: 8px 12px;
     position: relative;
     user-select: none;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
   }
 
-  /* Päis ja sissejuhatus */
+  /* Päis */
   .err-header {
-    margin-bottom: 14px;
-    border-bottom: 1px solid #e6e9ed;
-    padding-bottom: 12px;
+    margin-bottom: 18px;
   }
 
   .err-title {
-    font-size: 22pt;
+    font-size: 23pt;
     line-height: 1.2;
-    color: #111111;
+    color: var(--nov-green-deep);
     margin-bottom: 6px;
     letter-spacing: -0.2px;
   }
 
   .err-subtitle {
     font-size: 13pt;
-    color: #4b5563;
-    line-height: 1.38;
-    margin-bottom: 12px;
+    color: var(--nov-text-muted);
+    line-height: 1.4;
+    margin-bottom: 16px;
   }
 
-  /* Filtreerimise jaotus */
-  .filter-section {
-    background: #f8fafc;
-    border: 1px solid #e5e9ee;
-    border-radius: 6px;
-    padding: 10px 12px;
-    margin-bottom: 6px;
+  /* Horisontaalsed toimetuslikud vahelehed */
+  .tabs-wrapper {
+    margin-bottom: 12px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .tabs-wrapper::-webkit-scrollbar {
+    display: none;
+  }
+
+  .editorial-tabs {
+    display: flex;
+    gap: 8px;
+    padding: 2px 0;
+    min-width: max-content;
+  }
+
+  .tab-btn {
+    background: #ffffff;
+    color: var(--nov-text-muted);
+    border: 1px solid var(--nov-green-border);
+    padding: 7px 15px;
+    border-radius: 20px;
+    font-size: 13px;
+    cursor: pointer;
+    line-height: 1.2;
+    white-space: nowrap;
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+  }
+
+  .tab-btn:hover {
+    background: var(--nov-green-tint-hover);
+    color: var(--nov-green-dark);
+    border-color: var(--nov-green-subtle);
+    transform: translateY(-1px);
+  }
+
+  .tab-btn.active {
+    background: var(--nov-green);
+    color: #ffffff;
+    border-color: var(--nov-green);
+    box-shadow: 0 2px 8px rgba(40, 144, 45, 0.28);
+    transform: translateY(-1px);
+  }
+
+  /* Toimetuslik tsitaat kaldkirjas ilma kasti ja märgiseta */
+  .editorial-quote-wrap {
+    margin: 12px 0 20px 0;
+    padding: 4px 2px;
+    min-height: 48px;
+  }
+
+  .editorial-quote {
+    font-size: 15.5px;
+    line-height: 1.5;
+    color: var(--nov-green-deep);
+    font-style: italic;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+
+  .editorial-quote.fading {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  /* Pill-filtrid ja dünaamiline "Puhasta filtrid" */
+  .filter-area {
+    margin-bottom: 22px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 9px;
   }
 
   .filter-row {
@@ -78,12 +147,12 @@
     gap: 6px;
   }
 
-  .filter-label {
+  .filter-caption {
     font-size: 11px;
     text-transform: uppercase;
-    letter-spacing: 0.4px;
-    color: #64748b;
-    min-width: 82px;
+    letter-spacing: 0.5px;
+    color: var(--nov-text-muted);
+    min-width: 68px;
     flex-shrink: 0;
   }
 
@@ -94,31 +163,31 @@
     flex: 1;
   }
 
-  .filter-pill {
+  .pill-btn {
     background: #ffffff;
-    border: 1px solid #cbd5e1;
-    color: #334155;
+    border: 1px solid var(--nov-green-border);
+    color: var(--nov-text-main);
     font-size: 11.5px;
-    padding: 3px 9px;
+    padding: 3.5px 10px;
     border-radius: 14px;
     cursor: pointer;
     line-height: 1.25;
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.18s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
   }
 
-  .filter-pill:hover {
-    background: #eef2f6;
-    border-color: #94a3b8;
+  .pill-btn:hover {
+    background: var(--nov-green-tint-hover);
+    border-color: var(--nov-green-subtle);
     transform: translateY(-1px);
   }
 
-  .filter-pill.active {
-    background: #1e293b;
+  .pill-btn.active {
+    background: var(--nov-green);
     color: #ffffff;
-    border-color: #1e293b;
+    border-color: var(--nov-green);
   }
 
   .color-dot {
@@ -129,179 +198,48 @@
     flex-shrink: 0;
   }
 
-  .filter-pill.active .color-dot {
+  .pill-btn.active .color-dot {
     box-shadow: 0 0 0 1px #ffffff;
   }
 
-  /* Nõue 2: Reset nupp allparemas nurgas */
-  .filter-footer {
+  /* Puhasta filtrid nupp ilmub nähtavale AINULT aktiivse filtri korral */
+  .filter-actions {
     display: flex;
-    justify-content: flex-end;
-    margin-top: 4px;
-    padding-top: 6px;
-    border-top: 1px dashed #e2e8f0;
+    align-items: center;
+    gap: 8px;
+    padding-top: 2px;
   }
 
-  .reset-filters-btn {
-    background: #ffffff;
-    border: 1px solid #cbd5e1;
-    color: #475569;
+  .filter-actions.is-hidden {
+    display: none !important;
+  }
+
+  .clear-filters-btn {
+    background: transparent;
+    border: 1px solid var(--nov-green);
+    color: var(--nov-green-dark);
     font-size: 11.5px;
-    padding: 4px 11px;
-    border-radius: 4px;
+    padding: 3px 10px;
+    border-radius: 12px;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    line-height: 1.2;
-    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
+    gap: 4px;
+    transition: background-color 0.18s ease, color 0.18s ease;
   }
 
-  .reset-filters-btn:hover {
-    background: #f1f5f9;
-    color: #0f172a;
-    border-color: #94a3b8;
-    transform: translateY(-1px);
-  }
-
-  .reset-filters-btn:active {
-    transform: translateY(0);
-  }
-
-  /* Põhipaigutus */
-  .err-layout {
-    display: flex;
-    gap: 14px;
-    align-items: flex-start;
-    margin-top: 12px;
-  }
-
-  /* Vasakpoolne püstine menüütulp */
-  .side-menu {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    width: 94px;
-    flex-shrink: 0;
-    position: sticky;
-    top: 12px;
-    z-index: 20;
-  }
-
-  .menu-btn {
-    position: relative;
-    width: 100%;
-    min-height: 40px;
-    padding: 8px 6px;
-    background: #f3f5f7;
-    color: #222222;
-    border: 1px solid #d5dbe0;
-    border-radius: 5px;
-    font-size: 12px;
-    letter-spacing: 0.3px;
-    cursor: pointer;
-    text-align: center;
-    transition: background-color 0.22s ease, color 0.22s ease, transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
-  }
-
-  .menu-btn:hover,
-  .menu-btn:focus-visible {
-    background: #e2e8f0;
-    border-color: #94a3b8;
-    transform: translateX(2px);
-    outline: none;
-  }
-
-  .menu-btn.active {
-    background: #1e293b;
+  .clear-filters-btn:hover {
+    background: var(--nov-green);
     color: #ffffff;
-    border-color: #1e293b;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
-  }
-
-  /* Menüünupu hõljuv tooltip */
-  .menu-tooltip {
-    position: absolute;
-    left: calc(100% + 8px);
-    top: 50%;
-    transform: translateY(-50%) translateX(-6px);
-    background: #1e293b;
-    color: #ffffff;
-    padding: 5px 10px;
-    border-radius: 4px;
-    font-size: 12px;
-    white-space: nowrap;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.2s ease, transform 0.2s ease;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
-    z-index: 50;
-  }
-
-  .menu-tooltip::before {
-    content: "";
-    position: absolute;
-    left: -5px;
-    top: 50%;
-    transform: translateY(-50%);
-    border-width: 5px 5px 5px 0;
-    border-style: solid;
-    border-color: transparent #1e293b transparent transparent;
-  }
-
-  .menu-btn:hover .menu-tooltip,
-  .menu-btn:focus-visible .menu-tooltip,
-  .menu-btn.touch-preview .menu-tooltip {
-    opacity: 1;
-    transform: translateY(-50%) translateX(0);
-  }
-
-  /* Parem sisuala */
-  .main-stage {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .stage-transition {
-    opacity: 1;
-    transform: translateY(0);
-    transition: opacity 0.24s ease, transform 0.24s ease;
-  }
-
-  .stage-transition.fading {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-
-  .question-banner {
-    background: #f8fafc;
-    border-left: 3px solid #1e293b;
-    border-radius: 4px;
-    padding: 10px 12px;
-    margin-bottom: 12px;
-  }
-
-  .question-tag {
-    font-size: 11px;
-    text-transform: uppercase;
-    color: #64748b;
-    margin-bottom: 4px;
-    letter-spacing: 0.4px;
-  }
-
-  .question-text {
-    font-size: 13.5px;
-    line-height: 1.42;
-    color: #111827;
   }
 
   /* Fotovõrgustik */
   .photo-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
+    gap: 14px;
     position: relative;
-    min-height: 240px;
+    min-height: 280px;
   }
 
   .candidate-card {
@@ -310,49 +248,77 @@
     cursor: pointer;
     position: relative;
     outline: none;
-    transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.28s ease, opacity 0.3s ease;
+    transition: transform 0.26s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.26s ease, opacity 0.3s ease;
     border-radius: 6px;
     background: #ffffff;
     will-change: transform, opacity;
   }
 
-  /* Nõue 1: Sujuv üles äärde liikumine (peidetud kaardid võetakse voost välja, nähtavad voolavad üles) */
   .candidate-card.is-hidden {
     display: none !important;
   }
 
-  /* Pildile liikumisel väljatõste */
+  /* Kui kandidaadil puudub aktiivsele küsimusele vastus */
+  .candidate-card.no-answer {
+    opacity: 0.62;
+  }
+
+  .candidate-card.no-answer:hover {
+    opacity: 0.95;
+  }
+
+  /* Pildile liikumisel õhuline väljatõste */
   .candidate-card:hover,
   .candidate-card:focus-visible {
-    transform: translateY(-8px) scale(1.035);
-    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.16);
+    transform: translateY(-6px) scale(1.025);
+    box-shadow: 0 12px 24px rgba(40, 144, 45, 0.14);
     z-index: 5;
   }
 
-  /* Valitud kandidaadi esiletõste */
   .candidate-card.selected {
-    transform: translateY(-8px) scale(1.04);
-    box-shadow: 0 0 0 3px var(--inst-color, #1e293b), 0 14px 28px rgba(0, 0, 0, 0.22);
-    z-index: 10;
+    transform: translateY(-6px) scale(1.03);
+    box-shadow: 0 0 0 3px var(--inst-color, var(--nov-green)), 0 14px 28px rgba(40, 144, 45, 0.2);
+    z-index: 8;
   }
 
-  .candidate-card.selected .candidate-name {
-    color: #0f172a;
-    font-weight: 500 !important;
+  /* Küsimuse vahetumise märgatav laine-animatsioon kaartidel */
+  @keyframes cardQuestionWave {
+    0% {
+      transform: translateY(0);
+    }
+    45% {
+      transform: translateY(-8px) scale(1.02);
+    }
+    100% {
+      transform: translateY(0) scale(1);
+    }
   }
 
+  .card-waving {
+    animation: cardQuestionWave 0.36s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  }
+
+  /* Paks raami alaosa teadlase nimega */
   .photo-frame {
     position: relative;
     width: 100%;
-    aspect-ratio: 4 / 4.45;
-    border-style: solid;
-    border-width: 3px;
-    border-radius: 5px;
+    aspect-ratio: 4 / 4.75;
+    border: 2px solid var(--inst-color, var(--nov-green-border));
+    border-radius: 6px;
     overflow: hidden;
-    background: #eef2f6;
+    background: #f0f4f1;
+    display: flex;
+    flex-direction: column;
   }
 
-  .photo-frame img {
+  .photo-img-wrap {
+    flex: 1;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .photo-img-wrap img {
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -361,210 +327,362 @@
     transition: transform 0.28s ease;
   }
 
-  .candidate-card:hover .photo-frame img,
-  .candidate-card.selected .photo-frame img {
-    transform: scale(1.05);
+  .candidate-card:hover .photo-img-wrap img,
+  .candidate-card.selected .photo-img-wrap img {
+    transform: scale(1.045);
   }
 
-  .inst-badge {
+  .unanswered-tag {
     position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    padding: 3.5px 5px;
-    font-size: 9.5px;
-    line-height: 1.15;
+    top: 6px;
+    right: 6px;
+    background: rgba(20, 46, 23, 0.75);
     color: #ffffff;
-    text-align: center;
-    background: rgba(0, 0, 0, 0.78);
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 10px;
+    letter-spacing: 0.3px;
+    backdrop-filter: blur(2px);
+    display: none;
   }
 
-  .candidate-name {
-    margin-top: 6px;
-    font-size: 12px;
+  .candidate-card.no-answer .unanswered-tag {
+    display: block;
+  }
+
+  .frame-name-bar {
+    background-color: var(--inst-color, var(--nov-green));
+    padding: 7px 6px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .candidate-name-link {
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 12.5px;
     line-height: 1.25;
-    color: #111111;
+    letter-spacing: 0.15px;
+    display: block;
+    transition: opacity 0.18s ease;
+  }
+
+  .candidate-name-link:hover {
+    opacity: 0.92;
+  }
+
+  .card-meta {
+    margin-top: 6px;
+    font-size: 11px;
+    color: var(--nov-text-muted);
     text-align: center;
-    text-decoration: underline;
-    text-underline-offset: 2.5px;
+    line-height: 1.3;
   }
 
-  /* Popover infokaart */
-  .candidate-popover {
+  /* Slide-over drawer lahendus */
+  .drawer-overlay {
     position: fixed;
-    z-index: 9999;
-    width: 380px;
-    max-width: calc(100vw - 24px);
-    max-height: min(540px, calc(100vh - 36px));
-    display: flex;
-    flex-direction: column;
-    border-radius: 8px;
-    border: 1.5px solid #888888;
-    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.25);
+    inset: 0;
+    background: rgba(18, 41, 20, 0.35);
+    backdrop-filter: blur(2px);
     opacity: 0;
-    transform: scale(0.96) translateY(6px);
     pointer-events: none;
-    transition: opacity 0.22s ease, transform 0.22s ease;
-    overflow: hidden;
+    z-index: 9998;
+    transition: opacity 0.3s ease;
   }
 
-  .candidate-popover.visible {
+  .drawer-overlay.visible {
     opacity: 1;
-    transform: scale(1) translateY(0);
     pointer-events: auto;
   }
 
-  .popover-header {
-    padding: 12px 14px 10px 14px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  .slide-drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 520px;
+    max-width: calc(100vw - 20px);
+    background: #ffffff;
+    box-shadow: -10px 0 36px rgba(18, 41, 20, 0.2);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    transform: translateX(100%);
+    transition: transform 0.34s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .slide-drawer.visible {
+    transform: translateX(0);
+  }
+
+  .drawer-header {
+    padding: 18px 22px 14px 22px;
+    background: var(--nov-green-tint);
+    border-bottom: 1px solid var(--nov-green-border);
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    gap: 8px;
+    gap: 12px;
     flex-shrink: 0;
   }
 
-  .popover-title-group {
+  .drawer-person-info {
     min-width: 0;
   }
 
-  .popover-name {
-    font-size: 16px;
+  .drawer-name {
+    font-size: 20px;
+    color: var(--nov-green-deep);
     line-height: 1.25;
-    margin-bottom: 2px;
+    margin-bottom: 3px;
   }
 
-  .popover-role {
-    font-size: 12px;
-    line-height: 1.3;
-    opacity: 0.9;
+  .drawer-role {
+    font-size: 12.5px;
+    color: var(--nov-text-muted);
+    line-height: 1.35;
+    margin-bottom: 8px;
   }
 
-  .popover-meta-pills {
+  .drawer-badges {
     display: flex;
     flex-wrap: wrap;
-    gap: 5px;
-    margin-top: 6px;
+    gap: 6px;
   }
 
-  .popover-pill {
-    font-size: 10.5px;
-    padding: 2px 7px;
-    border-radius: 3px;
-    border: 1px solid rgba(0, 0, 0, 0.18);
+  .drawer-badge {
+    font-size: 11px;
+    padding: 2.5px 8px;
+    border-radius: 12px;
+    background: #ffffff;
+    border: 1px solid var(--nov-green-border);
+    color: var(--nov-text-main);
   }
 
-  .popover-close {
-    background: transparent;
-    border: 1px solid rgba(0, 0, 0, 0.2);
-    border-radius: 4px;
-    width: 26px;
-    height: 26px;
-    font-size: 17px;
-    line-height: 1;
+  .drawer-close-btn {
+    background: #ffffff;
+    border: 1px solid var(--nov-green-border);
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
     cursor: pointer;
-    flex-shrink: 0;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: background-color 0.18s ease;
+    color: var(--nov-text-main);
+    flex-shrink: 0;
+    transition: background-color 0.18s ease, transform 0.18s ease;
   }
 
-  .popover-close:hover {
-    background: rgba(0, 0, 0, 0.08);
+  .drawer-close-btn:hover {
+    background: var(--nov-green-tint-hover);
+    transform: rotate(90deg);
   }
 
-  /* Täispikk vastus, skrollitav aken */
-  .popover-body {
-    padding: 14px 16px;
-    overflow-y: auto;
+  /* Küsimuste navigeerimisriba sahtli sees */
+  .drawer-nav-bar {
+    background: #edf5ee;
+    padding: 8px 18px;
+    border-bottom: 1px solid var(--nov-green-border);
+    overflow-x: auto;
+    scrollbar-width: none;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+  }
+  .drawer-nav-bar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .drawer-nav-pills {
+    display: flex;
+    gap: 6px;
+    min-width: max-content;
+  }
+
+  .drawer-pill-btn {
+    background: #ffffff;
+    border: 1px solid var(--nov-green-border);
+    color: var(--nov-text-muted);
+    font-size: 11.5px;
+    padding: 4px 10px;
+    border-radius: 14px;
+    cursor: pointer;
+    line-height: 1.2;
+    white-space: nowrap;
+    transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+  }
+
+  .drawer-pill-btn:hover {
+    background: var(--nov-green-tint-hover);
+    color: var(--nov-green-dark);
+    border-color: var(--nov-green-subtle);
+  }
+
+  .drawer-pill-btn.active {
+    background: var(--nov-green);
+    color: #ffffff;
+    border-color: var(--nov-green);
+  }
+
+  /* Sahtli küsimuse päis ja tsitaat */
+  .drawer-topic-header {
+    padding: 12px 22px 10px 22px;
+    background: #fafdfa;
+    border-bottom: 1px solid var(--nov-green-border);
+    flex-shrink: 0;
+  }
+
+  .drawer-topic-label {
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--nov-green-dark);
+    margin-bottom: 4px;
+  }
+
+  .drawer-question-quote {
     font-size: 13.5px;
-    line-height: 1.55;
-    user-select: text;
-    flex: 1;
+    font-style: italic;
+    line-height: 1.4;
+    color: var(--nov-green-deep);
   }
 
-  .popover-body::-webkit-scrollbar {
+  /* Sahtli keha animatsiooniga */
+  .drawer-body {
+    padding: 22px;
+    overflow-y: auto;
+    font-size: 14px;
+    line-height: 1.62;
+    color: var(--nov-text-main);
+    flex: 1;
+    user-select: text;
+  }
+
+  .drawer-body::-webkit-scrollbar {
     width: 6px;
   }
-
-  .popover-body::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.05);
+  .drawer-body::-webkit-scrollbar-track {
+    background: #f7faf7;
   }
-
-  .popover-body::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.25);
+  .drawer-body::-webkit-scrollbar-thumb {
+    background: #c5dac7;
     border-radius: 3px;
   }
 
-  .popover-body p {
-    margin-bottom: 11px;
+  .drawer-body.animating {
+    animation: drawerTextEnter 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  @keyframes drawerTextEnter {
+    0% {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .drawer-body p {
+    margin-bottom: 13px;
     text-align: left;
   }
 
-  .popover-body p:last-child {
+  .drawer-body p:last-child {
     margin-bottom: 0;
   }
 
-  .popover-footer {
-    padding: 8px 14px;
+  /* Sahtli jalus navigatsiooninuppudega */
+  .drawer-footer {
+    padding: 10px 22px;
     font-size: 11px;
-    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    color: var(--nov-text-muted);
+    border-top: 1px solid var(--nov-green-border);
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
     align-items: center;
     flex-shrink: 0;
-    opacity: 0.88;
+    background: #fafdfa;
+    gap: 12px;
+  }
+
+  .drawer-nav-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .drawer-step-btn {
+    background: #ffffff;
+    border: 1px solid var(--nov-green-border);
+    color: var(--nov-text-main);
+    font-size: 11.5px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    line-height: 1.2;
+    transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+  }
+
+  .drawer-step-btn:hover:not(:disabled) {
+    background: var(--nov-green-tint-hover);
+    border-color: var(--nov-green-subtle);
+    color: var(--nov-green-dark);
+  }
+
+  .drawer-step-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  .drawer-step-indicator {
+    font-size: 11px;
+    color: var(--nov-text-muted);
+    min-width: 38px;
+    text-align: center;
   }
 
   .err-footer {
-    margin-top: 14px;
-    padding-top: 8px;
-    border-top: 1px solid #e6e9ed;
+    margin-top: 24px;
+    padding-top: 10px;
     font-size: 14pt;
-    color: #555555;
+    color: var(--nov-text-muted);
     display: flex;
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 6px;
   }
 
-  .scroll-hint {
-    font-size: 11px;
-    color: #64748b;
-    margin-top: 8px;
-  }
-
-  /* Kohanduvus 670 px ja mobiilsete seadmete jaoks */
-  @media (max-width: 680px) {
+  /* Kohanduvus */
+  @media (max-width: 720px) {
     .photo-grid {
       grid-template-columns: repeat(3, 1fr);
       gap: 10px;
     }
-    .side-menu {
-      width: 82px;
+    .err-title {
+      font-size: 19pt;
     }
   }
 
-  @media (max-width: 520px) {
+  @media (max-width: 480px) {
     .photo-grid {
       grid-template-columns: repeat(2, 1fr);
       gap: 10px;
     }
-    .side-menu {
-      width: 74px;
-    }
-    .err-title {
-      font-size: 18pt;
-    }
-    .err-footer {
-      font-size: 12pt;
-    }
-    .candidate-popover {
-      width: calc(100vw - 20px);
-    }
-    .filter-label {
+    .filter-caption {
       min-width: 100%;
+    }
+    .slide-drawer {
+      width: 100vw;
+      max-width: 100vw;
+    }
+    .drawer-footer {
+      flex-direction: column-reverse;
+      align-items: flex-start;
+      gap: 8px;
     }
   }
 </style>
@@ -574,116 +692,142 @@
 <div class="err-graphic-container" id="errGraphic">
   <header class="err-header">
     <h1 class="err-title">Eesti Teaduste Akadeemia akadeemikukandidaadid</h1>
-    <p class="err-subtitle">Vali vasakust tulbast küsimus või liigu teemade vahel hiirerulliku ja puutežestiga. Kandidaadi täismahus vastuse lugemiseks klõpsa tema fotol.</p>
+    <p class="err-subtitle">Vali teema ning klõpsa teadlase fotol, et avada paremalt tema täismahus vastus ja ülevaade.</p>
 
-    <!-- Nõue 1, 2, 4: Valdkonna ja asutuse filtrid koos allparemas nurgas asuva lähtestusnupuga -->
-    <div class="filter-section">
+    <!-- Horisontaalsed toimetuslikud vahelehed -->
+    <div class="tabs-wrapper">
+      <nav class="editorial-tabs" id="editorialTabs" role="tablist"></nav>
+    </div>
+
+    <!-- Toimetuslik küsimuse tsitaat -->
+    <div class="editorial-quote-wrap">
+      <p class="editorial-quote" id="editorialQuoteText"></p>
+    </div>
+
+    <!-- Pill-filtrid -->
+    <div class="filter-area">
       <div class="filter-row">
-        <span class="filter-label">Valdkond:</span>
+        <span class="filter-caption">Valdkond</span>
         <div class="filter-pills" id="fieldFilters">
-          <button type="button" class="filter-pill active" data-field="all">Kõik valdkonnad</button>
-          <button type="button" class="filter-pill" data-field="Astrofüüsika"><span class="color-dot" style="background:#0033cc"></span>Astrofüüsika</button>
-          <button type="button" class="filter-pill" data-field="Elektroonika"><span class="color-dot" style="background:#33cccc"></span>Elektroonika</button>
-          <button type="button" class="filter-pill" data-field="Filosoofia"><span class="color-dot" style="background:#ff9900"></span>Filosoofia</button>
-          <button type="button" class="filter-pill" data-field="Geomaatika"><span class="color-dot" style="background:#009900"></span>Geomaatika</button>
-          <button type="button" class="filter-pill" data-field="Haridusuuringud"><span class="color-dot" style="background:#ffcc00"></span>Haridusuuringud</button>
-          <button type="button" class="filter-pill" data-field="Keemia"><span class="color-dot" style="background:#ff5050"></span>Keemia</button>
+          <button type="button" class="pill-btn active" data-field="all">Kõik</button>
+          <button type="button" class="pill-btn" data-field="Astrofüüsika"><span class="color-dot" style="background:#0033cc"></span>Astrofüüsika</button>
+          <button type="button" class="pill-btn" data-field="Elektroonika"><span class="color-dot" style="background:#33cccc"></span>Elektroonika</button>
+          <button type="button" class="pill-btn" data-field="Filosoofia"><span class="color-dot" style="background:#ff9900"></span>Filosoofia</button>
+          <button type="button" class="pill-btn" data-field="Geomaatika"><span class="color-dot" style="background:#009900"></span>Geomaatika</button>
+          <button type="button" class="pill-btn" data-field="Haridusuuringud"><span class="color-dot" style="background:#ffcc00"></span>Haridusuuringud</button>
+          <button type="button" class="pill-btn" data-field="Keemia"><span class="color-dot" style="background:#ff5050"></span>Keemia</button>
         </div>
       </div>
       <div class="filter-row">
-        <span class="filter-label">Asutus:</span>
+        <span class="filter-caption">Asutus</span>
         <div class="filter-pills" id="instFilters">
-          <button type="button" class="filter-pill active" data-inst="all">Kõik asutused</button>
-          <button type="button" class="filter-pill" data-inst="Tallinna Tehnikaülikool"><span class="color-dot" style="background:#850045"></span>Tallinna Tehnikaülikool</button>
-          <button type="button" class="filter-pill" data-inst="Tartu Ülikool"><span class="color-dot" style="background:#2E66A4"></span>Tartu Ülikool</button>
-          <button type="button" class="filter-pill" data-inst="Tallinna Ülikool"><span class="color-dot" style="background:#B20E10"></span>Tallinna Ülikool</button>
-          <button type="button" class="filter-pill" data-inst="KBFI"><span class="color-dot" style="background:#CD5C6E"></span>KBFI</button>
+          <button type="button" class="pill-btn active" data-inst="all">Kõik</button>
+          <button type="button" class="pill-btn" data-inst="Tallinna Tehnikaülikool"><span class="color-dot" style="background:#850045"></span>Tallinna Tehnikaülikool</button>
+          <button type="button" class="pill-btn" data-inst="Tartu Ülikool"><span class="color-dot" style="background:#2E66A4"></span>Tartu Ülikool</button>
+          <button type="button" class="pill-btn" data-inst="Tallinna Ülikool"><span class="color-dot" style="background:#B20E10"></span>Tallinna Ülikool</button>
+          <button type="button" class="pill-btn" data-inst="KBFI"><span class="color-dot" style="background:#CD5C6E"></span>KBFI</button>
         </div>
       </div>
-      <div class="filter-footer">
-        <button type="button" class="reset-filters-btn" id="resetFiltersBtn" aria-label="Nulli filtrid">
-          <span style="font-size:13px; line-height:1;">↺</span> Nulli filtrid
+      <div class="filter-actions is-hidden" id="filterActions">
+        <button type="button" class="clear-filters-btn" id="resetFiltersBtn">
+          ✕ Puhasta filtrid
         </button>
       </div>
     </div>
   </header>
 
-  <div class="err-layout">
-    <nav class="side-menu" id="sideMenu" aria-label="Küsimuste valik"></nav>
-
-    <main class="main-stage">
-      <div class="stage-transition" id="stageContainer">
-        <section class="question-banner" aria-live="polite">
-          <div class="question-tag" id="questionTag">TUTVUSTUS</div>
-          <div class="question-text" id="questionFullText"></div>
-        </section>
-
-        <section class="photo-grid" id="photoGrid"></section>
-      </div>
-      <div class="scroll-hint">Vihje: küsimusi saad vahetada ka hiire rullikuga või nutiseadmes pikalt üles-alla tõmmates.</div>
-    </main>
-  </div>
+  <!-- Fotovõrgustik -->
+  <main>
+    <section class="photo-grid" id="photoGrid"></section>
+  </main>
 
   <footer class="err-footer">
     <span>Allikas: Eesti Teaduste Akadeemia, ERR Novaator</span>
   </footer>
 </div>
 
-<!-- Hüpikaken klõpsamisel -->
-<div class="candidate-popover" id="candidatePopover" role="dialog" aria-modal="false">
-  <div class="popover-header" id="popoverHeader">
-    <div class="popover-title-group">
-      <div class="popover-name" id="popoverName"></div>
-      <div class="popover-role" id="popoverRole"></div>
-      <div class="popover-meta-pills">
-        <span class="popover-pill" id="popoverInst"></span>
-        <span class="popover-pill" id="popoverField"></span>
+<!-- Slide-over drawer lahendus koos sisese küsimusenavigatsiooniga -->
+<div class="drawer-overlay" id="drawerOverlay"></div>
+<aside class="slide-drawer" id="slideDrawer" role="dialog" aria-modal="true" aria-hidden="true">
+  <div class="drawer-header">
+    <div class="drawer-person-info">
+      <h2 class="drawer-name" id="drawerName"></h2>
+      <div class="drawer-role" id="drawerRole"></div>
+      <div class="drawer-badges">
+        <span class="drawer-badge" id="drawerInstBadge"></span>
+        <span class="drawer-badge" id="drawerFieldBadge"></span>
       </div>
     </div>
-    <button type="button" class="popover-close" id="popoverClose" aria-label="Sulge infokaart">×</button>
+    <button type="button" class="drawer-close-btn" id="drawerCloseBtn" aria-label="Sulge külgpaneel">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
   </div>
-  <div class="popover-body" id="popoverBody"></div>
-  <div class="popover-footer" id="popoverFooter">
-    <span id="popoverPhotoCredit"></span>
+
+  <!-- Sise-navigatsiooninupud küsimuste vahel -->
+  <div class="drawer-nav-bar">
+    <div class="drawer-nav-pills" id="drawerNavPills"></div>
   </div>
-</div>
+
+  <div class="drawer-topic-header">
+    <div class="drawer-topic-label" id="drawerTopicLabel"></div>
+    <div class="drawer-question-quote" id="drawerQuestionQuote"></div>
+  </div>
+
+  <div class="drawer-body" id="drawerBody"></div>
+
+  <div class="drawer-footer">
+    <div class="drawer-nav-controls">
+      <button type="button" class="drawer-step-btn" id="drawerPrevBtn" aria-label="Eelmine küsimus">
+        ← Eelmine
+      </button>
+      <span class="drawer-step-indicator" id="drawerStepIndicator">1 / 6</span>
+      <button type="button" class="drawer-step-btn" id="drawerNextBtn" aria-label="Järgmine küsimus">
+        Järgmine →
+      </button>
+    </div>
+    <span id="drawerPhotoCredit"></span>
+  </div>
+</aside>
 
 <script>
 const QUESTIONS = [
   {
     "id": "tutvustus",
-    "btnLabel": "TUTVUSTUS",
-    "tooltip": "Tutvustus",
-    "fullText": "Tutvu 13 akadeemikukandidaadi teadustöö fookuse, seniste saavutuste ja ühiskondliku tegevusega. Klõpsa teadlase fotol, et avada tema täismahus tutvustus ja ankeedivastused."
+    "label": "Tutvustus",
+    "shortTitle": "Tutvustus",
+    "fullText": "Akadeemikukandidaatide teadustöö, seniste saavutuste ja ühiskondliku tegevuse ülevaade."
   },
   {
     "id": "k1",
-    "btnLabel": "1",
-    "tooltip": "Tipphetked",
+    "label": "Tipphetked",
+    "shortTitle": "1. Tipphetked",
     "fullText": "1. Mis on teie jaoks olnud elu tipphetked? Ja kui aus olla, siis kui paljud neist on seotud teie tööga ja kui paljud on juhtunud vaatamata sellele?"
   },
   {
     "id": "k2",
-    "btnLabel": "2",
-    "tooltip": "Suured probleemid",
+    "label": "Suured probleemid",
+    "shortTitle": "2. Suured probleemid",
     "fullText": "2. Kui raha ja bürokraatia poleks probleem, mis oleks see üks asi, mille te oma valdkonnas Eestis kohe ära lahendaksite? Ja mis on maailmas see teema, millest teie kolleegid räägivad liiga palju, ja millest liiga vähe?"
   },
   {
     "id": "k3",
-    "btnLabel": "3",
-    "tooltip": "Eetikadilemmad",
+    "label": "Eetikadilemmad",
+    "shortTitle": "3. Eetikadilemmad",
     "fullText": "3. Avastate, et teie hea kolleegi laialt tsiteeritud artikkel sisaldab teadlikult varjatud, ent kriitilist viga. Tõe avalikustamine kahjustaks rängalt nii kolleegi karjääri kui ka avalikku usaldust teie valdkonna vastu. Vaikimine laseks aga teaduslikul valel püsima jääda. Kuidas käitute ja millest lähtute?"
   },
   {
     "id": "k4",
-    "btnLabel": "4",
-    "tooltip": "Akadeemiku roll",
+    "label": "Akadeemiku roll",
+    "shortTitle": "4. Akadeemiku roll",
     "fullText": "4. Kui suur osa 21. sajandil elava akadeemiku tööst peaks olema suunatud kolleegidele ja kui suur osa ühiskonnale, kes teid lõppeks üleval peab? Millal saab teadlasest lihtsalt arvamusliider?"
   },
   {
     "id": "k5",
-    "btnLabel": "5",
-    "tooltip": "Isiklik tähendus",
+    "label": "Isiklik tähendus",
+    "shortTitle": "5. Isiklik tähendus",
     "fullText": "5. Mida akadeemiku tiitel teile isiklikult annaks? Kui palju kaasneks sellega sisetunnetuslikult kohustusi, mida te juba ei täida?"
   }
 ];
@@ -941,61 +1085,29 @@ let activeQuestionIndex = 0;
 let activeCandidateId = null;
 let activeFieldFilter = "all";
 let activeInstFilter = "all";
-let wheelCooldown = false;
 let isAnimatingFilter = false;
 
-const sideMenuEl = document.getElementById("sideMenu");
-const stageContainerEl = document.getElementById("stageContainer");
-const questionTagEl = document.getElementById("questionTag");
-const questionFullTextEl = document.getElementById("questionFullText");
+const editorialTabsEl = document.getElementById("editorialTabs");
+const editorialQuoteTextEl = document.getElementById("editorialQuoteText");
 const photoGridEl = document.getElementById("photoGrid");
-
-const popoverEl = document.getElementById("candidatePopover");
-const popoverHeaderEl = document.getElementById("popoverHeader");
-const popoverNameEl = document.getElementById("popoverName");
-const popoverRoleEl = document.getElementById("popoverRole");
-const popoverInstEl = document.getElementById("popoverInst");
-const popoverFieldEl = document.getElementById("popoverField");
-const popoverBodyEl = document.getElementById("popoverBody");
-const popoverPhotoCreditEl = document.getElementById("popoverPhotoCredit");
-const popoverCloseBtn = document.getElementById("popoverClose");
+const filterActionsEl = document.getElementById("filterActions");
 const resetFiltersBtn = document.getElementById("resetFiltersBtn");
 
-function computeDynamicTheme(hex) {
-  const clean = hex.replace("#", "").trim();
-  const r = parseInt(clean.substring(0, 2), 16) / 255;
-  const g = parseInt(clean.substring(2, 4), 16) / 255;
-  const b = parseInt(clean.substring(4, 6), 16) / 255;
-
-  const max = Math.max(r, g, b);
-  const min = Math.min(r, g, b);
-  let h = 0;
-  let s = 0;
-  const l = (max + min) / 2;
-
-  if (max !== min) {
-    const d = max - min;
-    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-    switch (max) {
-      case r: h = (g - b) / d + (g < b ? 6 : 0); break;
-      case g: h = (b - r) / d + 2; break;
-      case b: h = (r - g) / d + 4; break;
-    }
-    h /= 6;
-  }
-
-  const deg = Math.round(h * 360);
-  const satPastel = Math.min(65, Math.max(38, Math.round(s * 70)));
-  const satDark = Math.min(85, Math.max(55, Math.round(s * 90)));
-
-  return {
-    bgPastel: `hsl(${deg}, ${satPastel}%, 95%)`,
-    headerPastel: `hsl(${deg}, ${satPastel}%, 89%)`,
-    textDark: `hsl(${deg}, ${satDark}%, 14%)`,
-    borderTone: `hsl(${deg}, ${satDark}%, 38%)`,
-    pillBg: `hsl(${deg}, ${satPastel}%, 97%)`
-  };
-}
+const drawerOverlayEl = document.getElementById("drawerOverlay");
+const slideDrawerEl = document.getElementById("slideDrawer");
+const drawerCloseBtn = document.getElementById("drawerCloseBtn");
+const drawerNameEl = document.getElementById("drawerName");
+const drawerRoleEl = document.getElementById("drawerRole");
+const drawerInstBadgeEl = document.getElementById("drawerInstBadge");
+const drawerFieldBadgeEl = document.getElementById("drawerFieldBadge");
+const drawerNavPillsEl = document.getElementById("drawerNavPills");
+const drawerTopicLabelEl = document.getElementById("drawerTopicLabel");
+const drawerQuestionQuoteEl = document.getElementById("drawerQuestionQuote");
+const drawerBodyEl = document.getElementById("drawerBody");
+const drawerPhotoCreditEl = document.getElementById("drawerPhotoCredit");
+const drawerPrevBtn = document.getElementById("drawerPrevBtn");
+const drawerNextBtn = document.getElementById("drawerNextBtn");
+const drawerStepIndicatorEl = document.getElementById("drawerStepIndicator");
 
 function createFallbackSvg(name, color) {
   const initials = name
@@ -1005,38 +1117,39 @@ function createFallbackSvg(name, color) {
     .slice(0, 2)
     .toUpperCase();
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="330" viewBox="0 0 300 330">
-    <rect width="300" height="330" fill="#f1f5f9"/>
-    <circle cx="150" cy="145" r="58" fill="${color}" opacity="0.18"/>
-    <text x="150" y="160" text-anchor="middle" fill="${color}" font-family="Fira Sans, sans-serif" font-size="40" font-weight="400">${initials}</text>
+    <rect width="300" height="330" fill="#f0f5f1"/>
+    <circle cx="150" cy="145" r="56" fill="${color}" opacity="0.16"/>
+    <text x="150" y="160" text-anchor="middle" fill="${color}" font-family="Fira Sans, sans-serif" font-size="38" font-weight="400">${initials}</text>
   </svg>`;
   return "data:image/svg+xml;utf8," + encodeURIComponent(svg);
 }
 
-function renderMenu() {
-  sideMenuEl.innerHTML = "";
+// Horisontaalsed vahelehed põhilehel
+function renderTabs() {
+  editorialTabsEl.innerHTML = "";
   QUESTIONS.forEach((q, idx) => {
     const btn = document.createElement("button");
     btn.type = "button";
-    btn.className = "menu-btn" + (idx === activeQuestionIndex ? " active" : "");
-    btn.setAttribute("aria-label", `${q.btnLabel} – ${q.tooltip}`);
-    btn.innerHTML = `
-      <span>${q.btnLabel}</span>
-      <span class="menu-tooltip">${q.tooltip}</span>
-    `;
-    btn.addEventListener("click", () => switchQuestion(idx));
-    btn.addEventListener("touchstart", () => {
-      document.querySelectorAll(".menu-btn").forEach(b => b.classList.remove("touch-preview"));
-      btn.classList.add("touch-preview");
-      setTimeout(() => btn.classList.remove("touch-preview"), 1400);
-    }, { passive: true });
-    sideMenuEl.appendChild(btn);
+    btn.className = "tab-btn" + (idx === activeQuestionIndex ? " active" : "");
+    btn.setAttribute("role", "tab");
+    btn.setAttribute("aria-selected", idx === activeQuestionIndex ? "true" : "false");
+    btn.textContent = q.label;
+
+    btn.addEventListener("click", () => {
+      switchQuestion(idx);
+    });
+
+    editorialTabsEl.appendChild(btn);
   });
 }
 
-function renderQuestionBanner() {
+function renderQuote() {
   const q = QUESTIONS[activeQuestionIndex];
-  questionTagEl.textContent = q.id === "tutvustus" ? "TUTVUSTUS" : `KÜSIMUS ${q.btnLabel} • ${q.tooltip.toUpperCase()}`;
-  questionFullTextEl.textContent = q.fullText;
+  editorialQuoteTextEl.classList.add("fading");
+  setTimeout(() => {
+    editorialQuoteTextEl.textContent = `„${q.fullText}“`;
+    editorialQuoteTextEl.classList.remove("fading");
+  }, 120);
 }
 
 function isCandidateVisible(cand) {
@@ -1045,8 +1158,15 @@ function isCandidateVisible(cand) {
   return fieldMatches && instMatches;
 }
 
+function hasAnswer(cand, qId) {
+  const ans = cand.vastused[qId] || "";
+  return !ans.includes("ei esitanud sellele ankeediküsimusele vastust");
+}
+
+// Kaartide renderdamine
 function renderGrid() {
   photoGridEl.innerHTML = "";
+  const curQ = QUESTIONS[activeQuestionIndex];
 
   CANDIDATES.forEach(cand => {
     const card = document.createElement("div");
@@ -1063,9 +1183,17 @@ function renderGrid() {
       card.classList.add("is-hidden");
     }
 
+    // Märge, kui kandidaadil puudub sellele küsimusele vastus
+    if (curQ.id !== "tutvustus" && !hasAnswer(cand, curQ.id)) {
+      card.classList.add("no-answer");
+    }
+
+    // Fotoraam
     const frame = document.createElement("div");
     frame.className = "photo-frame";
-    frame.style.borderColor = cand.asutuseToon;
+
+    const imgWrap = document.createElement("div");
+    imgWrap.className = "photo-img-wrap";
 
     const img = document.createElement("img");
     img.src = cand.pilt;
@@ -1075,41 +1203,49 @@ function renderGrid() {
       this.onerror = null;
       this.src = createFallbackSvg(cand.nimi, cand.asutuseToon);
     };
+    imgWrap.appendChild(img);
 
-    const badge = document.createElement("div");
-    badge.className = "inst-badge";
-    badge.style.backgroundColor = cand.asutuseToon;
-    badge.textContent = cand.asutus;
+    const tag = document.createElement("span");
+    tag.className = "unanswered-tag";
+    tag.textContent = "Vastuseta";
+    imgWrap.appendChild(tag);
 
-    frame.appendChild(img);
-    frame.appendChild(badge);
+    // Paks alaosa asutuse tunnusvärvis koos teadlase nimega (lingivalmidusega)
+    const nameBar = document.createElement("div");
+    nameBar.className = "frame-name-bar";
 
-    const nameEl = document.createElement("div");
-    nameEl.className = "candidate-name";
-    nameEl.style.textDecorationColor = cand.asutuseToon;
-    nameEl.textContent = cand.nimi;
+    const nameLink = document.createElement("a");
+    nameLink.href = "#";
+    nameLink.className = "candidate-name-link";
+    nameLink.textContent = cand.nimi;
+    nameLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      openDrawer(cand);
+    });
+
+    nameBar.appendChild(nameLink);
+    frame.appendChild(imgWrap);
+    frame.appendChild(nameBar);
+
+    // Metaandmed foto all
+    const meta = document.createElement("div");
+    meta.className = "card-meta";
+    meta.textContent = `${cand.asutus} · ${cand.valdkond}`;
 
     card.appendChild(frame);
-    card.appendChild(nameEl);
+    card.appendChild(meta);
 
-    // Hüpikaken avaneb klõpsates
+    // Klõpsates avaneb slide-over
     card.addEventListener("click", (e) => {
       e.stopPropagation();
-      if (activeCandidateId === cand.id) {
-        closePopover();
-      } else {
-        openPopover(cand, card);
-      }
+      openDrawer(cand);
     });
 
     card.addEventListener("keydown", (e) => {
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
-        if (activeCandidateId === cand.id) {
-          closePopover();
-        } else {
-          openPopover(cand, card);
-        }
+        openDrawer(cand);
       }
     });
 
@@ -1117,7 +1253,60 @@ function renderGrid() {
   });
 }
 
-function openPopover(cand, anchorCard) {
+// Märgatav laine-animatsioon fotovõrgustikul küsimuse vahetamisel
+function triggerGridQuestionAnimation() {
+  const curQ = QUESTIONS[activeQuestionIndex];
+  const visibleCards = Array.from(photoGridEl.querySelectorAll(".candidate-card:not(.is-hidden)"));
+
+  visibleCards.forEach((card, idx) => {
+    const id = parseInt(card.dataset.id, 10);
+    const cand = CANDIDATES.find(c => c.id === id);
+
+    // Uuenda vastuseta staatust
+    if (curQ.id !== "tutvustus" && cand && !hasAnswer(cand, curQ.id)) {
+      card.classList.add("no-answer");
+    } else {
+      card.classList.remove("no-answer");
+    }
+
+    // Eemalda vana animatsiooniklass ja lisa uus staggered viivitusega
+    card.classList.remove("card-waving");
+    card.style.animationDelay = `${idx * 22}ms`;
+    void card.offsetWidth; // force reflow
+    card.classList.add("card-waving");
+
+    card.addEventListener("animationend", () => {
+      card.classList.remove("card-waving");
+      card.style.animationDelay = "";
+    }, { once: true });
+  });
+}
+
+// Slide-over drawer küsimuste navigatsiooniriba ehitamine
+function renderDrawerNavPills() {
+  drawerNavPillsEl.innerHTML = "";
+  QUESTIONS.forEach((q, idx) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "drawer-pill-btn" + (idx === activeQuestionIndex ? " active" : "");
+    btn.textContent = q.id === "tutvustus" ? "Tutvustus" : `${idx}. ${q.label}`;
+
+    btn.addEventListener("click", () => {
+      switchQuestion(idx);
+    });
+
+    drawerNavPillsEl.appendChild(btn);
+  });
+
+  // Skrolli aktiivne nupp sahtlis nähtavale
+  const activePill = drawerNavPillsEl.querySelector(".drawer-pill-btn.active");
+  if (activePill) {
+    activePill.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+  }
+}
+
+// Slide-over drawer avamine ja uuendamine
+function openDrawer(cand) {
   activeCandidateId = cand.id;
 
   document.querySelectorAll(".candidate-card").forEach(c => {
@@ -1125,121 +1314,120 @@ function openPopover(cand, anchorCard) {
   });
 
   const q = QUESTIONS[activeQuestionIndex];
-  const theme = computeDynamicTheme(cand.valdkonnaToon);
 
-  popoverEl.style.backgroundColor = theme.bgPastel;
-  popoverEl.style.color = theme.textDark;
-  popoverEl.style.borderColor = theme.borderTone;
+  drawerNameEl.textContent = cand.nimi;
+  drawerRoleEl.textContent = cand.amet;
+  drawerInstBadgeEl.textContent = cand.asutus;
+  drawerFieldBadgeEl.textContent = cand.valdkond;
 
-  popoverHeaderEl.style.backgroundColor = theme.headerPastel;
-  popoverCloseBtn.style.color = theme.textDark;
-  popoverCloseBtn.style.borderColor = theme.borderTone;
+  renderDrawerNavPills();
 
-  popoverNameEl.textContent = cand.nimi;
-  popoverRoleEl.textContent = cand.amet;
+  drawerTopicLabelEl.textContent = q.id === "tutvustus" ? "ÜLEVAADE JA TEADUSTÖÖ" : `${q.shortTitle.toUpperCase()}`;
+  drawerQuestionQuoteEl.textContent = `„${q.fullText}“`;
 
-  popoverInstEl.textContent = cand.asutus;
-  popoverInstEl.style.backgroundColor = theme.pillBg;
-  popoverInstEl.style.color = theme.textDark;
-
-  popoverFieldEl.textContent = cand.valdkond;
-  popoverFieldEl.style.backgroundColor = theme.pillBg;
-  popoverFieldEl.style.color = theme.textDark;
+  // Uuenda vastuse teksti animatsiooniga
+  drawerBodyEl.classList.remove("animating");
+  void drawerBodyEl.offsetWidth;
 
   const answerText = cand.vastused[q.id] || "Kandidaat ei esitanud sellele ankeediküsimusele vastust.";
-  popoverBodyEl.innerHTML = "";
+  drawerBodyEl.innerHTML = "";
   answerText.split(/\n\n+/).forEach(para => {
     const trimmed = para.trim();
     if (trimmed) {
       const p = document.createElement("p");
       p.textContent = trimmed;
-      popoverBodyEl.appendChild(p);
+      drawerBodyEl.appendChild(p);
     }
   });
-  popoverBodyEl.scrollTop = 0;
+  drawerBodyEl.scrollTop = 0;
+  drawerBodyEl.classList.add("animating");
 
-  popoverPhotoCreditEl.textContent = `Foto: ${cand.autor}`;
+  drawerPhotoCreditEl.textContent = `Foto: ${cand.autor}`;
 
-  popoverEl.classList.add("visible");
-  positionPopover(anchorCard);
+  // Uuenda sahtli jaluse sammunuppe
+  drawerPrevBtn.disabled = (activeQuestionIndex === 0);
+  drawerNextBtn.disabled = (activeQuestionIndex === QUESTIONS.length - 1);
+  drawerStepIndicatorEl.textContent = `${activeQuestionIndex + 1} / ${QUESTIONS.length}`;
+
+  slideDrawerEl.classList.add("visible");
+  slideDrawerEl.setAttribute("aria-hidden", "false");
+  drawerOverlayEl.classList.add("visible");
 }
 
-function positionPopover(anchorCard) {
-  if (!anchorCard) return;
-  const rect = anchorCard.getBoundingClientRect();
-  const popRect = popoverEl.getBoundingClientRect();
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
-  const margin = 12;
-
-  let left = rect.right + 10;
-  if (left + popRect.width > vw - margin) {
-    left = rect.left - popRect.width - 10;
-  }
-  if (left < margin) {
-    left = Math.max(margin, Math.min(vw - popRect.width - margin, (vw - popRect.width) / 2));
-  }
-
-  let top = rect.top - 10;
-  if (top + popRect.height > vh - margin) {
-    top = vh - popRect.height - margin;
-  }
-  if (top < margin) {
-    top = margin;
-  }
-
-  popoverEl.style.left = `${Math.round(left)}px`;
-  popoverEl.style.top = `${Math.round(top)}px`;
-}
-
-function closePopover() {
-  popoverEl.classList.remove("visible");
+function closeDrawer() {
+  slideDrawerEl.classList.remove("visible");
+  slideDrawerEl.setAttribute("aria-hidden", "true");
+  drawerOverlayEl.classList.remove("visible");
   activeCandidateId = null;
   document.querySelectorAll(".candidate-card").forEach(c => c.classList.remove("selected"));
 }
 
-popoverCloseBtn.addEventListener("click", (e) => {
-  e.stopPropagation();
-  closePopover();
-});
+drawerCloseBtn.addEventListener("click", closeDrawer);
+drawerOverlayEl.addEventListener("click", closeDrawer);
 
-document.addEventListener("click", (e) => {
-  if (popoverEl.classList.contains("visible") && !popoverEl.contains(e.target)) {
-    closePopover();
+// Sahtlis eelmise ja järgmise küsimuse nupud
+drawerPrevBtn.addEventListener("click", () => {
+  if (activeQuestionIndex > 0) {
+    switchQuestion(activeQuestionIndex - 1);
   }
 });
 
+drawerNextBtn.addEventListener("click", () => {
+  if (activeQuestionIndex < QUESTIONS.length - 1) {
+    switchQuestion(activeQuestionIndex + 1);
+  }
+});
+
+// Klahvistikunavigatsioon sahtlis (nool vasakule / nool paremale küsimuste vahel)
+document.addEventListener("keydown", (e) => {
+  if (!slideDrawerEl.classList.contains("visible")) return;
+
+  if (e.key === "Escape") {
+    closeDrawer();
+  } else if (e.key === "ArrowLeft" && activeQuestionIndex > 0) {
+    e.preventDefault();
+    switchQuestion(activeQuestionIndex - 1);
+  } else if (e.key === "ArrowRight" && activeQuestionIndex < QUESTIONS.length - 1) {
+    e.preventDefault();
+    switchQuestion(activeQuestionIndex + 1);
+  }
+});
+
+// Teema vahetamine (nii pealehelt kui sahtli seest)
 function switchQuestion(newIndex) {
   if (newIndex < 0 || newIndex >= QUESTIONS.length || newIndex === activeQuestionIndex) return;
   activeQuestionIndex = newIndex;
 
-  document.querySelectorAll(".menu-btn").forEach((btn, idx) => {
-    btn.classList.toggle("active", idx === activeQuestionIndex);
+  // Uuenda pealehe vahelehti
+  document.querySelectorAll(".tab-btn").forEach((btn, idx) => {
+    const isActive = (idx === activeQuestionIndex);
+    btn.classList.toggle("active", isActive);
+    btn.setAttribute("aria-selected", isActive ? "true" : "false");
   });
 
-  stageContainerEl.classList.add("fading");
-  setTimeout(() => {
-    renderQuestionBanner();
+  // Uuenda tsitaati ja vallanda pealehel laine-animatsioon
+  renderQuote();
+  triggerGridQuestionAnimation();
 
-    if (activeCandidateId) {
-      const activeCand = CANDIDATES.find(c => c.id === activeCandidateId);
-      const activeCard = photoGridEl.querySelector(`[data-id="${activeCandidateId}"]`);
-      if (activeCand && activeCard) {
-        openPopover(activeCand, activeCard);
-      }
+  // Kui sahtel on lahti, värskenda sujuvalt kandidaadi vastust ja sahtli juhtnuppe
+  if (activeCandidateId) {
+    const activeCand = CANDIDATES.find(c => c.id === activeCandidateId);
+    if (activeCand) {
+      openDrawer(activeCand);
     }
-    stageContainerEl.classList.remove("fading");
-  }, 160);
+  }
 }
 
-// Nõue 1: FLIP animatsioon – kandidaadid liiguvad sujuvalt üles äärde vabadele kohtadele
+// FLIP animatsioon filtrite valimisel
 function applyFilterAnimation() {
   if (isAnimatingFilter) return;
   isAnimatingFilter = true;
 
+  const hasActiveFilter = (activeFieldFilter !== "all" || activeInstFilter !== "all");
+  filterActionsEl.classList.toggle("is-hidden", !hasActiveFilter);
+
   const cards = Array.from(photoGridEl.querySelectorAll(".candidate-card"));
 
-  // 1. FIRST: Salvesta kõigi hetkel nähtavate kaartide asukohad
   const firstRects = new Map();
   cards.forEach(card => {
     if (!card.classList.contains("is-hidden")) {
@@ -1247,8 +1435,6 @@ function applyFilterAnimation() {
     }
   });
 
-  // 2. DOM OLEK: Peida väljafiltreeritud kaardid display: none abil,
-  // mis viib allesjäävad kaardid automaatselt kompaktsele kohale üles äärde
   cards.forEach(card => {
     const id = parseInt(card.dataset.id, 10);
     const cand = CANDIDATES.find(c => c.id === id);
@@ -1256,7 +1442,6 @@ function applyFilterAnimation() {
     card.classList.toggle("is-hidden", !visible);
   });
 
-  // 3. LAST & INVERT: Mõõda uued asukohad ja rakenda inverteeriv nihe
   cards.forEach(card => {
     if (!card.classList.contains("is-hidden")) {
       const first = firstRects.get(card);
@@ -1270,29 +1455,25 @@ function applyFilterAnimation() {
           card.style.transition = 'none';
         }
       } else {
-        // Uus kaart, mis enne oli peidus
         card.style.opacity = '0';
-        card.style.transform = 'translateY(18px) scale(0.96)';
+        card.style.transform = 'translateY(16px) scale(0.96)';
         card.style.transition = 'none';
       }
     }
   });
 
-  // 4. Force reflow
-  photoGridEl.offsetHeight;
+  photoGridEl.offsetHeight; // force reflow
 
-  // 5. PLAY: Animeeri sujuvalt uude asukohta üles äärde
   requestAnimationFrame(() => {
     cards.forEach(card => {
       if (!card.classList.contains("is-hidden")) {
-        card.style.transition = 'transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.35s ease, box-shadow 0.28s ease';
+        card.style.transition = 'transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.35s ease, box-shadow 0.26s ease';
         card.style.transform = '';
         card.style.opacity = '1';
       }
     });
   });
 
-  // Pärast animatsiooni lõppu taasta tavapärane hover-üleminek
   setTimeout(() => {
     cards.forEach(card => {
       if (!card.classList.contains("is-hidden")) {
@@ -1302,23 +1483,17 @@ function applyFilterAnimation() {
     isAnimatingFilter = false;
   }, 480);
 
-  // Kontrolli infokaardi olekut
   if (activeCandidateId) {
     const activeCand = CANDIDATES.find(c => c.id === activeCandidateId);
     if (!isCandidateVisible(activeCand)) {
-      closePopover();
-    } else {
-      const activeCard = photoGridEl.querySelector(`[data-id="${activeCandidateId}"]`);
-      if (activeCard) {
-        setTimeout(() => positionPopover(activeCard), 260);
-      }
+      closeDrawer();
     }
   }
 }
 
 function setupFilters() {
-  const fieldBtns = document.querySelectorAll("#fieldFilters .filter-pill");
-  const instBtns = document.querySelectorAll("#instFilters .filter-pill");
+  const fieldBtns = document.querySelectorAll("#fieldFilters .pill-btn");
+  const instBtns = document.querySelectorAll("#instFilters .pill-btn");
 
   fieldBtns.forEach(btn => {
     btn.addEventListener("click", () => {
@@ -1338,10 +1513,7 @@ function setupFilters() {
     });
   });
 
-  // Nõue 2: Reset nupp lähtestab mõlemad filtrid "all" peale
   resetFiltersBtn.addEventListener("click", () => {
-    if (activeFieldFilter === "all" && activeInstFilter === "all") return;
-
     activeFieldFilter = "all";
     activeInstFilter = "all";
 
@@ -1352,66 +1524,9 @@ function setupFilters() {
   });
 }
 
-// Hiire rullik
-document.getElementById("errGraphic").addEventListener("wheel", (e) => {
-  if (popoverEl.classList.contains("visible") && popoverEl.contains(e.target)) {
-    return;
-  }
-  if (Math.abs(e.deltaY) < 18) return;
-  e.preventDefault();
-  if (wheelCooldown) return;
-
-  wheelCooldown = true;
-  if (e.deltaY > 0 && activeQuestionIndex < QUESTIONS.length - 1) {
-    switchQuestion(activeQuestionIndex + 1);
-  } else if (e.deltaY < 0 && activeQuestionIndex > 0) {
-    switchQuestion(activeQuestionIndex - 1);
-  }
-  setTimeout(() => {
-    wheelCooldown = false;
-  }, 360);
-}, { passive: false });
-
-// Nutiseadme viiped
-let touchStartY = null;
-let touchStartX = null;
-
-document.getElementById("errGraphic").addEventListener("touchstart", (e) => {
-  if (popoverEl.classList.contains("visible") && popoverEl.contains(e.target)) {
-    touchStartY = null;
-    return;
-  }
-  if (e.touches.length === 1) {
-    touchStartY = e.touches[0].clientY;
-    touchStartX = e.touches[0].clientX;
-  }
-}, { passive: true });
-
-document.getElementById("errGraphic").addEventListener("touchend", (e) => {
-  if (touchStartY === null || e.changedTouches.length === 0) return;
-  const deltaY = touchStartY - e.changedTouches[0].clientY;
-  const deltaX = Math.abs(touchStartX - e.changedTouches[0].clientX);
-
-  if (Math.abs(deltaY) > 60 && Math.abs(deltaY) > deltaX * 1.5) {
-    if (deltaY > 0 && activeQuestionIndex < QUESTIONS.length - 1) {
-      switchQuestion(activeQuestionIndex + 1);
-    } else if (deltaY < 0 && activeQuestionIndex > 0) {
-      switchQuestion(activeQuestionIndex - 1);
-    }
-  }
-  touchStartY = null;
-}, { passive: true });
-
-window.addEventListener("resize", () => {
-  if (activeCandidateId && popoverEl.classList.contains("visible")) {
-    const activeCard = photoGridEl.querySelector(`[data-id="${activeCandidateId}"]`);
-    if (activeCard) positionPopover(activeCard);
-  }
-});
-
 // Alglaadimine
-renderMenu();
-renderQuestionBanner();
+renderTabs();
+renderQuote();
 renderGrid();
 setupFilters();
 </script>

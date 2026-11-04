@@ -202,6 +202,10 @@
     box-shadow: 0 0 0 1px #ffffff;
   }
 
+  .pill-btn.is-hidden {
+    display: none !important;
+  }
+
   /* Puhasta filtrid nupp ilmub nähtavale AINULT aktiivse filtri korral */
   .filter-actions {
     display: flex;
@@ -379,7 +383,7 @@
     line-height: 1.3;
   }
 
-  /* Slide-over drawer lahendus */
+  /* Slide-over drawer lahendus valdkonna värviskeemiga */
   .drawer-overlay {
     position: fixed;
     inset: 0;
@@ -403,13 +407,14 @@
     bottom: 0;
     width: 520px;
     max-width: calc(100vw - 20px);
-    background: #ffffff;
-    box-shadow: -10px 0 36px rgba(18, 41, 20, 0.2);
+    background: var(--drawer-bg, #ffffff);
+    color: var(--drawer-text, var(--nov-text-main));
+    box-shadow: -10px 0 36px rgba(0, 0, 0, 0.18);
     z-index: 9999;
     display: flex;
     flex-direction: column;
     transform: translateX(100%);
-    transition: transform 0.34s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform 0.34s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.25s ease, color 0.25s ease;
   }
 
   .slide-drawer.visible {
@@ -418,13 +423,14 @@
 
   .drawer-header {
     padding: 18px 22px 14px 22px;
-    background: var(--nov-green-tint);
-    border-bottom: 1px solid var(--nov-green-border);
+    background: var(--drawer-header-bg, var(--nov-green-tint));
+    border-bottom: 1px solid var(--drawer-border, var(--nov-green-border));
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
     gap: 12px;
     flex-shrink: 0;
+    transition: background-color 0.25s ease, border-color 0.25s ease;
   }
 
   .drawer-person-info {
@@ -433,14 +439,14 @@
 
   .drawer-name {
     font-size: 20px;
-    color: var(--nov-green-deep);
+    color: var(--drawer-text, var(--nov-green-deep));
     line-height: 1.25;
     margin-bottom: 3px;
   }
 
   .drawer-role {
     font-size: 12.5px;
-    color: var(--nov-text-muted);
+    color: var(--drawer-text-muted, var(--nov-text-muted));
     line-height: 1.35;
     margin-bottom: 8px;
   }
@@ -455,14 +461,15 @@
     font-size: 11px;
     padding: 2.5px 8px;
     border-radius: 12px;
-    background: #ffffff;
-    border: 1px solid var(--nov-green-border);
-    color: var(--nov-text-main);
+    background: var(--drawer-bg, #ffffff);
+    border: 1px solid var(--drawer-border, var(--nov-green-border));
+    color: var(--drawer-text, var(--nov-text-main));
+    transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
   }
 
   .drawer-close-btn {
-    background: #ffffff;
-    border: 1px solid var(--nov-green-border);
+    background: var(--drawer-bg, #ffffff);
+    border: 1px solid var(--drawer-border, var(--nov-green-border));
     border-radius: 50%;
     width: 32px;
     height: 32px;
@@ -470,26 +477,27 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: var(--nov-text-main);
+    color: var(--drawer-text, var(--nov-text-main));
     flex-shrink: 0;
-    transition: background-color 0.18s ease, transform 0.18s ease;
+    transition: background-color 0.18s ease, transform 0.18s ease, border-color 0.25s ease, color 0.25s ease;
   }
 
   .drawer-close-btn:hover {
-    background: var(--nov-green-tint-hover);
+    background: var(--drawer-header-bg, var(--nov-green-tint-hover));
     transform: rotate(90deg);
   }
 
   /* Küsimuste navigeerimisriba sahtli sees */
   .drawer-nav-bar {
-    background: #edf5ee;
+    background: var(--drawer-subtle-bg, #edf5ee);
     padding: 8px 18px;
-    border-bottom: 1px solid var(--nov-green-border);
+    border-bottom: 1px solid var(--drawer-border, var(--nov-green-border));
     overflow-x: auto;
     scrollbar-width: none;
     flex-shrink: 0;
     display: flex;
     align-items: center;
+    transition: background-color 0.25s ease, border-color 0.25s ease;
   }
   .drawer-nav-bar::-webkit-scrollbar {
     display: none;
@@ -502,51 +510,54 @@
   }
 
   .drawer-pill-btn {
-    background: #ffffff;
-    border: 1px solid var(--nov-green-border);
-    color: var(--nov-text-muted);
+    background: var(--drawer-bg, #ffffff);
+    border: 1px solid var(--drawer-border, var(--nov-green-border));
+    color: var(--drawer-text-muted, var(--nov-text-muted));
     font-size: 11.5px;
     padding: 4px 10px;
     border-radius: 14px;
     cursor: pointer;
     line-height: 1.2;
     white-space: nowrap;
-    transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+    transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
   }
 
   .drawer-pill-btn:hover {
-    background: var(--nov-green-tint-hover);
-    color: var(--nov-green-dark);
-    border-color: var(--nov-green-subtle);
+    background: var(--drawer-header-bg, var(--nov-green-tint-hover));
+    color: var(--drawer-text, var(--nov-green-dark));
   }
 
   .drawer-pill-btn.active {
-    background: var(--nov-green);
-    color: #ffffff;
-    border-color: var(--nov-green);
+    background: var(--drawer-accent, var(--nov-green));
+    color: var(--drawer-accent-text, #ffffff);
+    border-color: var(--drawer-accent, var(--nov-green));
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
   }
 
   /* Sahtli küsimuse päis ja tsitaat */
   .drawer-topic-header {
     padding: 12px 22px 10px 22px;
-    background: #fafdfa;
-    border-bottom: 1px solid var(--nov-green-border);
+    background: var(--drawer-bg, #fafdfa);
+    border-bottom: 1px solid var(--drawer-border, var(--nov-green-border));
     flex-shrink: 0;
+    transition: background-color 0.25s ease, border-color 0.25s ease;
   }
 
   .drawer-topic-label {
     font-size: 11.5px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    color: var(--nov-green-dark);
+    color: var(--drawer-accent, var(--nov-green-dark));
     margin-bottom: 4px;
+    transition: color 0.25s ease;
   }
 
   .drawer-question-quote {
     font-size: 13.5px;
     font-style: italic;
     line-height: 1.4;
-    color: var(--nov-green-deep);
+    color: var(--drawer-text, var(--nov-green-deep));
+    transition: color 0.25s ease;
   }
 
   /* Sahtli keha animatsiooniga */
@@ -555,19 +566,21 @@
     overflow-y: auto;
     font-size: 14px;
     line-height: 1.62;
-    color: var(--nov-text-main);
+    background: var(--drawer-bg, #ffffff);
+    color: var(--drawer-text, var(--nov-text-main));
     flex: 1;
     user-select: text;
+    transition: background-color 0.25s ease, color 0.25s ease;
   }
 
   .drawer-body::-webkit-scrollbar {
     width: 6px;
   }
   .drawer-body::-webkit-scrollbar-track {
-    background: #f7faf7;
+    background: transparent;
   }
   .drawer-body::-webkit-scrollbar-thumb {
-    background: #c5dac7;
+    background: var(--drawer-border, #c5dac7);
     border-radius: 3px;
   }
 
@@ -599,14 +612,15 @@
   .drawer-footer {
     padding: 10px 22px;
     font-size: 11px;
-    color: var(--nov-text-muted);
-    border-top: 1px solid var(--nov-green-border);
+    color: var(--drawer-text-muted, var(--nov-text-muted));
+    border-top: 1px solid var(--drawer-border, var(--nov-green-border));
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-shrink: 0;
-    background: #fafdfa;
+    background: var(--drawer-subtle-bg, #fafdfa);
     gap: 12px;
+    transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
   }
 
   .drawer-nav-controls {
@@ -616,9 +630,9 @@
   }
 
   .drawer-step-btn {
-    background: #ffffff;
-    border: 1px solid var(--nov-green-border);
-    color: var(--nov-text-main);
+    background: var(--drawer-bg, #ffffff);
+    border: 1px solid var(--drawer-border, var(--nov-green-border));
+    color: var(--drawer-text, var(--nov-text-main));
     font-size: 11.5px;
     padding: 4px 10px;
     border-radius: 4px;
@@ -628,9 +642,8 @@
   }
 
   .drawer-step-btn:hover:not(:disabled) {
-    background: var(--nov-green-tint-hover);
-    border-color: var(--nov-green-subtle);
-    color: var(--nov-green-dark);
+    background: var(--drawer-header-bg, var(--nov-green-tint-hover));
+    color: var(--drawer-text, var(--nov-green-dark));
   }
 
   .drawer-step-btn:disabled {
@@ -640,7 +653,7 @@
 
   .drawer-step-indicator {
     font-size: 11px;
-    color: var(--nov-text-muted);
+    color: var(--drawer-text-muted, var(--nov-text-muted));
     min-width: 38px;
     text-align: center;
   }
@@ -1147,7 +1160,9 @@ function renderQuote() {
   const q = QUESTIONS[activeQuestionIndex];
   editorialQuoteTextEl.classList.add("fading");
   setTimeout(() => {
-    editorialQuoteTextEl.textContent = `„${q.fullText}“`;
+    // Ilma jutumärkideta ja ilma küsimuse numbrita
+    const cleanedText = q.id === "tutvustus" ? q.fullText : q.fullText.replace(/^\d+\.\s*/, '');
+    editorialQuoteTextEl.textContent = cleanedText;
     editorialQuoteTextEl.classList.remove("fading");
   }, 120);
 }
@@ -1289,7 +1304,7 @@ function renderDrawerNavPills() {
     const btn = document.createElement("button");
     btn.type = "button";
     btn.className = "drawer-pill-btn" + (idx === activeQuestionIndex ? " active" : "");
-    btn.textContent = q.id === "tutvustus" ? "Tutvustus" : `${idx}. ${q.label}`;
+    btn.textContent = q.label;
 
     btn.addEventListener("click", () => {
       switchQuestion(idx);
@@ -1305,6 +1320,49 @@ function renderDrawerNavPills() {
   }
 }
 
+// Arvutab valdkonna värviskeemi külgpaneeli tausta ja fondi jaoks
+function computeFieldTheme(hexCode) {
+  const clean = hexCode.replace("#", "").trim();
+  const r = parseInt(clean.substring(0, 2), 16) / 255;
+  const g = parseInt(clean.substring(2, 4), 16) / 255;
+  const b = parseInt(clean.substring(4, 6), 16) / 255;
+
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  let h = 0;
+  let s = 0;
+  const l = (max + min) / 2;
+
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+      case g: h = (b - r) / d + 2; break;
+      case b: h = (r - g) / d + 4; break;
+    }
+    h /= 6;
+  }
+
+  const deg = Math.round(h * 360);
+
+  // WCAG relatiivne heledus nupule valge vs musta teksti valimiseks
+  const toLinear = c => c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  const lum = 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
+  const accentText = (lum < 0.38) ? "#ffffff" : "#111111";
+
+  return {
+    bg: `hsl(${deg}, 32%, 97.6%)`,
+    header: `hsl(${deg}, 38%, 92.5%)`,
+    subtle: `hsl(${deg}, 30%, 94.8%)`,
+    border: `hsl(${deg}, 28%, 83.5%)`,
+    text: `hsl(${deg}, 65%, 12.5%)`,
+    muted: `hsl(${deg}, 35%, 35%)`,
+    accent: hexCode,
+    accentText: accentText
+  };
+}
+
 // Slide-over drawer avamine ja uuendamine
 function openDrawer(cand) {
   activeCandidateId = cand.id;
@@ -1315,6 +1373,17 @@ function openDrawer(cand) {
 
   const q = QUESTIONS[activeQuestionIndex];
 
+  // Rakenda külgpaneelile teadlase valdkonna dünaamiline värviskeem
+  const theme = computeFieldTheme(cand.valdkonnaToon);
+  slideDrawerEl.style.setProperty("--drawer-bg", theme.bg);
+  slideDrawerEl.style.setProperty("--drawer-header-bg", theme.header);
+  slideDrawerEl.style.setProperty("--drawer-subtle-bg", theme.subtle);
+  slideDrawerEl.style.setProperty("--drawer-border", theme.border);
+  slideDrawerEl.style.setProperty("--drawer-text", theme.text);
+  slideDrawerEl.style.setProperty("--drawer-text-muted", theme.muted);
+  slideDrawerEl.style.setProperty("--drawer-accent", theme.accent);
+  slideDrawerEl.style.setProperty("--drawer-accent-text", theme.accentText);
+
   drawerNameEl.textContent = cand.nimi;
   drawerRoleEl.textContent = cand.amet;
   drawerInstBadgeEl.textContent = cand.asutus;
@@ -1322,8 +1391,8 @@ function openDrawer(cand) {
 
   renderDrawerNavPills();
 
-  drawerTopicLabelEl.textContent = q.id === "tutvustus" ? "ÜLEVAADE JA TEADUSTÖÖ" : `${q.shortTitle.toUpperCase()}`;
-  drawerQuestionQuoteEl.textContent = `„${q.fullText}“`;
+  drawerTopicLabelEl.textContent = q.id === "tutvustus" ? "ÜLEVAADE JA TEADUSTÖÖ" : q.label.toUpperCase();
+  drawerQuestionQuoteEl.textContent = q.id === "tutvustus" ? q.fullText : q.fullText.replace(/^\d+\.\s*/, '');
 
   // Uuenda vastuse teksti animatsiooniga
   drawerBodyEl.classList.remove("animating");
@@ -1419,9 +1488,47 @@ function switchQuestion(newIndex) {
 }
 
 // FLIP animatsioon filtrite valimisel
+// Uuendab ristfiltrina pill-nuppude nähtavust (kui kandidaate ei leidu, peidab nupu)
+function updateFilterPillVisibility() {
+  const fieldBtns = document.querySelectorAll("#fieldFilters .pill-btn");
+  const instBtns = document.querySelectorAll("#instFilters .pill-btn");
+
+  // Kontrolli asutuste nuppe vastavalt valitud valdkonnale
+  instBtns.forEach(btn => {
+    const instVal = btn.dataset.inst;
+    if (instVal === "all") {
+      btn.classList.remove("is-hidden");
+      return;
+    }
+    // Kas leidub mõni kandidaat valitud valdkonnas, kes töötab selles asutuses?
+    const hasCandidates = CANDIDATES.some(c => {
+      const matchField = (activeFieldFilter === "all" || c.valdkond === activeFieldFilter);
+      return matchField && c.asutus === instVal;
+    });
+    btn.classList.toggle("is-hidden", !hasCandidates);
+  });
+
+  // Kontrolli valdkondade nuppe vastavalt valitud asutusele
+  fieldBtns.forEach(btn => {
+    const fieldVal = btn.dataset.field;
+    if (fieldVal === "all") {
+      btn.classList.remove("is-hidden");
+      return;
+    }
+    // Kas leidub mõni kandidaat valitud asutuses, kes kuulub sellesse valdkonda?
+    const hasCandidates = CANDIDATES.some(c => {
+      const matchInst = (activeInstFilter === "all" || c.asutus === activeInstFilter);
+      return matchInst && c.valdkond === fieldVal;
+    });
+    btn.classList.toggle("is-hidden", !hasCandidates);
+  });
+}
+
 function applyFilterAnimation() {
   if (isAnimatingFilter) return;
   isAnimatingFilter = true;
+
+  updateFilterPillVisibility();
 
   const hasActiveFilter = (activeFieldFilter !== "all" || activeInstFilter !== "all");
   filterActionsEl.classList.toggle("is-hidden", !hasActiveFilter);

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Akadeemikukandidaadid 2026</title>
+<title>Akadeemikukandidaadid – ERR Novaator</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
@@ -740,7 +740,7 @@
 
 <div class="err-graphic-container" id="errGraphic">
   <header class="err-header">
-    <h1 class="err-title">Akadeemikukandidaadid 2026</h1>
+    <h1 class="err-title">Eesti Teaduste Akadeemia akadeemikukandidaadid</h1>
     <p class="err-subtitle">Vali teema ning klõpsa teadlase fotol, et avada paremalt tema täismahus vastus ja ülevaade.</p>
 
     <!-- Horisontaalsed toimetuslikud vahelehed -->
@@ -1730,9 +1730,10 @@ renderQuote();
 renderGrid();
 setupFilters();
 
-// Sahtli sisemine svaipimine mobiilis
+// Sahtli sisemine svaipimine ja topeltkoputus mobiilis
 let drawerTouchStartX = null;
 let drawerTouchStartY = null;
+let lastTapTime = 0;
 
 drawerBodyEl.addEventListener("touchstart", (e) => {
   if (e.touches.length === 1) {
@@ -1745,6 +1746,20 @@ drawerBodyEl.addEventListener("touchend", (e) => {
   if (drawerTouchStartX === null || drawerTouchStartY === null || e.changedTouches.length === 0) return;
   const deltaX = drawerTouchStartX - e.changedTouches[0].clientX;
   const deltaY = drawerTouchStartY - e.changedTouches[0].clientY;
+
+  // Topeltkoputuse tuvastamine sahtli sulgemiseks (kui liikumine on alla 15px)
+  if (Math.abs(deltaX) < 15 && Math.abs(deltaY) < 15) {
+    const currentTime = new Date().getTime();
+    const tapLength = currentTime - lastTapTime;
+    if (tapLength > 0 && tapLength < 350) {
+      closeDrawer();
+      lastTapTime = 0;
+      drawerTouchStartX = null;
+      drawerTouchStartY = null;
+      return;
+    }
+    lastTapTime = currentTime;
+  }
 
   // Horisontaalne svaip (vasakule/paremale) -> vahetab KÜSIMUST
   if (Math.abs(deltaX) > 60 && Math.abs(deltaX) > Math.abs(deltaY) * 1.2) {

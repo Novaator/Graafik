@@ -53,7 +53,7 @@
         /* Uus graafiline profiilikaart */
         .profile-image-wrapper {
             width: 100%;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
             border: 1px solid #e0e0e0;
             border-radius: 4px;
             overflow: hidden;
@@ -66,19 +66,65 @@
             height: auto;
             display: block;
         }
+        
+        /* Peavaate lüliti (View Toggle) */
+        .view-toggle-container {
+            background: #f1f3f5;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--err-blue);
+        }
+
+        .view-toggle-label {
+            font-size: 14pt;
+            margin-bottom: 8px;
+            color: var(--err-text);
+        }
+
+        .view-toggle-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .view-btn {
+            flex: 1;
+            padding: 10px;
+            font-size: 14pt;
+            font-family: inherit;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            background: #fff;
+            color: #555;
+            transition: all 0.2s;
+        }
+
+        .view-btn:first-child {
+            border-radius: 4px 0 0 4px;
+        }
+
+        .view-btn:last-child {
+            border-radius: 0 4px 4px 0;
+        }
+
+        .view-btn.active {
+            background: var(--err-blue);
+            color: #fff;
+            border-color: var(--err-blue);
+        }
 
         /* Tabid */
         .tabs {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
+            gap: 6px;
             margin-bottom: 15px;
         }
 
         .tab-btn {
             background: #e9ecef;
             border: none;
-            padding: 8px 16px;
+            padding: 6px 14px;
             font-size: 14pt;
             font-family: inherit;
             cursor: pointer;
@@ -101,12 +147,20 @@
             display: flex;
             justify-content: flex-end;
             margin-bottom: 15px;
+            align-items: center;
+        }
+        
+        .view-desc {
+            font-size: 12pt;
+            color: #666;
+            margin-right: auto;
+            font-style: italic;
         }
 
         .sort-btn {
             background: none;
             border: 1px solid #ccc;
-            padding: 6px 12px;
+            padding: 4px 10px;
             font-size: 12pt;
             font-family: inherit;
             cursor: pointer;
@@ -139,9 +193,18 @@
         <h1>Kuidas jaotub Eesti teadusportaali lugejaskond?</h1>
         <h2>ERR Novaatori, Delfi Forte ja Postimees Teaduse loetavuse võrdlus erinevates ühiskonnarühmades</h2>
 
-        <!-- Illustreeriv sotsiaaldemograafiline profiil -->
+        <!-- Illustreeriv sotsiaaldemograafiline profiil (Osakaal sihtrühmast fookusega) -->
         <div class="profile-image-wrapper">
-            <img src="https://s.err.ee/photo/orig/2026/11/17/3885001hfefe.jpg" alt="ERR Novaatori tüüpiline lugeja">
+            <img src="watermarked_img_7015145832071877493.jpg" alt="ERR Novaatori tüüpiline lugeja">
+        </div>
+
+        <!-- Põhivaate lüliti -->
+        <div class="view-toggle-container">
+            <div class="view-toggle-label">Vali andmete vaatenurk:</div>
+            <div class="view-toggle-buttons">
+                <button class="view-btn active" data-view="coverage">Loetavus rühma sees (Hõlvatus)</button>
+                <button class="view-btn" data-view="absolute">Osakaal kogulugejaskonnast</button>
+            </div>
         </div>
 
         <div class="tabs" id="tabContainer">
@@ -153,7 +216,8 @@
         </div>
 
         <div class="toolbar">
-            <button class="sort-btn" id="sortBtn">Sorteeri Novaatori järgi: Kahanevalt</button>
+            <div class="view-desc" id="viewDesc">Kui suur osa antud rühmast loeb portaali?</div>
+            <button class="sort-btn" id="sortBtn">Sorteeri: Kahanevalt</button>
         </div>
 
         <div class="canvas-wrapper">
@@ -166,7 +230,8 @@
     </div>
 
     <script>
-        const rawData = {
+        // VAADE 1: Hõlvatus rühma sees (kui suur osa rühmast loeb portaali)
+        const dataCoverage = {
             'Staatus': [
                 {label: 'Õpilane/üliõpilane', n: 48.5, f: 33.5, p: 41.8},
                 {label: 'Ettevõtja', n: 44.8, f: 44.0, p: 41.1},
@@ -203,12 +268,52 @@
             ]
         };
 
+        // VAADE 2: Osakaal kogu lugejaskonnast (kes moodustavad lugejamassi absoluutarvudes)
+        const dataAbsolute = {
+            'Staatus': [
+                {label: 'Palgatöötaja', n: 51.8, f: 52.5, p: 53.1},
+                {label: 'Ettevõtja', n: 15.2, f: 16.1, p: 12.9},
+                {label: 'Pensionär', n: 15.2, f: 18.0, p: 20.8},
+                {label: 'Õpilane/üliõpilane', n: 12.4, f: 9.2, p: 9.8},
+                {label: 'Muu', n: 2.7, f: 2.0, p: 2.0},
+                {label: 'Töötu, tööotsija', n: 2.7, f: 2.6, p: 1.4}
+            ],
+            'Vanus': [
+                {label: '50–64', n: 27.9, f: 27.9, p: 27.0},
+                {label: '35–49', n: 23.9, f: 26.6, p: 26.4},
+                {label: '25–34', n: 17.3, f: 17.7, p: 14.3},
+                {label: '16–24', n: 16.7, f: 11.8, p: 12.9},
+                {label: '65–74', n: 9.7, f: 12.1, p: 12.4},
+                {label: '75+', n: 4.8, f: 4.3, p: 7.0}
+            ],
+            'Haridus': [
+                {label: 'Keskharidus', n: 46.1, f: 51.5, p: 52.0},
+                {label: 'Kõrgharidus', n: 39.1, f: 32.1, p: 34.6},
+                {label: 'Põhiharidus', n: 14.8, f: 16.4, p: 13.5}
+            ],
+            'Regioon': [
+                {label: 'Tallinn', n: 29.1, f: 32.5, p: 34.0},
+                {label: 'Põhja-Eesti', n: 23.3, f: 23.9, p: 18.0},
+                {label: 'Tartu pk', n: 17.6, f: 12.8, p: 16.3},
+                {label: 'Lõuna-Eesti', n: 10.9, f: 10.5, p: 9.8},
+                {label: 'Lääne-Eesti', n: 10.3, f: 10.8, p: 11.0},
+                {label: 'Virumaa', n: 9.1, f: 9.5, p: 11.2}
+            ],
+            'Sugu': [
+                {label: 'Mees', n: 51.2, f: 53.8, p: 50.8},
+                {label: 'Naine', n: 48.2, f: 46.2, p: 49.2},
+                {label: 'Muu*', n: 0.6, f: 0, p: 0.3}
+            ]
+        };
+
+        let currentView = 'coverage'; // 'coverage' või 'absolute'
         let currentCategory = 'Staatus';
         let sortByValue = true;
         let chartInstance = null;
 
         function getChartData() {
-            let dataArr = JSON.parse(JSON.stringify(rawData[currentCategory]));
+            const dataSource = currentView === 'coverage' ? dataCoverage : dataAbsolute;
+            let dataArr = JSON.parse(JSON.stringify(dataSource[currentCategory]));
             
             if (sortByValue) {
                 dataArr.sort((a, b) => b.n - a.n);
@@ -258,7 +363,7 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     layout: {
-                        padding: { right: 40 }
+                        padding: { right: 45 }
                     },
                     plugins: {
                         legend: {
@@ -300,7 +405,7 @@
                     scales: {
                         x: {
                             beginAtZero: true,
-                            max: 80,
+                            max: currentView === 'coverage' ? 80 : 60, // Dünaamiline x-telje maksimum
                             grid: { color: '#eee' },
                             ticks: {
                                 font: { family: 'Fira Sans', size: 12, weight: 400 },
@@ -321,13 +426,36 @@
 
         function updateChart() {
             const currentData = getChartData();
+            
+            // Uuenda x-telje skaalat vastavalt vaatele
+            chartInstance.options.scales.x.max = currentView === 'coverage' ? 80 : 60;
+            
             chartInstance.data.labels = currentData.labels;
             chartInstance.data.datasets[0].data = currentData.novaator;
             chartInstance.data.datasets[1].data = currentData.forte;
             chartInstance.data.datasets[2].data = currentData.postimees;
             chartInstance.update();
+            
+            // Uuenda abiteksti
+            const descEl = document.getElementById('viewDesc');
+            if(currentView === 'coverage') {
+                descEl.textContent = 'Kui suur osa antud rühmast loeb portaali?';
+            } else {
+                descEl.textContent = 'Millise osa moodustab rühm portaali kogulugejaskonnast?';
+            }
         }
 
+        // Põhivaate lüliti kuulajad
+        document.querySelectorAll('.view-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                currentView = e.target.dataset.view;
+                updateChart();
+            });
+        });
+
+        // Kategooriate tabide kuulajad
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -337,9 +465,10 @@
             });
         });
 
+        // Sorteerimisnupp
         document.getElementById('sortBtn').addEventListener('click', (e) => {
             sortByValue = !sortByValue;
-            e.target.textContent = sortByValue ? 'Sorteeri Novaatori järgi: Kahanevalt' : 'Sorteeri Novaatori järgi: Algne järjestus';
+            e.target.textContent = sortByValue ? 'Sorteeri: Kahanevalt' : 'Sorteeri: Algne järjestus';
             updateChart();
         });
 

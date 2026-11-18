@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Erakondade reitingud</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Fira+Sans+Condensed:wght@400&display=swap');
+
+    /* Global reset enforcing ERR typography and strict non-bold rule */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Fira Sans Condensed', sans-serif;
+      font-weight: 400 !important;
+      font-style: normal;
+    }
+
+    html,
+    body {
+      width: 100%;
+      background-color: #FFFFFF;
+      color: #222222;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
+    }
+
+    /* Main chart wrapper sized for iframe embedding and GitHub Pages */
+    .chart-container {
+      width: 100%;
+      max-width: 820px;
+      max-height: 665px;
+      margin: 0 auto;
+      padding: 16px 20px 14px 20px;
+      background-color: #FFFFFF;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    /* Header row: title on left, error bar legend on right */
+    .chart-header {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px 16px;
+      margin-bottom: 14px;
+    }
+
+    .chart-title {
+      color: #333333;
+      font-size: clamp(18px, 2.5vw, 20px);
+      line-height: 1.25;
+      font-weight: 400;
+    }
+
+    .chart-legend {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #333333;
+      font-size: 14px;
+      line-height: 1.2;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .legend-symbol {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* Chart plot area wrapper with continuous 0% vertical axis line */
+    .chart-body {
+      position: relative;
+      width: 100%;
+    }
+
+    .zero-axis-line {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 125px;
+      width: 1px;
+      background-color: #CCCCCC;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    /* Rows stack with exact 5px vertical spacing */
+    .chart-rows {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      width: 100%;
+    }
+
+    /* Individual party row: exact 40px height */
+    .chart-row {
+      display: flex;
+      align-items: center;
+      height: 40px;
+      width: 100%;
+    }
+
+    /* Right-aligned party label column */
+    .party-label {
+      width: 125px;
+      flex-shrink: 0;
+      text-align: right;
+      padding-right: 10px;
+      color: #222222;
+      font-size: 15px;
+      line-height: 1;
+      white-space: nowrap;
+      user-select: none;
+    }
+
+    /* Horizontal bar plotting area */
+    .plot-area {
+      position: relative;
+      flex: 1;
+      height: 40px;
+      display: flex;
+      align-items: center;
+    }
+
+    /* Party rating bar */
+    .party-bar {
+      position: relative;
+      height: 40px;
+      border-radius: 0 3px 3px 0;
+      cursor: pointer;
+      transition: filter 0.15s ease;
+      z-index: 1;
+    }
+
+    .party-bar:hover {
+      filter: brightness(0.95);
+    }
+
+    /* Percentage text inside bars (>= 2.5%) */
+    .bar-label-inside {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 15px;
+      line-height: 1;
+      white-space: nowrap;
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    /* Percentage text outside short bars (< 2.5%) */
+    .bar-label-outside {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #111111;
+      font-size: 15px;
+      line-height: 1;
+      white-space: nowrap;
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    /* Error bar interactive hit container */
+    .error-bar-hit {
+      position: absolute;
+      top: 50%;
+      height: 22px;
+      transform: translateY(-50%);
+      cursor: pointer;
+      z-index: 5;
+    }
+
+    /* Horizontal stem of |--●--| */
+    .error-line {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      height: 1.5px;
+      background-color: #4A4A4A;
+      transform: translateY(-50%);
+      pointer-events: none;
+    }
+
+    /* Left and right vertical end caps of |--●--| */
+    .error-cap-left,
+    .error-cap-right {
+      position: absolute;
+      top: 50%;
+      width: 1.5px;
+      height: 10px;
+      background-color: #4A4A4A;
+      transform: translateY(-50%);
+      pointer-events: none;
+    }
+
+    .error-cap-left {
+      left: 0;
+    }
+
+    .error-cap-right {
+      right: 0;
+    }
+
+    /* Center point dot ● aligned with exact party support */
+    .error-dot {
+      position: absolute;
+      top: 50%;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background-color: #4A4A4A;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      transition: transform 0.12s ease;
+    }
+
+    .error-bar-hit:hover .error-dot {
+      transform: translate(-50%, -50%) scale(1.2);
+    }
+
+    /* Footer strictly on two lines */
+    .chart-footer {
+      text-align: center;
+      margin-top: 14px;
+      font-size: 13px;
+      color: #555555;
+      line-height: 1.4;
+    }
+
+    /* Floating tooltip for party bar hover */
+    .bar-tooltip {
+      position: fixed;
+      top: 0;
+      left: 0;
+      background-color: #FFFFFF;
+      color: #222222;
+      border: 1px solid #CCCCCC;
+      border-radius: 4px;
+      padding: 5px 10px;
+      font-size: 14px;
+      line-height: 1.2;
+      white-space: nowrap;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.1s ease;
+      z-index: 100;
+    }
+
+    /* Dark tooltip anchored directly above the error bar's center dot */
+    .error-tooltip {
+      position: fixed;
+      top: 0;
+      left: 0;
+      transform: translate(-50%, -100%);
+      background-color: #222222;
+      color: #FFFFFF;
+      border-radius: 4px;
+      padding: 4px 8px;
+      font-size: 13px;
+      line-height: 1.2;
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.1s ease;
+      z-index: 110;
+    }
+
+    /* Downward-pointing triangle arrow on error tooltip */
+    .error-tooltip::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border-width: 5px;
+      border-style: solid;
+      border-color: #222222 transparent transparent transparent;
+    }
+
+    /* Compact mobile adjustments */
+    @media (max-width: 420px) {
+      .chart-container {
+        padding: 12px 12px 12px 10px;
+      }
+
+      .party-label {
+        width: 112px;
+        padding-right: 8px;
+        font-size: 14px;
+      }
+
+      .zero-axis-line {
+        left: 112px;
+      }
+
+      .bar-label-inside,
+      .bar-label-outside {
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="chart-container" aria-label="Erakondade reitingute tulpdiagramm">
+    <header class="chart-header">
+      <!-- Asenda [kuupäevad] täpse küsitlusperioodiga -->
+      <h1 class="chart-title">Erakondade reitingud küsitlusperioodil 9.-18.11.2026</h1>
+      <div class="chart-legend" aria-label="Veapiiri legend">
+        <span class="legend-symbol" aria-hidden="true">
+          <svg width="34" height="12" viewBox="0 0 34 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <line x1="1" y1="6" x2="33" y2="6" stroke="#4A4A4A" stroke-width="1.5"/>
+            <line x1="1" y1="1" x2="1" y2="11" stroke="#4A4A4A" stroke-width="1.5"/>
+            <line x1="33" y1="1" x2="33" y2="11" stroke="#4A4A4A" stroke-width="1.5"/>
+            <circle cx="17" cy="6" r="3.5" fill="#4A4A4A"/>
+          </svg>
+        </span>
+        <span>- veapiir</span>
+      </div>
+    </header>
+
+    <section class="chart-body">
+      <div class="zero-axis-line" aria-hidden="true"></div>
+      <div class="chart-rows" id="chart-rows"></div>
+    </section>
+
+    <footer class="chart-footer">
+      <div>Graafika: Mirjam Mäekivi</div>
+      <div>Allikas: Emor</div>
+    </footer>
+  </main>
+
+  <div class="bar-tooltip" id="bar-tooltip" role="tooltip"></div>
+  <div class="error-tooltip" id="error-tooltip" role="tooltip"></div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      // Exact dataset sorted descending by support
+      const partyRatings = [
+        { name: 'Keskerakond', support: 24.7, margin: 2.2, color: '#027D2B', textColor: '#FFFFFF' },
+        { name: 'SDE', support: 20.5, margin: 2.1, color: '#CE1126', textColor: '#FFFFFF' },
+        { name: 'Isamaa', support: 18.9, margin: 2.0, color: '#009DE0', textColor: '#FFFFFF' },
+        { name: 'EKRE', support: 13.8, margin: 1.8, color: '#2139B5', textColor: '#FFFFFF' },
+        { name: 'Reformierakond', support: 10.9, margin: 1.6, color: '#FFDC00', textColor: '#111111' },
+        { name: 'Parempoolsed', support: 5.5, margin: 1.2, color: '#ff6100', textColor: '#111111' },
+        { name: 'ERK', support: 1.6, margin: 0.6, color: '#000000', textColor: '#111111' },
+        { name: 'Eesti 200', support: 1.5, margin: 0.6, color: '#00C0C9', textColor: '#111111' },
+        { name: 'Rohelised', support: 1.4, margin: 0.6, color: '#60BE19', textColor: '#111111' },
+        { name: 'KOOS', support: 1.1, margin: 0.5, color: '#dc5356', textColor: '#111111' }
+      ];
+
+      // Format number with Estonian decimal comma and 1 decimal place
+      function formatEstonianPercent(value) {
+        return value.toFixed(1).replace('.', ',') + '%';
+      }
+
+      // Compute horizontal scale upper bound (26.9 * 1.15 = 30.935)
+      const maxScale = Math.max.apply(null, partyRatings.map(function (d) {
+        return d.support + d.margin;
+      })) * 1.15;
+
+      const rowsContainer = document.getElementById('chart-rows');
+      const barTooltip = document.getElementById('bar-tooltip');
+      const errorTooltip = document.getElementById('error-tooltip');
+
+      function hideBarTooltip() {
+        barTooltip.style.opacity = '0';
+      }
+
+      function hideErrorTooltip() {
+        errorTooltip.style.opacity = '0';
+      }
+
+      function showBarTooltip(party, clientX, clientY) {
+        hideErrorTooltip();
+        barTooltip.textContent = party.name + ': ' + formatEstonianPercent(party.support);
+        barTooltip.style.opacity = '1';
+
+        const tooltipRect = barTooltip.getBoundingClientRect();
+        const offset = 12;
+        let left = clientX + offset;
+        let top = clientY - tooltipRect.height - 8;
+
+        // Keep tooltip inside viewport horizontally
+        if (left + tooltipRect.width > window.innerWidth - 8) {
+          left = clientX - tooltipRect.width - offset;
+        }
+        if (left < 8) {
+          left = 8;
+        }
+
+        // Keep tooltip inside viewport vertically
+        if (top < 8) {
+          top = clientY + offset;
+        }
+
+        barTooltip.style.left = left + 'px';
+        barTooltip.style.top = top + 'px';
+      }
+
+      function showErrorTooltip(party, dotElement) {
+        hideBarTooltip();
+        errorTooltip.textContent = '± ' + formatEstonianPercent(party.margin);
+
+        const dotRect = dotElement.getBoundingClientRect();
+        const centerX = dotRect.left + dotRect.width / 2;
+        const topY = dotRect.top - 8;
+
+        errorTooltip.style.left = centerX + 'px';
+        errorTooltip.style.top = topY + 'px';
+        errorTooltip.style.opacity = '1';
+      }
+
+      // Render each party row
+      partyRatings.forEach(function (party) {
+        const row = document.createElement('div');
+        row.className = 'chart-row';
+
+        // Left party name column
+        const label = document.createElement('div');
+        label.className = 'party-label';
+        label.textContent = party.name;
+        row.appendChild(label);
+
+        // Plot area
+        const plotArea = document.createElement('div');
+        plotArea.className = 'plot-area';
+
+        const barWidthPct = (party.support / maxScale) * 100;
+        const lowBound = Math.max(0, party.support - party.margin);
+        const highBound = party.support + party.margin;
+        const lowPct = (lowBound / maxScale) * 100;
+        const highPct = (highBound / maxScale) * 100;
+        const spanPct = highPct - lowPct;
+
+        // Horizontal bar
+        const bar = document.createElement('div');
+        bar.className = 'party-bar';
+        bar.style.width = barWidthPct + '%';
+        bar.style.backgroundColor = party.color;
+        bar.setAttribute('aria-label', party.name + ': ' + formatEstonianPercent(party.support));
+
+        // Percentage label placement (< 2.5% outside right of error bar, >= 2.5% inside left of bar)
+        const valueLabel = document.createElement('span');
+        valueLabel.textContent = formatEstonianPercent(party.support);
+
+        if (party.support >= 2.5) {
+          valueLabel.className = 'bar-label-inside';
+          valueLabel.style.color = party.textColor;
+          bar.appendChild(valueLabel);
+        } else {
+          valueLabel.className = 'bar-label-outside';
+          valueLabel.style.left = 'calc(' + highPct + '% + 8px)';
+          plotArea.appendChild(valueLabel);
+        }
+
+        // Bar hover & touch handlers
+        bar.addEventListener('mouseenter', function (e) {
+          showBarTooltip(party, e.clientX, e.clientY);
+        });
+
+        bar.addEventListener('mousemove', function (e) {
+          showBarTooltip(party, e.clientX, e.clientY);
+        });
+
+        bar.addEventListener('mouseleave', function () {
+          hideBarTooltip();
+        });
+
+        bar.addEventListener('touchstart', function (e) {
+          if (e.touches && e.touches.length > 0) {
+            const touch = e.touches[0];
+            showBarTooltip(party, touch.clientX, touch.clientY);
+          }
+        }, { passive: true });
+
+        plotArea.appendChild(bar);
+
+        // Error bar marker (|--●--|)
+        const errorHit = document.createElement('div');
+        errorHit.className = 'error-bar-hit';
+        errorHit.style.left = lowPct + '%';
+        errorHit.style.width = spanPct + '%';
+        errorHit.setAttribute('aria-label', party.name + ' veapiir ± ' + formatEstonianPercent(party.margin));
+
+        const errorLine = document.createElement('span');
+        errorLine.className = 'error-line';
+
+        const capLeft = document.createElement('span');
+        capLeft.className = 'error-cap-left';
+
+        const capRight = document.createElement('span');
+        capRight.className = 'error-cap-right';
+
+        const errorDot = document.createElement('span');
+        errorDot.className = 'error-dot';
+        const dotOffsetPct = spanPct > 0 ? ((party.support - lowBound) / (highBound - lowBound)) * 100 : 50;
+        errorDot.style.left = dotOffsetPct + '%';
+
+        errorHit.appendChild(errorLine);
+        errorHit.appendChild(capLeft);
+        errorHit.appendChild(capRight);
+        errorHit.appendChild(errorDot);
+
+        // Error bar hover & touch handlers (stopPropagation overrides bar tooltip)
+        errorHit.addEventListener('mouseenter', function (e) {
+          e.stopPropagation();
+          showErrorTooltip(party, errorDot);
+        });
+
+        errorHit.addEventListener('mousemove', function (e) {
+          e.stopPropagation();
+          showErrorTooltip(party, errorDot);
+        });
+
+        errorHit.addEventListener('mouseleave', function (e) {
+          e.stopPropagation();
+          hideErrorTooltip();
+        });
+
+        errorHit.addEventListener('touchstart', function (e) {
+          e.stopPropagation();
+          showErrorTooltip(party, errorDot);
+        }, { passive: true });
+
+        plotArea.appendChild(errorHit);
+        row.appendChild(plotArea);
+        rowsContainer.appendChild(row);
+      });
+
+      // Dismiss tooltips on outside tap or scroll/resize
+      document.addEventListener('touchstart', function (e) {
+        if (!e.target.closest('.party-bar') && !e.target.closest('.error-bar-hit')) {
+          hideBarTooltip();
+          hideErrorTooltip();
+        }
+      }, { passive: true });
+
+      window.addEventListener('scroll', function () {
+        hideBarTooltip();
+        hideErrorTooltip();
+      }, { passive: true });
+
+      window.addEventListener('resize', function () {
+        hideBarTooltip();
+        hideErrorTooltip();
+      });
+    })();
+  </script>
+</body>
+</html>

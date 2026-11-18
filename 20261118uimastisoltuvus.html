@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ERR Graafik - Rahustisõltuvus</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400&display=swap');
+        
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #fff;
+        }
+        .err-container {
+            max-width: 670px;
+            margin: 0 auto;
+            font-family: 'Fira Sans', sans-serif;
+            font-weight: 400;
+        }
+        .err-container * {
+            font-family: 'Fira Sans', sans-serif !important;
+            font-weight: 400 !important;
+        }
+        .err-title {
+            font-size: 22pt;
+            color: #000;
+            margin: 0 0 8px 0;
+            line-height: 1.2;
+        }
+        .err-subtitle {
+            font-size: 20pt;
+            color: #333;
+            margin: 0 0 20px 0;
+            line-height: 1.2;
+        }
+        .err-footer {
+            font-size: 14pt;
+            color: #666;
+            margin: 20px 0 0 0;
+            text-align: right;
+        }
+        canvas {
+            width: 100% !important;
+            height: auto !important;
+        }
+    </style>
+</head>
+<body>
+
+<div class="err-container">
+    <h1 class="err-title">Rahustisõltuvuse tõttu psühhiaatri juures käinud isikud</h1>
+    <h2 class="err-subtitle">Konsulteeritud isikute arv soo lõikes (2020–2025)</h2>
+    
+    <canvas id="errChart"></canvas>
+    
+    <div class="err-footer">Allikas: Tervise Arengu Instituut</div>
+</div>
+
+<script>
+    Chart.defaults.font.family = "'Fira Sans', sans-serif";
+    Chart.defaults.font.size = 14;
+    Chart.defaults.font.weight = 400;
+    Chart.defaults.color = '#333';
+
+    const ctx = document.getElementById('errChart').getContext('2d');
+    const errChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['2020', '2021', '2022', '2023', '2024', '2025'],
+            datasets: [
+                {
+                    label: 'Kokku',
+                    data: [243, 262, 266, 255, 260, 234],
+                    borderColor: '#8B0000',
+                    backgroundColor: '#8B0000',
+                    borderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    tension: 0
+                },
+                {
+                    label: 'Naised',
+                    data: [142, 173, 171, 157, 159, 138],
+                    borderColor: '#D32F2F',
+                    backgroundColor: '#D32F2F',
+                    borderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    tension: 0
+                },
+                {
+                    label: 'Mehed',
+                    data: [101, 89, 95, 98, 101, 96],
+                    borderColor: '#4A4A4A',
+                    backgroundColor: '#4A4A4A',
+                    borderWidth: 2,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    tension: 0
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        font: {
+                            family: "'Fira Sans', sans-serif",
+                            size: 14,
+                            weight: 400
+                        },
+                        usePointStyle: true,
+                        boxWidth: 8
+                    }
+                },
+                tooltip: {
+                    titleFont: {
+                        family: "'Fira Sans', sans-serif",
+                        size: 14,
+                        weight: 400
+                    },
+                    bodyFont: {
+                        family: "'Fira Sans', sans-serif",
+                        size: 14,
+                        weight: 400
+                    },
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    padding: 10
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: '#E0E0E0'
+                    },
+                    ticks: {
+                        font: {
+                            family: "'Fira Sans', sans-serif",
+                            size: 14,
+                            weight: 400
+                        }
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        font: {
+                            family: "'Fira Sans', sans-serif",
+                            size: 14,
+                            weight: 400
+                        }
+                    }
+                }
+            }
+        }
+    });
+</script>
+</body>
+</html>

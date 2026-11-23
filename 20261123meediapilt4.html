@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ERR-i erakonnauudiseid peetakse kõige tasakaalustatumaks</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Sans+Condensed:wght@400&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Fira Sans Condensed', sans-serif;
+      font-weight: 400;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      color: #33383d;
+    }
+    .err-box {
+      width: 100%;
+      max-width: 670px;
+      margin: 0 auto;
+      background: #ffffff;
+      border: 1px solid #dfe4e8;
+      border-radius: 5px;
+      padding: 10px 14px;
+    }
+    .err-title {
+      font-size: 15pt;
+      line-height: 1.22;
+      margin: 0 0 2px 0;
+      color: #181c20;
+    }
+    .err-subtitle {
+      font-size: 12.5pt;
+      line-height: 1.25;
+      margin: 0 0 7px 0;
+      color: #4a525a;
+    }
+    .controls-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 6px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #eceff2;
+    }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-size: 10pt;
+      color: #2f363d;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .swatch {
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+      display: inline-block;
+    }
+    .filter-buttons {
+      display: flex;
+      gap: 4px;
+    }
+    .filter-btn {
+      background: #f4f6f8;
+      border: 1px solid #d5dbe0;
+      color: #2f363d;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 10pt;
+      cursor: pointer;
+    }
+    .filter-btn:hover {
+      background: #e8ecf0;
+    }
+    .filter-btn.active {
+      background: #4e7988;
+      border-color: #4e7988;
+      color: #ffffff;
+    }
+    .col-headers {
+      display: grid;
+      grid-template-columns: 1.45fr 1fr 1fr;
+      gap: 8px;
+      font-size: 9.5pt;
+      color: #5c6670;
+      padding: 0 6px 3px 6px;
+      margin-bottom: 4px;
+      border-bottom: 1px solid #e6eaee;
+    }
+    .channel-block {
+      margin-bottom: 5px;
+      background: #fafbfc;
+      border: 1px solid #eef1f4;
+      border-radius: 4px;
+      padding: 4px 6px;
+    }
+    .channel-block:last-child {
+      margin-bottom: 0;
+    }
+    .channel-title {
+      font-size: 11pt;
+      color: #14181c;
+      margin-bottom: 3px;
+      padding-bottom: 2px;
+      border-bottom: 1px solid #e8ecf0;
+    }
+    .metric-row {
+      display: grid;
+      grid-template-columns: 1.45fr 1fr 1fr;
+      gap: 8px;
+      align-items: center;
+      padding: 2px 2px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    .metric-row:hover {
+      background: #edf2f6;
+    }
+    .row-meta {
+      font-size: 10pt;
+      color: #5c6670;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .row-meta span {
+      color: #1f2428;
+    }
+    .bar-wrap {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .neutral-track {
+      flex: 1;
+      height: 9px;
+      background: #e9edf1;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .neutral-fill {
+      height: 100%;
+      background: #5b849b;
+      border-radius: 2px;
+    }
+    .neto-track {
+      flex: 1;
+      height: 9px;
+      background: #e9edf1;
+      border-radius: 2px;
+      display: flex;
+      overflow: hidden;
+    }
+    .neto-neg-zone {
+      width: 35%;
+      height: 100%;
+      display: flex;
+      justify-content: flex-end;
+      border-right: 1px solid #8a949e;
+    }
+    .neto-pos-zone {
+      width: 65%;
+      height: 100%;
+      display: flex;
+      justify-content: flex-start;
+    }
+    .neto-fill-neg {
+      height: 100%;
+      background: #c85a5a;
+    }
+    .neto-fill-pos {
+      height: 100%;
+      background: #4e8a6e;
+    }
+    .val-tag {
+      width: 36px;
+      text-align: right;
+      font-size: 10pt;
+      color: #1f2428;
+      flex-shrink: 0;
+    }
+    .err-footer {
+      margin-top: 6px;
+      padding-top: 5px;
+      border-top: 1px solid #eceff2;
+      font-size: 9.5pt;
+      line-height: 1.28;
+      color: #636c75;
+    }
+    .tooltip {
+      position: fixed;
+      pointer-events: none;
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      color: #1e242b;
+      padding: 10px 13px;
+      border-radius: 8px;
+      border: 1px solid #d8e0e7;
+      font-size: 11pt;
+      line-height: 1.45;
+      z-index: 999;
+      opacity: 0;
+      transform: translateY(4px);
+      transition: opacity 0.14s ease, transform 0.14s ease;
+      max-width: 295px;
+      box-shadow: 0 10px 26px -4px rgba(15, 23, 42, 0.14), 0 4px 10px -2px rgba(15, 23, 42, 0.06);
+    }
+    .tooltip.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .tooltip-title {
+      font-size: 12pt;
+      color: #111519;
+      margin-bottom: 6px;
+      padding-bottom: 5px;
+      border-bottom: 1px solid #edf1f5;
+    }
+  </style>
+</head>
+<body>
+  <div class="err-box">
+    <h1 class="err-title">ERR-i erakonnauudiseid peetakse kõige tasakaalustatumaks</h1>
+    <p class="err-subtitle">Hinnangud koalitsiooni ja opositsiooni kajastusele vastaja poliitilise eelistuse järgi</p>
+
+    <div class="controls-bar">
+      <div class="legend">
+        <div class="legend-item">
+          <span class="swatch" style="background-color: #5b849b;"></span>
+          <span>Neutraalne kajastus (%)</span>
+        </div>
+        <div class="legend-item">
+          <span class="swatch" style="background-color: #4e8a6e;"></span>
+          <span>Neto positiivne (+)</span>
+        </div>
+        <div class="legend-item">
+          <span class="swatch" style="background-color: #c85a5a;"></span>
+          <span>Neto negatiivne (−)</span>
+        </div>
+      </div>
+
+      <div class="filter-buttons">
+        <button type="button" class="filter-btn active" data-group="all">Kõik vastajad</button>
+        <button type="button" class="filter-btn" data-group="coal">Koalitsiooni toetajad</button>
+        <button type="button" class="filter-btn" data-group="opp">Opositsiooni toetajad</button>
+      </div>
+    </div>
+
+    <div class="col-headers">
+      <div>Vastajad / kajastuse objekt</div>
+      <div>Neutraalne hinnang (%)</div>
+      <div>Netosaldo (pos − neg)</div>
+    </div>
+
+    <div id="chart-container"></div>
+
+    <div class="err-footer">
+      Küsimus: kuidas kajastavad ERR, Postimees ja Delfi koalitsiooni ja opositsiooni erakondade tegevust? Netosaldo (pos − neg) näitab positiivse ja negatiivse hinnangu vahet protsendipunktides.<br>
+      Allikas: Kultuuriministeerium / Turu-uuringute AS (2026).
+    </div>
+  </div>
+
+  <div class="tooltip" id="tooltip"></div>
+
+  <script>
+    const channels = [
+      {
+        name: 'ERR (kõik kanalid)',
+        rows: [
+          { group: 'coal', supporter: 'Koalitsiooni toetajad', target: 'Koalitsiooni kajastus', neutral: 47.4, neto: 5.9 },
+          { group: 'coal', supporter: 'Koalitsiooni toetajad', target: 'Opositsiooni kajastus', neutral: 53.5, neto: 11.5 },
+          { group: 'opp', supporter: 'Opositsiooni toetajad', target: 'Koalitsiooni kajastus', neutral: 31.6, neto: 16.5 },
+          { group: 'opp', supporter: 'Opositsiooni toetajad', target: 'Opositsiooni kajastus', neutral: 36.2, neto: -0.8 }
+        ]
+      },
+      {
+        name: 'Postimees (eesti- ja venekeelne)',
+        rows: [
+          { group: 'coal', supporter: 'Koalitsiooni toetajad', target: 'Koalitsiooni kajastus', neutral: 25.9, neto: -7.4 },
+          { group: 'coal', supporter: 'Koalitsiooni toetajad', target: 'Opositsiooni kajastus', neutral: 30.0, neto: 15.0 },
+          { group: 'opp', supporter: 'Opositsiooni toetajad', target: 'Koalitsiooni kajastus', neutral: 22.2, neto: 7.5 },
+          { group: 'opp', supporter: 'Opositsiooni toetajad', target: 'Opositsiooni kajastus', neutral: 26.0, neto: 2.7 }
+        ]
+      },
+      {
+        name: 'Delfi (eesti- ja venekeelne)',
+        rows: [
+          { group: 'coal', supporter: 'Koalitsiooni toetajad', target: 'Koalitsiooni kajastus', neutral: 32.1, neto: -0.5 },
+          { group: 'coal', supporter: 'Koalitsiooni toetajad', target: 'Opositsiooni kajastus', neutral: 36.2, neto: 5.6 },
+          { group: 'opp', supporter: 'Opositsiooni toetajad', target: 'Koalitsiooni kajastus', neutral: 22.2, neto: 14.7 },
+          { group: 'opp', supporter: 'Opositsiooni toetajad', target: 'Opositsiooni kajastus', neutral: 25.3, neto: -3.4 }
+        ]
+      }
+    ];
+
+    const container = document.getElementById('chart-container');
+    const tooltip = document.getElementById('tooltip');
+    let activeGroup = 'all';
+
+    function fmtPct(v) {
+      return v.toFixed(1).replace('.', ',') + '%';
+    }
+
+    function fmtNeto(v) {
+      const sign = v > 0 ? '+' : (v < 0 ? '−' : '');
+      return sign + Math.abs(v).toFixed(1).replace('.', ',');
+    }
+
+    function showTooltip(e, channelName, row) {
+      const toneColor = row.neto >= 0 ? '#3a7559' : '#b84646';
+      const toneText = row.neto > 0
+        ? 'Positiivseid hinnanguid on enam kui negatiivseid.'
+        : 'Negatiivseid hinnanguid on enam kui positiivseid.';
+      tooltip.innerHTML = `
+        <div class="tooltip-title">${channelName}</div>
+        <div style="color:#4a525a;">Vastajad: <span style="color:#181c20;">${row.supporter}</span></div>
+        <div style="color:#4a525a;">Hinnatav: <span style="color:#181c20;">${row.target}</span></div>
+        <div style="margin-top:5px; padding-top:4px; border-top:1px dashed #e2e8f0; display:flex; justify-content:space-between;">
+          <span style="color:#4a525a;">Neutraalne kajastus</span><span>${fmtPct(row.neutral)}</span>
+        </div>
+        <div style="display:flex; justify-content:space-between;">
+          <span style="color:#4a525a;">Netosaldo (pos − neg)</span><span style="color:${toneColor};">${fmtNeto(row.neto)}</span>
+        </div>
+        <div style="margin-top:5px; font-size:10pt; color:#636c75;">${toneText}</div>
+      `;
+      tooltip.classList.add('visible');
+      moveTooltip(e);
+    }
+
+    function moveTooltip(e) {
+      const pad = 12;
+      let x = e.clientX + pad;
+      let y = e.clientY + pad;
+      const rect = tooltip.getBoundingClientRect();
+      if (x + rect.width > window.innerWidth - 6) x = e.clientX - rect.width - pad;
+      if (y + rect.height > window.innerHeight - 6) y = e.clientY - rect.height - pad;
+      if (x < 6) x = 6;
+      if (y < 6) y = 6;
+      tooltip.style.left = x + 'px';
+      tooltip.style.top = y + 'px';
+    }
+
+    function hideTooltip() {
+      tooltip.classList.remove('visible');
+    }
+
+    function render() {
+      container.innerHTML = '';
+      channels.forEach(ch => {
+        const filteredRows = ch.rows.filter(r => activeGroup === 'all' || r.group === activeGroup);
+        const block = document.createElement('div');
+        block.className = 'channel-block';
+
+        const title = document.createElement('div');
+        title.className = 'channel-title';
+        title.textContent = ch.name;
+        block.appendChild(title);
+
+        filteredRows.forEach(r => {
+          const neutralPct = Math.min(100, (r.neutral / 60) * 100);
+          let posPct = 0;
+          let negPct = 0;
+          if (r.neto >= 0) posPct = Math.min(100, (r.neto / 20) * 100);
+          else negPct = Math.min(100, (Math.abs(r.neto) / 10) * 100);
+          const netoColor = r.neto >= 0 ? '#3a7559' : '#b84646';
+          const who = r.group === 'coal' ? 'Koal. valija → ' : 'Opos. valija → ';
+
+          const rowEl = document.createElement('div');
+          rowEl.className = 'metric-row';
+          rowEl.innerHTML = `
+            <div class="row-meta">${who}<span>${r.target}</span></div>
+            <div class="bar-wrap">
+              <div class="neutral-track"><div class="neutral-fill" style="width:${neutralPct}%;"></div></div>
+              <div class="val-tag">${fmtPct(r.neutral)}</div>
+            </div>
+            <div class="bar-wrap">
+              <div class="neto-track">
+                <div class="neto-neg-zone"><div class="neto-fill-neg" style="width:${negPct}%;"></div></div>
+                <div class="neto-pos-zone"><div class="neto-fill-pos" style="width:${posPct}%;"></div></div>
+              </div>
+              <div class="val-tag" style="color:${netoColor};">${fmtNeto(r.neto)}</div>
+            </div>
+          `;
+          rowEl.addEventListener('mouseenter', e => showTooltip(e, ch.name, r));
+          rowEl.addEventListener('mousemove', moveTooltip);
+          rowEl.addEventListener('mouseleave', hideTooltip);
+          rowEl.addEventListener('click', e => showTooltip(e, ch.name, r));
+          block.appendChild(rowEl);
+        });
+
+        container.appendChild(block);
+      });
+    }
+
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeGroup = btn.dataset.group;
+        render();
+      });
+    });
+
+    render();
+  </script>
+</body>
+</html>

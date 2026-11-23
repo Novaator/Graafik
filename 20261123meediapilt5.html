@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Poliitiline eelistus määrab suhte Eesti ja Vene meediasse</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Sans+Condensed:wght@400&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Fira Sans Condensed', sans-serif;
+      font-weight: 400;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      color: #33383d;
+    }
+    .err-box {
+      width: 100%;
+      max-width: 670px;
+      margin: 0 auto;
+      background: #ffffff;
+      border: 1px solid #dfe4e8;
+      border-radius: 5px;
+      padding: 10px 14px;
+    }
+    .err-title {
+      font-size: 15pt;
+      line-height: 1.22;
+      margin: 0 0 2px 0;
+      color: #181c20;
+    }
+    .err-subtitle {
+      font-size: 12.5pt;
+      line-height: 1.25;
+      margin: 0 0 8px 0;
+      color: #4a525a;
+    }
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px;
+    }
+    .channel-card {
+      padding: 6px 8px;
+      border-radius: 4px;
+      background: #fafbfc;
+      border: 1px solid #eef1f4;
+    }
+    .channel-title {
+      font-size: 11pt;
+      color: #14181c;
+      margin-bottom: 4px;
+      padding-bottom: 2px;
+      border-bottom: 1px solid #e8ecf0;
+    }
+    .card-cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .col-head {
+      font-size: 9.5pt;
+      margin-bottom: 3px;
+    }
+    .col-head.trust {
+      color: #3a7559;
+    }
+    .col-head.distrust {
+      color: #b84646;
+    }
+    .entry-row {
+      padding: 2px 3px;
+      margin-bottom: 3px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    .entry-row:last-child {
+      margin-bottom: 0;
+    }
+    .entry-row:hover {
+      background: #edf2f6;
+    }
+    .entry-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: 10pt;
+      color: #1f2428;
+      margin-bottom: 2px;
+    }
+    .entry-track {
+      width: 100%;
+      height: 7px;
+      background: #e9edf1;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .entry-fill {
+      height: 100%;
+      border-radius: 2px;
+    }
+    .err-footer {
+      margin-top: 7px;
+      padding-top: 5px;
+      border-top: 1px solid #eceff2;
+      font-size: 9.5pt;
+      line-height: 1.28;
+      color: #636c75;
+    }
+    .tooltip {
+      position: fixed;
+      pointer-events: none;
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      color: #1e242b;
+      padding: 10px 13px;
+      border-radius: 8px;
+      border: 1px solid #d8e0e7;
+      font-size: 11pt;
+      line-height: 1.45;
+      z-index: 999;
+      opacity: 0;
+      transform: translateY(4px);
+      transition: opacity 0.14s ease, transform 0.14s ease;
+      max-width: 270px;
+      box-shadow: 0 10px 26px -4px rgba(15, 23, 42, 0.14), 0 4px 10px -2px rgba(15, 23, 42, 0.06);
+    }
+    .tooltip.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .tooltip-title {
+      font-size: 12pt;
+      color: #111519;
+      margin-bottom: 6px;
+      padding-bottom: 5px;
+      border-bottom: 1px solid #edf1f5;
+    }
+    @media (max-width: 480px) {
+      .cards-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="err-box">
+    <h1 class="err-title">Poliitiline eelistus määrab suhte Eesti ja Vene meediasse</h1>
+    <p class="err-subtitle">Kaks suurima usalduse ja umbusaldusega erakonna valijarühma kanali kohta (%)</p>
+
+    <div class="cards-grid" id="chart-rows"></div>
+
+    <div class="err-footer">
+      Küsimus: meediakanalite üldisele usaldusväärsusele antud hinnangud vastavalt vastaja erakondlikule eelistusele (kaks kõrgeima usalduse ja mitte-usalduse osakaaluga valijarühma). Väiksemate erakondade puhul tuleb arvestada väiksema valimimahuga.<br>
+      Allikas: Kultuuriministeerium / Turu-uuringute AS (2026).
+    </div>
+  </div>
+
+  <div class="tooltip" id="tooltip"></div>
+
+  <script>
+    const partyColors = {
+      'Keskerakond': '#027D2B',
+      'Reformierakond': '#FFDC00',
+      'EKRE': '#2139B5',
+      'SDE': '#CE1126',
+      'Isamaa': '#009DE0',
+      'Parempoolsed': '#FF6100',
+      'KOOS': '#DC5356'
+    };
+
+    const data = [
+      {
+        channel: 'ERR (kõik kanalid)',
+        trust: [
+          { party: 'Parempoolsed', val: 100.0 },
+          { party: 'SDE', val: 99.4 }
+        ],
+        distrust: [
+          { party: 'KOOS', val: 46.9 },
+          { party: 'EKRE', val: 27.0 }
+        ]
+      },
+      {
+        channel: 'Postimees (eesti- ja venekeelne)',
+        trust: [
+          { party: 'Isamaa', val: 87.7 },
+          { party: 'Parempoolsed', val: 82.3 }
+        ],
+        distrust: [
+          { party: 'KOOS', val: 65.2 },
+          { party: 'EKRE', val: 33.7 }
+        ]
+      },
+      {
+        channel: 'Delfi (eesti- ja venekeelne)',
+        trust: [
+          { party: 'Parempoolsed', val: 89.2 },
+          { party: 'Reformierakond', val: 81.4 }
+        ],
+        distrust: [
+          { party: 'KOOS', val: 65.2 },
+          { party: 'EKRE', val: 40.4 }
+        ]
+      },
+      {
+        channel: 'Venemaa meedia',
+        trust: [
+          { party: 'KOOS', val: 64.1 },
+          { party: 'Keskerakond', val: 18.4 }
+        ],
+        distrust: [
+          { party: 'SDE', val: 80.9 },
+          { party: 'Isamaa', val: 77.1 }
+        ]
+      },
+      {
+        channel: 'Sotsiaalmeedia',
+        trust: [
+          { party: 'EKRE', val: 37.9 },
+          { party: 'KOOS', val: 36.3 }
+        ],
+        distrust: [
+          { party: 'SDE', val: 69.7 },
+          { party: 'Isamaa', val: 61.2 }
+        ]
+      },
+      {
+        channel: 'Lääne meedia',
+        trust: [
+          { party: 'Parempoolsed', val: 78.0 },
+          { party: 'SDE', val: 73.3 }
+        ],
+        distrust: [
+          { party: 'KOOS', val: 49.8 },
+          { party: 'EKRE', val: 30.8 }
+        ]
+      }
+    ];
+
+    const chartRows = document.getElementById('chart-rows');
+    const tooltip = document.getElementById('tooltip');
+
+    function fmt(v) {
+      return v.toFixed(1).replace('.', ',') + '%';
+    }
+
+    function showTooltip(e, channel, typeLabel, entry) {
+      const color = partyColors[entry.party] || '#5b849b';
+      const valColor = typeLabel === 'Usaldab' ? '#3a7559' : '#b84646';
+      tooltip.innerHTML = `
+        <div class="tooltip-title">${channel}</div>
+        <div style="display:flex; align-items:center; gap:6px; margin-bottom:3px;">
+          <span style="width:9px; height:9px; border-radius:2px; background:${color}; display:inline-block;"></span>
+          <span>${entry.party}</span>
+        </div>
+        <div style="display:flex; justify-content:space-between; gap:14px; color:#4a525a;">
+          <span>${typeLabel}</span>
+          <span style="color:${valColor};">${fmt(entry.val)}</span>
+        </div>
+      `;
+      tooltip.classList.add('visible');
+      moveTooltip(e);
+    }
+
+    function moveTooltip(e) {
+      const pad = 12;
+      let x = e.clientX + pad;
+      let y = e.clientY + pad;
+      const rect = tooltip.getBoundingClientRect();
+      if (x + rect.width > window.innerWidth - 6) x = e.clientX - rect.width - pad;
+      if (y + rect.height > window.innerHeight - 6) y = e.clientY - rect.height - pad;
+      if (x < 6) x = 6;
+      if (y < 6) y = 6;
+      tooltip.style.left = x + 'px';
+      tooltip.style.top = y + 'px';
+    }
+
+    function hideTooltip() {
+      tooltip.classList.remove('visible');
+    }
+
+    function buildEntry(entry, channel, typeLabel) {
+      const color = partyColors[entry.party] || '#5b849b';
+      const borderExtra = entry.party === 'Reformierakond' ? 'border:1px solid #c9ad00;' : '';
+      const shortParty = entry.party === 'Reformierakond' ? 'Reformierak.' : entry.party;
+
+      const item = document.createElement('div');
+      item.className = 'entry-row';
+      item.innerHTML = `
+        <div class="entry-top">
+          <span>${shortParty}</span>
+          <span>${fmt(entry.val)}</span>
+        </div>
+        <div class="entry-track">
+          <div class="entry-fill" style="width:${entry.val}%; background:${color}; ${borderExtra}"></div>
+        </div>
+      `;
+      item.addEventListener('mouseenter', e => showTooltip(e, channel, typeLabel, entry));
+      item.addEventListener('mousemove', moveTooltip);
+      item.addEventListener('mouseleave', hideTooltip);
+      item.addEventListener('click', e => showTooltip(e, channel, typeLabel, entry));
+      return item;
+    }
+
+    data.forEach(d => {
+      const card = document.createElement('div');
+      card.className = 'channel-card';
+
+      const title = document.createElement('div');
+      title.className = 'channel-title';
+      title.textContent = d.channel;
+      card.appendChild(title);
+
+      const cols = document.createElement('div');
+      cols.className = 'card-cols';
+
+      const leftCol = document.createElement('div');
+      leftCol.innerHTML = '<div class="col-head trust">● Usaldajad</div>';
+      d.trust.forEach(t => leftCol.appendChild(buildEntry(t, d.channel, 'Usaldab')));
+
+      const rightCol = document.createElement('div');
+      rightCol.innerHTML = '<div class="col-head distrust">● Mitte-usaldajad</div>';
+      d.distrust.forEach(dt => rightCol.appendChild(buildEntry(dt, d.channel, 'Ei usalda')));
+
+      cols.appendChild(leftCol);
+      cols.appendChild(rightCol);
+      card.appendChild(cols);
+      chartRows.appendChild(card);
+    });
+  </script>
+</body>
+</html>

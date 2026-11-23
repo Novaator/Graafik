@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eesti- ja venekeelse publiku usaldus meediasse lahkneb</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Sans+Condensed:wght@400&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Fira Sans Condensed', sans-serif;
+      font-weight: 400;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      color: #33383d;
+    }
+    .err-box {
+      width: 100%;
+      max-width: 670px;
+      margin: 0 auto;
+      background: #ffffff;
+      border: 1px solid #dfe4e8;
+      border-radius: 5px;
+      padding: 10px 14px;
+    }
+    .err-title {
+      font-size: 15pt;
+      line-height: 1.22;
+      margin: 0 0 2px 0;
+      color: #181c20;
+    }
+    .err-subtitle {
+      font-size: 12.5pt;
+      line-height: 1.25;
+      margin: 0 0 7px 0;
+      color: #4a525a;
+    }
+    .controls-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 7px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid #eceff2;
+    }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-size: 10.5pt;
+      color: #2f363d;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .swatch {
+      width: 11px;
+      height: 11px;
+      border-radius: 2px;
+      display: inline-block;
+    }
+    .filter-buttons {
+      display: flex;
+      gap: 4px;
+    }
+    .filter-btn {
+      background: #f4f6f8;
+      border: 1px solid #d5dbe0;
+      color: #2f363d;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 10pt;
+      cursor: pointer;
+    }
+    .filter-btn:hover {
+      background: #e8ecf0;
+    }
+    .filter-btn.active {
+      background: #4e7988;
+      border-color: #4e7988;
+      color: #ffffff;
+    }
+    .channel-card {
+      margin-bottom: 4px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      background: #fafbfc;
+      border: 1px solid #eef1f4;
+      cursor: pointer;
+    }
+    .channel-card:hover {
+      background: #f1f5f8;
+      border-color: #cbd5df;
+    }
+    .channel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: 11pt;
+      color: #14181c;
+      margin-bottom: 2px;
+    }
+    .gap-tag {
+      font-size: 9.5pt;
+      color: #5c6670;
+    }
+    .stack-row {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 2px;
+    }
+    .stack-row:last-child {
+      margin-bottom: 0;
+    }
+    .lang-lbl {
+      width: 92px;
+      font-size: 10pt;
+      color: #3b434b;
+      flex-shrink: 0;
+    }
+    .stack-track {
+      flex: 1;
+      height: 12px;
+      background: #dfe4e9;
+      border-radius: 2px;
+      overflow: hidden;
+      display: flex;
+    }
+    .seg-trust {
+      background: #4e8a6e;
+      color: #ffffff;
+      font-size: 9pt;
+      line-height: 12px;
+      padding-left: 4px;
+      overflow: hidden;
+    }
+    .seg-noans {
+      background: transparent;
+    }
+    .seg-distrust {
+      background: #c85a5a;
+      color: #ffffff;
+      font-size: 9pt;
+      line-height: 12px;
+      text-align: right;
+      padding-right: 4px;
+      overflow: hidden;
+    }
+    .num-col {
+      width: 62px;
+      text-align: right;
+      font-size: 10pt;
+      color: #2f363d;
+      flex-shrink: 0;
+    }
+    .err-footer {
+      margin-top: 6px;
+      padding-top: 5px;
+      border-top: 1px solid #eceff2;
+      font-size: 9.5pt;
+      line-height: 1.28;
+      color: #636c75;
+    }
+    .tooltip {
+      position: fixed;
+      pointer-events: none;
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      color: #1e242b;
+      padding: 10px 13px;
+      border-radius: 8px;
+      border: 1px solid #d8e0e7;
+      font-size: 11pt;
+      line-height: 1.45;
+      z-index: 999;
+      opacity: 0;
+      transform: translateY(4px);
+      transition: opacity 0.14s ease, transform 0.14s ease;
+      max-width: 295px;
+      box-shadow: 0 10px 26px -4px rgba(15, 23, 42, 0.14), 0 4px 10px -2px rgba(15, 23, 42, 0.06);
+    }
+    .tooltip.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .tooltip-title {
+      font-size: 12pt;
+      color: #111519;
+      margin-bottom: 6px;
+      padding-bottom: 5px;
+      border-bottom: 1px solid #edf1f5;
+    }
+    .tooltip table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .tooltip td {
+      padding: 2px 8px 2px 0;
+    }
+    .tooltip td:last-child {
+      padding-right: 0;
+      text-align: right;
+    }
+  </style>
+</head>
+<body>
+  <div class="err-box">
+    <h1 class="err-title">Eesti- ja venekeelse publiku usaldus meediasse lahkneb</h1>
+    <p class="err-subtitle">Meediakanalite üldine usaldusväärsus vastaja kodukeele järgi (%)</p>
+
+    <div class="controls-bar">
+      <div class="legend">
+        <div class="legend-item">
+          <span class="swatch" style="background-color: #4e8a6e;"></span>
+          <span>Usaldab</span>
+        </div>
+        <div class="legend-item">
+          <span class="swatch" style="background-color: #dfe4e9;"></span>
+          <span>Ei oska vastata/Hinnang puudub</span>
+        </div>
+        <div class="legend-item">
+          <span class="swatch" style="background-color: #c85a5a;"></span>
+          <span>Ei usalda</span>
+        </div>
+      </div>
+
+      <div class="filter-buttons">
+        <button type="button" class="filter-btn active" data-mode="all">Mõlemad rühmad</button>
+        <button type="button" class="filter-btn" data-mode="est">Eesti kodukeel</button>
+        <button type="button" class="filter-btn" data-mode="rus">Vene kodukeel</button>
+      </div>
+    </div>
+
+    <div id="chart-rows"></div>
+
+    <div class="err-footer">
+      Küsimus: „Kuivõrd usaldusväärsed on Teie arvates järgmised meediakanalid?“ (osakaal vastava kodukeelega vastajate seas).<br>
+      Allikas: Kultuuriministeerium / Turu-uuringute AS (2026).
+    </div>
+  </div>
+
+  <div class="tooltip" id="tooltip"></div>
+
+  <script>
+    const data = [
+      { name: 'ERR (kõik kanalid)', estTrust: 89, estDistrust: 6, rusTrust: 53, rusDistrust: 24 },
+      { name: 'Postimees (eesti- ja venekeelne)', estTrust: 70, estDistrust: 14, rusTrust: 38, rusDistrust: 35 },
+      { name: 'Delfi (eesti- ja venekeelne)', estTrust: 66, estDistrust: 19, rusTrust: 39, rusDistrust: 33 },
+      { name: 'Lääne meediakanalid', estTrust: 55, estDistrust: 11, rusTrust: 27, rusDistrust: 26 },
+      { name: 'Sotsiaalmeedia', estTrust: 21, estDistrust: 58, rusTrust: 30, rusDistrust: 32 },
+      { name: 'Venemaa meediakanalid', estTrust: 1, estDistrust: 67, rusTrust: 22, rusDistrust: 40 }
+    ];
+
+    const chartRows = document.getElementById('chart-rows');
+    const tooltip = document.getElementById('tooltip');
+    let viewMode = 'all';
+
+    function showTooltip(e, item) {
+      const estNoAns = 100 - item.estTrust - item.estDistrust;
+      const rusNoAns = 100 - item.rusTrust - item.rusDistrust;
+      tooltip.innerHTML = `
+        <div class="tooltip-title">${item.name}</div>
+        <table>
+          <tr style="color:#6c7682; font-size:10pt;"><td>Näitaja</td><td>Eesti</td><td>Vene</td></tr>
+          <tr><td style="color:#3a7559;">Usaldab</td><td>${item.estTrust}%</td><td>${item.rusTrust}%</td></tr>
+          <tr><td style="color:#b84646;">Ei usalda</td><td>${item.estDistrust}%</td><td>${item.rusDistrust}%</td></tr>
+          <tr><td style="color:#5c6670;">Ei oska vastata/Hinnang puudub</td><td>${estNoAns}%</td><td>${rusNoAns}%</td></tr>
+        </table>
+      `;
+      tooltip.classList.add('visible');
+      moveTooltip(e);
+    }
+
+    function moveTooltip(e) {
+      const pad = 12;
+      let x = e.clientX + pad;
+      let y = e.clientY + pad;
+      const rect = tooltip.getBoundingClientRect();
+      if (x + rect.width > window.innerWidth - 6) x = e.clientX - rect.width - pad;
+      if (y + rect.height > window.innerHeight - 6) y = e.clientY - rect.height - pad;
+      if (x < 6) x = 6;
+      if (y < 6) y = 6;
+      tooltip.style.left = x + 'px';
+      tooltip.style.top = y + 'px';
+    }
+
+    function hideTooltip() {
+      tooltip.classList.remove('visible');
+    }
+
+    function buildRow(label, trust, distrust) {
+      const noAns = Math.max(0, 100 - trust - distrust);
+      return `
+        <div class="stack-row">
+          <div class="lang-lbl">${label}</div>
+          <div class="stack-track">
+            <div class="seg-trust" style="width:${trust}%;">${trust >= 12 ? trust + '%' : ''}</div>
+            <div class="seg-noans" style="width:${noAns}%;"></div>
+            <div class="seg-distrust" style="width:${distrust}%;">${distrust >= 12 ? distrust + '%' : ''}</div>
+          </div>
+          <div class="num-col">${trust}% / ${distrust}%</div>
+        </div>
+      `;
+    }
+
+    function render() {
+      chartRows.innerHTML = '';
+      data.forEach(item => {
+        const gap = item.estTrust - item.rusTrust;
+        const gapText = (gap >= 0 ? '+' : '') + gap + ' pp';
+        const card = document.createElement('div');
+        card.className = 'channel-card';
+
+        let rowsHtml = '';
+        if (viewMode === 'all' || viewMode === 'est') rowsHtml += buildRow('Eesti kodukeel', item.estTrust, item.estDistrust);
+        if (viewMode === 'all' || viewMode === 'rus') rowsHtml += buildRow('Vene kodukeel', item.rusTrust, item.rusDistrust);
+
+        card.innerHTML = `
+          <div class="channel-head">
+            <span>${item.name}</span>
+            <span class="gap-tag">Usalduse vahe: ${gapText}</span>
+          </div>
+          ${rowsHtml}
+        `;
+        card.addEventListener('mouseenter', e => showTooltip(e, item));
+        card.addEventListener('mousemove', moveTooltip);
+        card.addEventListener('mouseleave', hideTooltip);
+        card.addEventListener('click', e => showTooltip(e, item));
+        chartRows.appendChild(card);
+      });
+    }
+
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        viewMode = btn.dataset.mode;
+        render();
+      });
+    });
+
+    render();
+  </script>
+</body>
+</html>

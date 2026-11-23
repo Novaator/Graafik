@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Professionaalne Eesti meedia jõuab enamikuni elanikest</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Sans+Condensed:wght@400&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Fira Sans Condensed', sans-serif;
+      font-weight: 400;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      color: #33383d;
+    }
+    .err-box {
+      width: 100%;
+      max-width: 670px;
+      margin: 0 auto;
+      background: #ffffff;
+      border: 1px solid #dfe4e8;
+      border-radius: 5px;
+      padding: 11px 14px;
+    }
+    .err-title {
+      font-size: 15pt;
+      line-height: 1.22;
+      margin: 0 0 2px 0;
+      color: #181c20;
+    }
+    .err-subtitle {
+      font-size: 12.5pt;
+      line-height: 1.25;
+      margin: 0 0 8px 0;
+      color: #4a525a;
+    }
+    .controls-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 8px;
+      padding-bottom: 7px;
+      border-bottom: 1px solid #eceff2;
+    }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 11pt;
+      color: #2f363d;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .swatch {
+      width: 11px;
+      height: 11px;
+      border-radius: 2px;
+      display: inline-block;
+    }
+    .chart-row {
+      margin-bottom: 5px;
+      padding: 5px 8px;
+      border-radius: 4px;
+      background: #fafbfc;
+      border: 1px solid #eef1f4;
+      cursor: pointer;
+    }
+    .chart-row:hover {
+      background: #f1f5f8;
+      border-color: #cbd5df;
+    }
+    .row-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 3px;
+      font-size: 11.5pt;
+      color: #1f2428;
+    }
+    .row-diff {
+      font-size: 10pt;
+      color: #5c6670;
+    }
+    .bar-line {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 3px;
+    }
+    .bar-line:last-child {
+      margin-bottom: 0;
+    }
+    .bar-track {
+      flex: 1;
+      height: 9px;
+      background: #eaeef2;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      border-radius: 2px;
+      transition: width 0.25s ease;
+    }
+    .bar-val {
+      width: 44px;
+      text-align: right;
+      font-size: 10.5pt;
+      color: #1f2428;
+      flex-shrink: 0;
+    }
+    .err-footer {
+      margin-top: 7px;
+      padding-top: 6px;
+      border-top: 1px solid #eceff2;
+      font-size: 10pt;
+      line-height: 1.3;
+      color: #636c75;
+    }
+    .tooltip {
+      position: fixed;
+      pointer-events: none;
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      color: #1e242b;
+      padding: 10px 13px;
+      border-radius: 8px;
+      border: 1px solid #d8e0e7;
+      font-size: 11pt;
+      line-height: 1.45;
+      z-index: 999;
+      opacity: 0;
+      transform: translateY(4px);
+      transition: opacity 0.14s ease, transform 0.14s ease;
+      max-width: 270px;
+      box-shadow: 0 10px 26px -4px rgba(15, 23, 42, 0.14), 0 4px 10px -2px rgba(15, 23, 42, 0.06);
+    }
+    .tooltip.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .tooltip-title {
+      font-size: 12pt;
+      color: #111519;
+      margin-bottom: 6px;
+      padding-bottom: 5px;
+      border-bottom: 1px solid #edf1f5;
+    }
+    .tooltip-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      color: #3f4852;
+    }
+  </style>
+</head>
+<body>
+  <div class="err-box">
+    <h1 class="err-title">Professionaalne Eesti meedia jõuab enamikuni elanikest</h1>
+    <p class="err-subtitle">Meediakanalite nädalane auditoorium ja üldine usaldus (% elanikkonnast 15+)</p>
+
+    <div class="controls-bar">
+      <div class="legend">
+        <div class="legend-item">
+          <span class="swatch" style="background-color: #5b849b;"></span>
+          <span>Jälgib vähemalt kord nädalas</span>
+        </div>
+        <div class="legend-item">
+          <span class="swatch" style="background-color: #4e8a6e;"></span>
+          <span>Peab usaldusväärseks</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="chart-rows"></div>
+
+    <div class="err-footer">
+      Näitaja: nädalane jälgijaskond ja üldine usaldusväärsus kogu elanikkonna seas vanuses 15+ (n = 1010), mitte üksnes kanali jälgijate hulgas.<br>
+      Allikas: Kultuuriministeerium / Turu-uuringute AS (2026).
+    </div>
+  </div>
+
+  <div class="tooltip" id="tooltip"></div>
+
+  <script>
+    const data = [
+      { name: 'ERR (kõik kanalid kokku)', reach: 71.8, trust: 76.6 },
+      { name: 'Delfi (eesti- ja venekeelne)', reach: 55.9, trust: 56.7 },
+      { name: 'Postimees (eesti- ja venekeelne)', reach: 43.9, trust: 59.0 },
+      { name: 'Sotsiaalmeedia', reach: 62.4, trust: 24.0 },
+      { name: 'Venemaa meediakanalid', reach: 8.4, trust: 9.1 }
+    ];
+
+    const rowsContainer = document.getElementById('chart-rows');
+    const tooltip = document.getElementById('tooltip');
+
+    function fmt(v) {
+      return v.toFixed(1).replace('.', ',') + '%';
+    }
+
+    function showTooltip(e, item) {
+      const diff = (item.trust - item.reach).toFixed(1).replace('.', ',');
+      const sign = item.trust >= item.reach ? '+' : '';
+      tooltip.innerHTML = `
+        <div class="tooltip-title">${item.name}</div>
+        <div class="tooltip-line"><span>Jälgib kord nädalas</span><span>${fmt(item.reach)}</span></div>
+        <div class="tooltip-line"><span>Peab usaldusväärseks</span><span>${fmt(item.trust)}</span></div>
+        <div class="tooltip-line" style="margin-top:5px; padding-top:4px; border-top:1px dashed #e2e8f0; color:#5a6572;">
+          <span>Vahe</span><span>${sign}${diff} pp</span>
+        </div>
+      `;
+      tooltip.classList.add('visible');
+      moveTooltip(e);
+    }
+
+    function moveTooltip(e) {
+      const pad = 12;
+      let x = e.clientX + pad;
+      let y = e.clientY + pad;
+      const rect = tooltip.getBoundingClientRect();
+      if (x + rect.width > window.innerWidth - 6) x = e.clientX - rect.width - pad;
+      if (y + rect.height > window.innerHeight - 6) y = e.clientY - rect.height - pad;
+      if (x < 6) x = 6;
+      if (y < 6) y = 6;
+      tooltip.style.left = x + 'px';
+      tooltip.style.top = y + 'px';
+    }
+
+    function hideTooltip() {
+      tooltip.classList.remove('visible');
+    }
+
+    function render() {
+      rowsContainer.innerHTML = '';
+      data.forEach(item => {
+        const diffVal = item.trust - item.reach;
+        const diffStr = (diffVal >= 0 ? '+' : '') + diffVal.toFixed(1).replace('.', ',') + ' pp';
+
+        const row = document.createElement('div');
+        row.className = 'chart-row';
+        row.innerHTML = `
+          <div class="row-header">
+            <span>${item.name}</span>
+            <span class="row-diff">Usalduse ja jälgijate vahe: ${diffStr}</span>
+          </div>
+          <div class="bar-line">
+            <div class="bar-track"><div class="bar-fill" style="width:${item.reach}%; background:#5b849b;"></div></div>
+            <div class="bar-val">${fmt(item.reach)}</div>
+          </div>
+          <div class="bar-line">
+            <div class="bar-track"><div class="bar-fill" style="width:${item.trust}%; background:#4e8a6e;"></div></div>
+            <div class="bar-val">${fmt(item.trust)}</div>
+          </div>
+        `;
+        row.addEventListener('mouseenter', e => showTooltip(e, item));
+        row.addEventListener('mousemove', moveTooltip);
+        row.addEventListener('mouseleave', hideTooltip);
+        row.addEventListener('click', e => showTooltip(e, item));
+        rowsContainer.appendChild(row);
+      });
+    }
+
+    render();
+  </script>
+</body>
+</html>

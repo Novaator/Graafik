@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Üldine usaldus ja inimareng (Realo ja Allik, 2026)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Sans+Condensed:wght@400&family=Fira+Sans:wght@400&display=swap" rel="stylesheet">
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-weight: 400 !important;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Fira Sans', sans-serif;
+      background-color: #ffffff;
+      color: #1a1a1a;
+      display: flex;
+      justify-content: center;
+      padding: 12px;
+    }
+
+    .err-chart-container {
+      width: 100%;
+      max-width: 670px;
+      background: #ffffff;
+      border-top: 3px solid #00426a;
+      padding-top: 14px;
+    }
+
+    .err-title {
+      font-family: 'Fira Sans Condensed', 'Fira Sans', sans-serif;
+      font-size: 22pt;
+      line-height: 1.15;
+      color: #111111;
+      margin-bottom: 6px;
+    }
+
+    .err-subtitle {
+      font-family: 'Fira Sans', sans-serif;
+      font-size: 20pt;
+      line-height: 1.25;
+      color: #4a4a4a;
+      margin-bottom: 14px;
+    }
+
+    .err-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      font-size: 13px;
+      color: #333333;
+      margin-bottom: 8px;
+      align-items: center;
+    }
+
+    .err-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .err-dot-swatch {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .err-line-swatch {
+      width: 18px;
+      height: 2px;
+      display: inline-block;
+    }
+
+    .chart-wrapper {
+      width: 100%;
+    }
+
+    svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      overflow: visible;
+    }
+
+    .axis text {
+      font-family: 'Fira Sans', sans-serif;
+      font-size: 12px;
+      fill: #4a4a4a;
+    }
+
+    .axis-label {
+      font-family: 'Fira Sans', sans-serif;
+      font-size: 13px;
+      fill: #222222;
+    }
+
+    .grid line {
+      stroke: #e2e6ea;
+      stroke-dasharray: 2,2;
+    }
+
+    .grid path {
+      stroke-width: 0;
+    }
+
+    .country-label {
+      font-family: 'Fira Sans Condensed', 'Fira Sans', sans-serif;
+      font-size: 11px;
+      fill: #222222;
+    }
+
+    .err-footer {
+      font-family: 'Fira Sans', sans-serif;
+      font-size: 14pt;
+      line-height: 1.3;
+      color: #555555;
+      margin-top: 12px;
+      padding-top: 8px;
+      border-top: 1px solid #dce1e6;
+    }
+  </style>
+</head>
+<body>
+
+<div class="err-chart-container">
+  <div class="err-title">Üldine usaldus hüppab üles alles väga kõrge heaoluga riikides</div>
+  <div class="err-subtitle">Riigi inimarengu indeks (HDI) ja nende elanike osakaal, kes usaldavad enamikku inimesi</div>
+
+  <div class="err-legend">
+    <div class="err-legend-item"><span class="err-dot-swatch" style="background:#00426a;"></span> Riik / territoorium</div>
+    <div class="err-legend-item"><span class="err-dot-swatch" style="background:#1b6b50;"></span> Eesti ja Põhjamaad</div>
+    <div class="err-legend-item"><span class="err-dot-swatch" style="background:#c0392b;"></span> Erandid (Hiina, Valgevene)</div>
+    <div class="err-legend-item"><span class="err-line-swatch" style="background:#c0392b;"></span> Eksponentsiaalne trendijoon</div>
+  </div>
+
+  <div class="chart-wrapper" id="chart"></div>
+
+  <div class="err-footer">Allikas: Anu Realo ja Jüri Allik (Social Indicators Research, 2026), IVS (1981–2022) ja ÜRO (HDI 2021).</div>
+</div>
+
+<script>
+  const data = [
+    { code: "NO", name: "Norra", sigt: 0.70, hdi: 0.961, group: "nordic" },
+    { code: "SE", name: "Rootsi", sigt: 0.61, hdi: 0.947, group: "nordic" },
+    { code: "CN", name: "Hiina", sigt: 0.60, hdi: 0.768, group: "outliers" },
+    { code: "NL", name: "Holland", sigt: 0.59, hdi: 0.941, group: "high_hdi" },
+    { code: "FI", name: "Soome", sigt: 0.55, hdi: 0.940, group: "nordic" },
+    { code: "NZ", name: "Uus-Meremaa", sigt: 0.54, hdi: 0.937, group: "high_hdi" },
+    { code: "SA", name: "Saudi Araabia", sigt: 0.53, hdi: 0.875, group: "high_hdi" },
+    { code: "CH", name: "Šveits", sigt: 0.50, hdi: 0.962, group: "high_hdi" },
+    { code: "AU", name: "Austraalia", sigt: 0.49, hdi: 0.951, group: "high_hdi" },
+    { code: "CA", name: "Kanada", sigt: 0.45, hdi: 0.936, group: "high_hdi" },
+    { code: "MO", name: "Macau", sigt: 0.44, hdi: 0.922, group: "high_hdi" },
+    { code: "HK", name: "Hongkong", sigt: 0.42, hdi: 0.952, group: "high_hdi" },
+    { code: "JP", name: "Jaapan", sigt: 0.40, hdi: 0.925, group: "high_hdi" },
+    { code: "DE", name: "Saksamaa", sigt: 0.39, hdi: 0.942, group: "high_hdi" },
+    { code: "US", name: "Ameerika Ühendriigid", sigt: 0.38, hdi: 0.921, group: "high_hdi" },
+    { code: "IQ", name: "Iraak", sigt: 0.37, hdi: 0.686, group: "other" },
+    { code: "ME", name: "Montenegro", sigt: 0.33, hdi: 0.832, group: "high_hdi" },
+    { code: "ES", name: "Hispaania", sigt: 0.33, hdi: 0.905, group: "high_hdi" },
+    { code: "EE", name: "Eesti", sigt: 0.32, hdi: 0.890, group: "est_baltic" },
+    { code: "KZ", name: "Kasahstan", sigt: 0.32, hdi: 0.811, group: "high_hdi" },
+    { code: "KR", name: "Lõuna-Korea", sigt: 0.32, hdi: 0.925, group: "high_hdi" },
+    { code: "GB", name: "Suurbritannia", sigt: 0.30, hdi: 0.929, group: "high_hdi" },
+    { code: "HU", name: "Ungari", sigt: 0.30, hdi: 0.846, group: "high_hdi" },
+    { code: "KW", name: "Kuveit", sigt: 0.30, hdi: 0.831, group: "high_hdi" },
+    { code: "SG", name: "Singapur", sigt: 0.30, hdi: 0.939, group: "high_hdi" },
+    { code: "TW", name: "Taiwan", sigt: 0.30, hdi: 0.926, group: "high_hdi" },
+    { code: "CZ", name: "Tšehhi", sigt: 0.29, hdi: 0.889, group: "high_hdi" },
+    { code: "IN", name: "India", sigt: 0.29, hdi: 0.633, group: "other" },
+    { code: "IR", name: "Iraan", sigt: 0.29, hdi: 0.774, group: "other" },
+    { code: "IT", name: "Itaalia", sigt: 0.29, hdi: 0.895, group: "high_hdi" },
+    { code: "UA", name: "Ukraina", sigt: 0.29, hdi: 0.773, group: "other" },
+    { code: "BY", name: "Valgevene", sigt: 0.28, hdi: 0.808, group: "outliers" },
+    { code: "RU", name: "Venemaa", sigt: 0.28, hdi: 0.822, group: "high_hdi" },
+    { code: "VN", name: "Vietnam", sigt: 0.28, hdi: 0.703, group: "other" },
+    { code: "AL", name: "Albaania", sigt: 0.26, hdi: 0.796, group: "other" },
+    { code: "DO", name: "Dominikaani Vabariik", sigt: 0.26, hdi: 0.767, group: "other" },
+    { code: "SK", name: "Slovakkia", sigt: 0.26, hdi: 0.848, group: "high_hdi" },
+    { code: "BG", name: "Bulgaaria", sigt: 0.25, hdi: 0.795, group: "other" },
+    { code: "HR", name: "Horvaatia", sigt: 0.25, hdi: 0.858, group: "high_hdi" },
+    { code: "LV", name: "Läti", sigt: 0.25, hdi: 0.863, group: "est_baltic" },
+    { code: "PK", name: "Pakistan", sigt: 0.25, hdi: 0.544, group: "other" },
+    { code: "TH", name: "Tai", sigt: 0.25, hdi: 0.800, group: "high_hdi" },
+    { code: "EG", name: "Egiptus", sigt: 0.24, hdi: 0.731, group: "other" },
+    { code: "ID", name: "Indoneesia", sigt: 0.24, hdi: 0.705, group: "other" },
+    { code: "AD", name: "Andorra", sigt: 0.23, hdi: 0.858, group: "high_hdi" },
+    { code: "IL", name: "Iisrael", sigt: 0.23, hdi: 0.919, group: "high_hdi" },
+    { code: "KG", name: "Kõrgõzstan", sigt: 0.23, hdi: 0.692, group: "other" },
+    { code: "PL", name: "Poola", sigt: 0.23, hdi: 0.876, group: "high_hdi" },
+    { code: "BA", name: "Bosnia ja Hertsegoviina", sigt: 0.22, hdi: 0.780, group: "other" },
+    { code: "HT", name: "Haiti", sigt: 0.22, hdi: 0.535, group: "other" },
+    { code: "JO", name: "Jordaania", sigt: 0.22, hdi: 0.720, group: "other" },
+    { code: "LT", name: "Leedu", sigt: 0.22, hdi: 0.875, group: "est_baltic" },
+    { code: "UY", name: "Uruguay", sigt: 0.22, hdi: 0.809, group: "high_hdi" },
+    { code: "QA", name: "Katar", sigt: 0.21, hdi: 0.855, group: "high_hdi" },
+    { code: "ZA", name: "Lõuna-Aafrika Vabariik", sigt: 0.21, hdi: 0.713, group: "other" },
+    { code: "AR", name: "Argentina", sigt: 0.20, hdi: 0.842, group: "high_hdi" },
+    { code: "BD", name: "Bangladesh", sigt: 0.20, hdi: 0.661, group: "other" },
+    { code: "RS", name: "Serbia", sigt: 0.20, hdi: 0.802, group: "high_hdi" },
+    { code: "AM", name: "Armeenia", sigt: 0.19, hdi: 0.759, group: "other" },
+    { code: "AZ", name: "Aserbaidžaan", sigt: 0.19, hdi: 0.745, group: "other" },
+    { code: "FR", name: "Prantsusmaa", sigt: 0.19, hdi: 0.903, group: "high_hdi" },
+    { code: "MX", name: "Mehhiko", sigt: 0.19, hdi: 0.758, group: "other" },
+    { code: "NG", name: "Nigeeria", sigt: 0.19, hdi: 0.535, group: "other" },
+    { code: "CL", name: "Tšiili", sigt: 0.18, hdi: 0.855, group: "high_hdi" },
+    { code: "ET", name: "Etioopia", sigt: 0.18, hdi: 0.498, group: "other" },
+    { code: "MD", name: "Moldova", sigt: 0.18, hdi: 0.767, group: "other" },
+    { code: "PS", name: "Palestiina", sigt: 0.18, hdi: 0.715, group: "other" },
+    { code: "SI", name: "Sloveenia", sigt: 0.18, hdi: 0.918, group: "high_hdi" },
+    { code: "TJ", name: "Tadžikistan", sigt: 0.18, hdi: 0.685, group: "other" },
+    { code: "UZ", name: "Usbekistan", sigt: 0.18, hdi: 0.727, group: "other" },
+    { code: "GT", name: "Guatemala", sigt: 0.17, hdi: 0.627, group: "other" },
+    { code: "ML", name: "Mali", sigt: 0.17, hdi: 0.428, group: "other" },
+    { code: "GE", name: "Gruusia", sigt: 0.16, hdi: 0.802, group: "high_hdi" },
+    { code: "MA", name: "Maroko", sigt: 0.16, hdi: 0.683, group: "other" },
+    { code: "BF", name: "Burkina Faso", sigt: 0.15, hdi: 0.449, group: "other" },
+    { code: "SV", name: "El Salvador", sigt: 0.15, hdi: 0.675, group: "other" },
+    { code: "MM", name: "Myanmar", sigt: 0.15, hdi: 0.585, group: "other" },
+    { code: "RO", name: "Rumeenia", sigt: 0.15, hdi: 0.821, group: "high_hdi" },
+    { code: "TN", name: "Tuneesia", sigt: 0.15, hdi: 0.731, group: "other" },
+    { code: "VE", name: "Venezuela", sigt: 0.15, hdi: 0.691, group: "other" },
+    { code: "DZ", name: "Alžeeria", sigt: 0.14, hdi: 0.745, group: "other" },
+    { code: "PR", name: "Puerto Rico", sigt: 0.14, hdi: 0.845, group: "high_hdi" },
+    { code: "TR", name: "Türgi", sigt: 0.13, hdi: 0.838, group: "high_hdi" },
+    { code: "YE", name: "Jeemen", sigt: 0.13, hdi: 0.455, group: "other" },
+    { code: "LY", name: "Liibüa", sigt: 0.12, hdi: 0.718, group: "other" },
+    { code: "MY", name: "Malaisia", sigt: 0.12, hdi: 0.803, group: "high_hdi" },
+    { code: "ZM", name: "Sambia", sigt: 0.12, hdi: 0.565, group: "other" },
+    { code: "MK", name: "Põhja-Makedoonia", sigt: 0.11, hdi: 0.770, group: "other" },
+    { code: "RW", name: "Rwanda", sigt: 0.11, hdi: 0.534, group: "other" },
+    { code: "CO", name: "Colombia", sigt: 0.10, hdi: 0.752, group: "other" },
+    { code: "CY", name: "Küpros", sigt: 0.10, hdi: 0.896, group: "high_hdi" },
+    { code: "LB", name: "Liibanon", sigt: 0.10, hdi: 0.706, group: "other" },
+    { code: "BO", name: "Boliivia", sigt: 0.09, hdi: 0.692, group: "other" },
+    { code: "GR", name: "Kreeka", sigt: 0.08, hdi: 0.887, group: "high_hdi" },
+    { code: "TZ", name: "Tansaania", sigt: 0.08, hdi: 0.549, group: "other" },
+    { code: "UG", name: "Uganda", sigt: 0.08, hdi: 0.525, group: "other" },
+    { code: "BR", name: "Brasiilia", sigt: 0.07, hdi: 0.754, group: "other" },
+    { code: "EC", name: "Ecuador", sigt: 0.07, hdi: 0.740, group: "other" },
+    { code: "GH", name: "Ghana", sigt: 0.07, hdi: 0.632, group: "other" },
+    { code: "PE", name: "Peruu", sigt: 0.07, hdi: 0.762, group: "other" },
+    { code: "ZW", name: "Zimbabwe", sigt: 0.07, hdi: 0.593, group: "other" },
+    { code: "PH", name: "Filipiinid", sigt: 0.06, hdi: 0.699, group: "other" },
+    { code: "NI", name: "Nicaragua", sigt: 0.04, hdi: 0.667, group: "other" },
+    { code: "TT", name: "Trinidad ja Tobago", sigt: 0.04, hdi: 0.810, group: "high_hdi" }
+  ];
+
+  const margin = { top: 20, right: 25, bottom: 48, left: 52 };
+  const width = 670 - margin.left - margin.right;
+  const height = 430 - margin.top - margin.bottom;
+
+  const svg = d3.select("#chart")
+    .append("svg")
+    .attr("viewBox", `0 0 ${width + margin.left + margin.right} ${height + margin.top + margin.bottom}`)
+    .append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
+
+  const x = d3.scaleLinear().domain([0.40, 1.00]).range([0, width]);
+  const y = d3.scaleLinear().domain([0, 0.80]).range([height, 0]);
+
+  svg.append("g")
+    .attr("class", "grid")
+    .attr("transform", `translate(0,${height})`)
+    .call(d3.axisBottom(x).ticks(6).tickSize(-height).tickFormat(""));
+
+  svg.append("g")
+    .attr("class", "grid")
+    .call(d3.axisLeft(y).ticks(8).tickSize(-width).tickFormat(""));
+
+  const formatDecimal = d3.format(".1f");
+  svg.append("g")
+    .attr("class", "axis")
+    .attr("transform", `translate(0,${height})`)
+    .call(d3.axisBottom(x).ticks(6).tickFormat(d => String(formatDecimal(d)).replace('.', ',')));
+
+  svg.append("g")
+    .attr("class", "axis")
+    .call(d3.axisLeft(y).ticks(8).tickFormat(d => Math.round(d * 100) + "%"));
+
+  svg.append("text")
+    .attr("class", "axis-label")
+    .attr("x", width / 2)
+    .attr("y", height + 38)
+    .attr("text-anchor", "middle")
+    .text("Inimarengu indeks (HDI 2021)");
+
+  svg.append("text")
+    .attr("class", "axis-label")
+    .attr("transform", "rotate(-90)")
+    .attr("x", -height / 2)
+    .attr("y", -38)
+    .attr("text-anchor", "middle")
+    .text("Usaldab enamikku inimesi (SIGT)");
+
+  svg.append("line")
+    .attr("x1", x(0.80))
+    .attr("x2", x(0.80))
+    .attr("y1", 0)
+    .attr("y2", height)
+    .attr("stroke", "#66788a")
+    .attr("stroke-width", 1.5)
+    .attr("stroke-dasharray", "5,4");
+
+  svg.append("text")
+    .attr("x", x(0.80) - 6)
+    .attr("y", 14)
+    .attr("text-anchor", "end")
+    .attr("font-size", "12px")
+    .attr("fill", "#4a5a6a")
+    .text("Väga kõrge inimarengu piir (0,80)");
+
+  const curvePoints = [];
+  for (let h = 0.42; h <= 0.975; h += 0.005) {
+    const val = 0.15 + Math.exp(20.5 * (h - 0.98));
+    if (val <= 0.80) {
+      curvePoints.push({ hdi: h, sigt: val });
+    }
+  }
+
+  const lineGenerator = d3.line()
+    .x(d => x(d.hdi))
+    .y(d => y(d.sigt))
+    .curve(d3.curveMonotoneX);
+
+  svg.append("path")
+    .datum(curvePoints)
+    .attr("fill", "none")
+    .attr("stroke", "#c0392b")
+    .attr("stroke-width", 2)
+    .attr("d", lineGenerator);
+
+  function getPointColor(d) {
+    if (d.code === "CN" || d.code === "BY") return "#c0392b";
+    if (d.code === "EE" || d.group === "nordic") return "#1b6b50";
+    return "#00426a";
+  }
+
+  const labeledCountries = {
+    "NO": { text: "Norra (70%)", dx: -8, dy: 4, anchor: "end" },
+    "SE": { text: "Rootsi (61%)", dx: -8, dy: 3, anchor: "end" },
+    "FI": { text: "Soome (55%)", dx: -8, dy: 4, anchor: "end" },
+    "EE": { text: "Eesti (32%)", dx: -8, dy: -4, anchor: "end" },
+    "LV": { text: "Läti (25%)", dx: 6, dy: 10, anchor: "start" },
+    "LT": { text: "Leedu (22%)", dx: 6, dy: 4, anchor: "start" },
+    "CN": { text: "Hiina (60%)", dx: 7, dy: 4, anchor: "start" },
+    "BY": { text: "Valgevene (28%)", dx: 7, dy: 4, anchor: "start" },
+    "DE": { text: "DE", dx: 6, dy: 3, anchor: "start" },
+    "US": { text: "US", dx: -6, dy: 3, anchor: "end" },
+    "JP": { text: "JP", dx: -6, dy: -3, anchor: "end" },
+    "ML": { text: "ML", dx: 6, dy: 3, anchor: "start" },
+    "NI": { text: "NI", dx: 6, dy: 3, anchor: "start" },
+    "ZA": { text: "ZA", dx: 6, dy: 3, anchor: "start" },
+    "IN": { text: "IN", dx: 6, dy: 3, anchor: "start" }
+  };
+
+  svg.selectAll(".dot")
+    .data(data)
+    .enter()
+    .append("circle")
+    .attr("class", "dot")
+    .attr("cx", d => x(d.hdi))
+    .attr("cy", d => y(d.sigt))
+    .attr("r", d => labeledCountries[d.code] && labeledCountries[d.code].text.length > 3 ? 5.5 : 4.2)
+    .attr("fill", d => getPointColor(d))
+    .attr("stroke", "#ffffff")
+    .attr("stroke-width", 1)
+    .style("opacity", 0.92);
+
+  svg.selectAll(".country-label")
+    .data(data.filter(d => labeledCountries[d.code]))
+    .enter()
+    .append("text")
+    .attr("class", "country-label")
+    .attr("x", d => x(d.hdi) + labeledCountries[d.code].dx)
+    .attr("y", d => y(d.sigt) + labeledCountries[d.code].dy)
+    .attr("text-anchor", d => labeledCountries[d.code].anchor)
+    .text(d => labeledCountries[d.code].text);
+</script>
+
+</body>
+</html>

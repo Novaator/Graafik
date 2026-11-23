@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Üldine usaldus ja inimareng (Realo ja Allik, 2026)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Sans+Condensed:wght@400&family=Fira+Sans:wght@400&display=swap" rel="stylesheet">
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-weight: 400 !important;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Fira Sans', sans-serif;
+      background-color: #ffffff;
+      color: #1a1a1a;
+      display: flex;
+      justify-content: center;
+      padding: 12px;
+    }
+
+    .err-chart-container {
+      width: 100%;
+      max-width: 670px;
+      background: #ffffff;
+      border-top: 3px solid #00426a;
+      padding-top: 14px;
+    }
+
+    .err-title {
+      font-family: 'Fira Sans Condensed', 'Fira Sans', sans-serif;
+      font-size: 22pt;
+      line-height: 1.15;
+      color: #111111;
+      margin-bottom: 6px;
+    }
+
+    .err-subtitle {
+      font-family: 'Fira Sans', sans-serif;
+      font-size: 20pt;
+      line-height: 1.25;
+      color: #4a4a4a;
+      margin-bottom: 16px;
+    }
+
+    .err-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 12px;
+      padding: 10px;
+      background-color: #f4f6f8;
+      border-radius: 2px;
+    }
+
+    .err-btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .err-btn {
+      font-family: 'Fira Sans', sans-serif;
+      font-size: 13px;
+      padding: 5px 10px;
+      border: 1px solid #b8c4ce;
+      background-color: #ffffff;
+      color: #1a1a1a;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+    }
+
+    .err-btn:hover {
+      border-color: #00426a;
+      color: #00426a;
+    }
+
+    .err-btn.active {
+      background-color: #00426a;
+      border-color: #00426a;
+      color: #ffffff;
+    }
+
+    .err-btn.toggle-active {
+      background-color: #1b6b50;
+      border-color: #1b6b50;
+      color: #ffffff;
+    }
+
+    .err-search-wrap {
+      margin-left: auto;
+      position: relative;
+      min-width: 170px;
+    }
+
+    .err-search {
+      width: 100%;
+      font-family: 'Fira Sans', sans-serif;
+      font-size: 13px;
+      padding: 5px 8px;
+      border: 1px solid #b8c4ce;
+      border-radius: 2px;
+      background: #ffffff;
+      color: #111111;
+    }
+
+    .err-search:focus {
+      outline: none;
+      border-color: #00426a;
+    }
+
+    .err-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      font-size: 13px;
+      color: #333333;
+      margin-bottom: 8px;
+      align-items: center;
+    }
+
+    .err-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .err-dot-swatch {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .err-line-swatch {
+      width: 18px;
+      height: 2px;
+      display: inline-block;
+    }
+
+    .chart-wrapper {
+      position: relative;
+      width: 100%;
+    }
+
+    svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      overflow: visible;
+    }
+
+    .axis text {
+      font-family: 'Fira Sans', sans-serif;
+      font-size: 12px;
+      fill: #4a4a4a;
+    }
+
+    .axis-label {
+      font-family: 'Fira Sans', sans-serif;
+      font-size: 13px;
+      fill: #222222;
+    }
+
+    .grid line {
+      stroke: #e2e6ea;
+      stroke-dasharray: 2,2;
+    }
+
+    .grid path {
+      stroke-width: 0;
+    }
+
+    .country-label {
+      font-family: 'Fira Sans Condensed', 'Fira Sans', sans-serif;
+      font-size: 11px;
+      pointer-events: none;
+      fill: #222222;
+    }
+
+    .err-tooltip {
+      position: absolute;
+      pointer-events: none;
+      background: rgba(255, 255, 255, 0.97);
+      border: 1px solid #00426a;
+      padding: 8px 11px;
+      font-size: 13px;
+      line-height: 1.4;
+      color: #111111;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+      border-radius: 2px;
+      opacity: 0;
+      transition: opacity 0.1s;
+      z-index: 10;
+      min-width: 185px;
+    }
+
+    .err-footer {
+      font-family: 'Fira Sans', sans-serif;
+      font-size: 14pt;
+      line-height: 1.3;
+      color: #555555;
+      margin-top: 12px;
+      padding-top: 8px;
+      border-top: 1px solid #dce1e6;
+    }
+
+    @media (max-width: 540px) {
+      .err-search-wrap {
+        margin-left: 0;
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="err-chart-container">
+  <div class="err-title">Üldine usaldus hüppab üles alles väga kõrge heaoluga riikides</div>
+  <div class="err-subtitle">Riigi inimarengu indeks (HDI) ja nende elanike osakaal, kes usaldavad enamikku inimesi</div>
+
+  <div class="err-controls">
+    <div class="err-btn-group" id="filter-buttons">
+      <button class="err-btn active" data-filter="all">Kõik 88 riiki</button>
+      <button class="err-btn" data-filter="est_baltic">Eesti ja Baltikum</button>
+      <button class="err-btn" data-filter="nordic">Põhjamaad</button>
+      <button class="err-btn" data-filter="outliers">Erandid (Hiina, Valgevene)</button>
+      <button class="err-btn" data-filter="high_hdi">Väga kõrge HDI (≥ 0,80)</button>
+    </div>
+    <button class="err-btn toggle-active" id="toggle-curve">Trendijoon ja 0,80 piir</button>
+    <div class="err-search-wrap">
+      <input type="text" id="country-search" class="err-search" list="country-list" placeholder="Otsi riiki (nt Eesti)...">
+      <datalist id="country-list"></datalist>
+    </div>
+  </div>
+
+  <div class="err-legend">
+    <div class="err-legend-item"><span class="err-dot-swatch" style="background:#00426a;"></span> Riik / territoorium</div>
+    <div class="err-legend-item"><span class="err-dot-swatch" style="background:#1b6b50;"></span> Eesti ja Põhjamaad</div>
+    <div class="err-legend-item"><span class="err-dot-swatch" style="background:#c0392b;"></span> Erandid (Hiina, Valgevene)</div>
+    <div class="err-legend-item"><span class="err-line-swatch" style="background:#c0392b;"></span> Eksponentsiaalne trendijoon</div>
+  </div>
+
+  <div class="chart-wrapper" id="chart">
+    <div class="err-tooltip" id="tooltip"></div>
+  </div>
+
+  <div class="err-footer">Allikas: Anu Realo ja Jüri Allik (Social Indicators Research, 2026), IVS (1981–2022) ja ÜRO (HDI 2021).</div>
+</div>
+
+<script>
+  // Tabeli 1 andmed (88 riiki ja territooriumi täieliku andmestikuga ning võtmeriigid jooniselt 2)
+  const data = [
+    { code: "NO", name: "Norra", sigt: 0.70, hdi: 0.961, n: 2136, group: "nordic" },
+    { code: "SE", name: "Rootsi", sigt: 0.61, hdi: 0.947, n: 3092, group: "nordic" },
+    { code: "CN", name: "Hiina", sigt: 0.60, hdi: 0.768, n: 10447, group: "outliers" },
+    { code: "NL", name: "Holland", sigt: 0.59, hdi: 0.941, n: 2862, group: "high_hdi" },
+    { code: "FI", name: "Soome", sigt: 0.55, hdi: 0.940, n: 2952, group: "nordic" },
+    { code: "NZ", name: "Uus-Meremaa", sigt: 0.54, hdi: 0.937, n: 3891, group: "high_hdi" },
+    { code: "SA", name: "Saudi Araabia", sigt: 0.53, hdi: 0.875, n: 1431, group: "high_hdi" },
+    { code: "CH", name: "Šveits", sigt: 0.50, hdi: 0.962, n: 3181, group: "high_hdi" },
+    { code: "AU", name: "Austraalia", sigt: 0.49, hdi: 0.951, n: 7875, group: "high_hdi" },
+    { code: "CA", name: "Kanada", sigt: 0.45, hdi: 0.936, n: 8035, group: "high_hdi" },
+    { code: "MO", name: "Macau", sigt: 0.44, hdi: 0.922, n: 968, group: "high_hdi" },
+    { code: "HK", name: "Hongkong", sigt: 0.42, hdi: 0.952, n: 4289, group: "high_hdi" },
+    { code: "JP", name: "Jaapan", sigt: 0.40, hdi: 0.925, n: 8826, group: "high_hdi" },
+    { code: "DE", name: "Saksamaa", sigt: 0.39, hdi: 0.942, n: 7353, group: "high_hdi" },
+    { code: "US", name: "Ameerika Ühendriigid", sigt: 0.38, hdi: 0.921, n: 8738, group: "high_hdi" },
+    { code: "IQ", name: "Iraak", sigt: 0.37, hdi: 0.686, n: 7105, group: "other" },
+    { code: "ME", name: "Montenegro", sigt: 0.33, hdi: 0.832, n: 1261, group: "high_hdi" },
+    { code: "ES", name: "Hispaania", sigt: 0.33, hdi: 0.905, n: 6080, group: "high_hdi" },
+    { code: "EE", name: "Eesti", sigt: 0.32, hdi: 0.890, n: 2490, group: "est_baltic" },
+    { code: "KZ", name: "Kasahstan", sigt: 0.32, hdi: 0.811, n: 2718, group: "high_hdi" },
+    { code: "KR", name: "Lõuna-Korea", sigt: 0.32, hdi: 0.925, n: 8216, group: "high_hdi" },
+    { code: "GB", name: "Suurbritannia", sigt: 0.30, hdi: 0.929, n: 2095, group: "high_hdi" },
+    { code: "HU", name: "Ungari", sigt: 0.30, hdi: 0.846, n: 3039, group: "high_hdi" },
+    { code: "KW", name: "Kuveit", sigt: 0.30, hdi: 0.831, n: 1240, group: "high_hdi" },
+    { code: "SG", name: "Singapur", sigt: 0.30, hdi: 0.939, n: 5462, group: "high_hdi" },
+    { code: "TW", name: "Taiwan", sigt: 0.30, hdi: 0.926, n: 4413, group: "high_hdi" },
+    { code: "CZ", name: "Tšehhi", sigt: 0.29, hdi: 0.889, n: 2017, group: "high_hdi" },
+    { code: "IN", name: "India", sigt: 0.29, hdi: 0.633, n: 11666, group: "other" },
+    { code: "IR", name: "Iraan", sigt: 0.29, hdi: 0.774, n: 6065, group: "other" },
+    { code: "IT", name: "Itaalia", sigt: 0.29, hdi: 0.895, n: 953, group: "high_hdi" },
+    { code: "UA", name: "Ukraina", sigt: 0.29, hdi: 0.773, n: 6162, group: "other" },
+    { code: "BY", name: "Valgevene", sigt: 0.28, hdi: 0.808, n: 4414, group: "outliers" },
+    { code: "RU", name: "Venemaa", sigt: 0.28, hdi: 0.822, n: 9817, group: "high_hdi" },
+    { code: "VN", name: "Vietnam", sigt: 0.28, hdi: 0.703, n: 3601, group: "other" },
+    { code: "AL", name: "Albaania", sigt: 0.26, hdi: 0.796, n: 1852, group: "other" },
+    { code: "DO", name: "Dominikaani Vabariik", sigt: 0.26, hdi: 0.767, n: 397, group: "other" },
+    { code: "SK", name: "Slovakkia", sigt: 0.26, hdi: 0.848, n: 1508, group: "high_hdi" },
+    { code: "BG", name: "Bulgaaria", sigt: 0.25, hdi: 0.795, n: 1771, group: "other" },
+    { code: "HR", name: "Horvaatia", sigt: 0.25, hdi: 0.858, n: 1088, group: "high_hdi" },
+    { code: "LV", name: "Läti", sigt: 0.25, hdi: 0.863, n: 1160, group: "est_baltic" },
+    { code: "PK", name: "Pakistan", sigt: 0.25, hdi: 0.544, n: 5686, group: "other" },
+    { code: "TH", name: "Tai", sigt: 0.25, hdi: 0.800, n: 4135, group: "high_hdi" },
+    { code: "EG", name: "Egiptus", sigt: 0.24, hdi: 0.731, n: 8730, group: "other" },
+    { code: "ID", name: "Indoneesia", sigt: 0.24, hdi: 0.705, n: 5859, group: "other" },
+    { code: "AD", name: "Andorra", sigt: 0.23, hdi: 0.858, n: 1995, group: "high_hdi" },
+    { code: "IL", name: "Iisrael", sigt: 0.23, hdi: 0.919, n: 1168, group: "high_hdi" },
+    { code: "KG", name: "Kõrgõzstan", sigt: 0.23, hdi: 0.692, n: 3658, group: "other" },
+    { code: "PL", name: "Poola", sigt: 0.23, hdi: 0.876, n: 3841, group: "high_hdi" },
+    { code: "BA", name: "Bosnia ja Hertsegoviina", sigt: 0.22, hdi: 0.780, n: 2326, group: "other" },
+    { code: "HT", name: "Haiti", sigt: 0.22, hdi: 0.535, n: 1967, group: "other" },
+    { code: "JO", name: "Jordaania", sigt: 0.22, hdi: 0.720, n: 4784, group: "other" },
+    { code: "LT", name: "Leedu", sigt: 0.22, hdi: 0.875, n: 981, group: "est_baltic" },
+    { code: "UY", name: "Uruguay", sigt: 0.22, hdi: 0.809, n: 2745, group: "high_hdi" },
+    { code: "QA", name: "Katar", sigt: 0.21, hdi: 0.855, n: 1059, group: "high_hdi" },
+    { code: "ZA", name: "Lõuna-Aafrika Vabariik", sigt: 0.21, hdi: 0.713, n: 13341, group: "other" },
+    { code: "AR", name: "Argentina", sigt: 0.20, hdi: 0.842, n: 7105, group: "high_hdi" },
+    { code: "BD", name: "Bangladesh", sigt: 0.20, hdi: 0.661, n: 4174, group: "other" },
+    { code: "RS", name: "Serbia", sigt: 0.20, hdi: 0.802, n: 4505, group: "high_hdi" },
+    { code: "AM", name: "Armeenia", sigt: 0.19, hdi: 0.759, n: 2989, group: "other" },
+    { code: "AZ", name: "Aserbaidžaan", sigt: 0.19, hdi: 0.745, n: 2868, group: "other" },
+    { code: "FR", name: "Prantsusmaa", sigt: 0.19, hdi: 0.903, n: 996, group: "high_hdi" },
+    { code: "MX", name: "Mehhiko", sigt: 0.19, hdi: 0.758, n: 11353, group: "other" },
+    { code: "NG", name: "Nigeeria", sigt: 0.19, hdi: 0.535, n: 7776, group: "other" },
+    { code: "CL", name: "Tšiili", sigt: 0.18, hdi: 0.855, n:

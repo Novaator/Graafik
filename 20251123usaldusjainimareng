@@ -35,7 +35,7 @@
 
     .err-title {
       font-family: 'Fira Sans Condensed', 'Fira Sans', sans-serif;
-      font-size: 22pt;
+      font-size: 20pt;
       line-height: 1.15;
       color: #111111;
       margin-bottom: 6px;
@@ -43,7 +43,7 @@
 
     .err-subtitle {
       font-family: 'Fira Sans', sans-serif;
-      font-size: 20pt;
+      font-size: 18pt;
       line-height: 1.25;
       color: #4a4a4a;
       margin-bottom: 14px;

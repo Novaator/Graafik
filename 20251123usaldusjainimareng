@@ -17,65 +17,69 @@
     }
 
     body {
-      font-family: 'Fira Sans', sans-serif;
-      background-color: #ffffff;
-      color: #1a1a1a;
+      font-family: 'Fira Sans Condensed', 'Fira Sans', sans-serif;
+      background-color: transparent;
+      color: #181c20;
       display: flex;
       justify-content: center;
-      padding: 12px;
+      padding: 0;
     }
 
     .err-chart-container {
       width: 100%;
       max-width: 670px;
       background: #ffffff;
-      border-top: 3px solid #00426a;
-      padding-top: 14px;
+      border: 1px solid #dfe4e8;
+      padding: 14px 16px 12px 16px;
     }
 
     .err-title {
       font-family: 'Fira Sans Condensed', 'Fira Sans', sans-serif;
-      font-size: 20pt;
-      line-height: 1.15;
-      color: #111111;
-      margin-bottom: 6px;
+      font-size: 15pt;
+      line-height: 1.22;
+      color: #181c20;
+      margin-bottom: 4px;
     }
 
     .err-subtitle {
-      font-family: 'Fira Sans', sans-serif;
-      font-size: 18pt;
+      font-family: 'Fira Sans Condensed', 'Fira Sans', sans-serif;
+      font-size: 12.5pt;
       line-height: 1.25;
-      color: #4a4a4a;
-      margin-bottom: 14px;
+      color: #4a525a;
+      margin-bottom: 10px;
     }
 
     .err-legend {
       display: flex;
       flex-wrap: wrap;
-      gap: 14px;
-      font-size: 13px;
-      color: #333333;
-      margin-bottom: 8px;
+      gap: 12px 16px;
+      font-family: 'Fira Sans Condensed', 'Fira Sans', sans-serif;
+      font-size: 10.5pt;
+      line-height: 1.2;
+      color: #181c20;
+      margin-bottom: 6px;
       align-items: center;
     }
 
     .err-legend-item {
       display: flex;
       align-items: center;
-      gap: 5px;
+      gap: 6px;
     }
 
     .err-dot-swatch {
-      width: 10px;
-      height: 10px;
+      width: 9px;
+      height: 9px;
       border-radius: 50%;
       display: inline-block;
+      flex-shrink: 0;
     }
 
     .err-line-swatch {
-      width: 18px;
+      width: 16px;
       height: 2px;
       display: inline-block;
+      flex-shrink: 0;
     }
 
     .chart-wrapper {
@@ -90,19 +94,24 @@
     }
 
     .axis text {
-      font-family: 'Fira Sans', sans-serif;
-      font-size: 12px;
-      fill: #4a4a4a;
+      font-family: 'Fira Sans Condensed', 'Fira Sans', sans-serif;
+      font-size: 9.5pt;
+      fill: #4a525a;
+    }
+
+    .axis path,
+    .axis line {
+      stroke: #cfd6dc;
     }
 
     .axis-label {
-      font-family: 'Fira Sans', sans-serif;
-      font-size: 13px;
-      fill: #222222;
+      font-family: 'Fira Sans Condensed', 'Fira Sans', sans-serif;
+      font-size: 10.5pt;
+      fill: #181c20;
     }
 
     .grid line {
-      stroke: #e2e6ea;
+      stroke: #e8edf1;
       stroke-dasharray: 2,2;
     }
 
@@ -112,18 +121,18 @@
 
     .country-label {
       font-family: 'Fira Sans Condensed', 'Fira Sans', sans-serif;
-      font-size: 11px;
-      fill: #222222;
+      font-size: 9pt;
+      fill: #181c20;
     }
 
     .err-footer {
-      font-family: 'Fira Sans', sans-serif;
-      font-size: 14pt;
-      line-height: 1.3;
-      color: #555555;
-      margin-top: 12px;
+      font-family: 'Fira Sans Condensed', 'Fira Sans', sans-serif;
+      font-size: 9.5pt;
+      line-height: 1.28;
+      color: #636c75;
+      margin-top: 8px;
       padding-top: 8px;
-      border-top: 1px solid #dce1e6;
+      border-top: 1px solid #dfe4e8;
     }
   </style>
 </head>

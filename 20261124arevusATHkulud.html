@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ATH ja ärevushäirega patsientide arv (2020–2026)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Sans+Condensed:wght@400&display=swap" rel="stylesheet" />
+  <style>
+    /* ERR kujundusjuhised: läbipaistev taust, Fira Sans Condensed (kaal 400 kõikjal) */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      font-weight: 400;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: transparent;
+      font-family: 'Fira Sans Condensed', sans-serif;
+      font-weight: 400;
+      color: #181c20;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Kompaktne kaart (~415px kõrge, et iframe'is ei tekiks kerimisriba) */
+    .err-card {
+      max-width: 670px;
+      width: 100%;
+      background: #ffffff;
+      border: 1px solid #dfe4e8;
+      padding: 16px 18px 14px 18px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .err-header {
+      margin-bottom: 10px;
+    }
+
+    .err-title {
+      margin: 0 0 3px 0;
+      font-size: 15pt;
+      line-height: 1.22;
+      color: #181c20;
+      font-weight: 400;
+    }
+
+    .err-subtitle {
+      margin: 0;
+      font-size: 12.5pt;
+      line-height: 1.25;
+      color: #4a525a;
+      font-weight: 400;
+    }
+
+    /* Interaktiivne legend sarjade sisse- ja väljalülitamiseks */
+    .err-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 14px;
+      margin-bottom: 6px;
+      align-items: center;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 4px;
+      padding: 2px 5px;
+      margin-left: -5px;
+      cursor: pointer;
+      font-family: 'Fira Sans Condensed', sans-serif;
+      font-size: 10.5pt;
+      line-height: 1.2;
+      color: #24292e;
+      transition: opacity 0.18s ease, background-color 0.18s ease;
+      user-select: none;
+    }
+
+    .legend-item:hover {
+      background-color: #f4f7f9;
+    }
+
+    .legend-item.is-muted {
+      opacity: 0.38;
+    }
+
+    .legend-swatch {
+      width: 20px;
+      height: 10px;
+      flex-shrink: 0;
+      display: block;
+    }
+
+    /* Graafiku ala */
+    .chart-wrap {
+      width: 100%;
+      height: 256px;
+      position: relative;
+    }
+
+    #chart-svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      overflow: visible;
+      touch-action: pan-y;
+    }
+
+    .axis-label {
+      font-family: 'Fira Sans Condensed', sans-serif;
+      font-size: 9.8pt;
+      fill: #5a636c;
+    }
+
+    .end-label {
+      font-family: 'Fira Sans Condensed', sans-serif;
+      font-size: 9.8pt;
+      transition: opacity 0.18s ease;
+    }
+
+    .series-group {
+      transition: opacity 0.2s ease;
+    }
+
+    .series-group.is-hidden {
+      opacity: 0.08;
+      pointer-events: none;
+    }
+
+    /* Jalus ja allikaviide */
+    .err-footer {
+      margin-top: 6px;
+      font-size: 9.5pt;
+      line-height: 1.28;
+      color: #636c75;
+    }
+
+    /* Baastaseme hõljumise hüpikaken */
+    .err-tooltip {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 20;
+      pointer-events: none;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.14s ease, transform 0.12s ease;
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid #d8e0e7;
+      border-radius: 8px;
+      box-shadow: 0 8px 24px rgba(24, 28, 32, 0.12), 0 2px 6px rgba(24, 28, 32, 0.06);
+      padding: 9px 11px;
+      width: 282px;
+      max-width: calc(100% - 16px);
+      color: #181c20;
+    }
+
+    .err-tooltip.is-visible {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .tt-year {
+      font-size: 11.5pt;
+      line-height: 1.2;
+      color: #181c20;
+      border-bottom: 1px solid #e6ebf0;
+      padding-bottom: 4px;
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+
+    .tt-year-note {
+      font-size: 9.5pt;
+      color: #636c75;
+    }
+
+    .tt-row {
+      margin-bottom: 5px;
+      padding-bottom: 5px;
+      border-bottom: 1px solid #f1f4f6;
+      font-size: 10pt;
+      line-height: 1.24;
+    }
+
+    .tt-row:last-child {
+      margin-bottom: 0;
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+
+    .tt-row.is-dimmed {
+      opacity: 0.42;
+    }
+
+    .tt-main {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
+    .tt-name-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #181c20;
+    }
+
+    .tt-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .tt-val-wrap {
+      text-align: right;
+      white-space: nowrap;
+      color: #181c20;
+    }
+
+    .tt-yoy {
+      font-size: 9.3pt;
+      color: #55606b;
+      margin-left: 3px;
+    }
+
+    .tt-costs {
+      padding-left: 14px;
+      font-size: 9.3pt;
+      color: #525b64;
+      margin-top: 1px;
+    }
+
+    @media (max-width: 480px) {
+      .err-card {
+        padding: 13px 12px 12px 12px;
+      }
+      .err-title {
+        font-size: 13.5pt;
+      }
+      .err-subtitle {
+        font-size: 11.2pt;
+      }
+      .legend-item {
+        font-size: 9.8pt;
+      }
+      .err-tooltip {
+        width: 256px;
+        padding: 8px 9px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <article class="err-card" id="err-card" aria-label="ATH ja ärevushäirega patsientide arvu joondiagramm">
+    <header class="err-header">
+      <h1 class="err-title">ATH ja ärevushäirega patsientide arv kasvas seitsme aastaga hüppeliselt</h1>
+      <p class="err-subtitle">Raviarve ja retseptiga inimeste arv aastatel 2020–2026</p>
+    </header>
+
+    <div class="err-legend" id="err-legend" role="group" aria-label="Andmesarjade filter"></div>
+
+    <div class="chart-wrap" id="chart-wrap">
+      <svg id="chart-svg" role="img" aria-label="Joondiagramm: ATH ja ärevushäirega inimeste arv 2020–2026"></svg>
+    </div>
+
+    <footer class="err-footer">
+      Allikas: Tervisekassa andmed (2020–2026). Hõlju punktidel, et näha täpseid kulusid.
+    </footer>
+
+    <div class="err-tooltip" id="err-tooltip" role="status" aria-live="polite"></div>
+  </article>
+
+  <script>
+    (function () {
+      // Aastad X-teljel
+      const years = [2020, 2021, 2022, 2023, 2024, 2025, 2026];
+
+      // Andmesarjad koos inimeste arvu, Tervisekassa kulu (€) ja patsiendi omaosalusega (€)
+      const seriesData = [
+        {
+          id: 'arev_raviarve',
+          label: 'Ärevushäire – raviarve',
+          color: '#3B6E8C',
+          dashed: false,
+          strokeWidth: 2.5,
+          people: [28207, 30044, 31865, 34432, 36751, 39528, 40383],
+          tkCost: [2880830, 3203392, 3406452, 4998596, 6208184, 6894322, 6604973],
+          patientCost: null
+        },
+        {
+          id: 'arev_retsept',
+          label: 'Ärevushäire – retsept',
+          color: '#7FAAC4',
+          dashed: true,
+          strokeWidth: 2.2,
+          people: [20639, 23129, 25531, 28757, 32137, 33871, 36589],
+          tkCost: [312387, 360149, 398160, 441787, 512940, 492362, 490861],
+          patientCost: [675139, 763479, 842508, 932318, 1097611, 1269006, 1259832]
+        },
+        {
+          id: 'ath_retsept',
+          label: 'ATH – retsept',
+          color: '#C85A32',
+          dashed: false,
+          strokeWidth: 2.5,
+          people: [2688, 3162, 4657, 8838, 12871, 17243, 20759],
+          tkCost: [566341, 679637, 931815, 1385783, 2405141, 3469895, 4198966],
+          patientCost: [152139, 179932, 256817, 1010677, 1436144, 2039130, 2227052]
+        },
+        {
+          id: 'ath_raviarve',
+          label: 'ATH – raviarve',
+          color: '#DFA058',
+          dashed: true,
+          strokeWidth: 2.2,
+          people: [3599, 3985, 5169, 7717, 10951, 14119, 16840],
+          tkCost: [1347854, 1272699, 1701490, 2719795, 3597973, 3824749, 3913450],
+          patientCost: null
+        }
+      ];
+
+      // Nähtavuse olek legendi klõpsamiseks
+      const visibleState = {
+        arev_raviarve: true,
+        arev_retsept: true,
+        ath_retsept: true,
+        ath_raviarve: true
+      };
+
+      let activeYearIndex = null;
+
+      // Vormindab täisarvu kitsa tühikuga (nt 40 383)
+      function formatInt(num) {
+        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '\u2009');
+      }
+
+      // Vormindab aastase muutuse protsendina eesti komakohaga (nt +22,8%)
+      function formatYoY(curr, prev) {
+        if (prev === null || prev === undefined || prev === 0) return '';
+        const diff = ((curr - prev) / prev) * 100;
+        const sign = diff > 0 ? '+' : '';
+        return sign + diff.toFixed(1).replace('.', ',') + '%';
+      }
+
+      // Loob interaktiivse legendi
+      const legendEl = document.getElementById('err-legend');
+      seriesData.forEach((s) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'legend-item';
+        btn.dataset.seriesId = s.id;
+        btn.setAttribute('aria-pressed', 'true');
+
+        const dashAttr = s.dashed ? 'stroke-dasharray="4,2.5"' : '';
+        btn.innerHTML = `
+          <svg class="legend-swatch" viewBox="0 0 20 10" aria-hidden="true">
+            <line x1="0" y1="5" x2="20" y2="5" stroke="${s.color}" stroke-width="${s.strokeWidth}" ${dashAttr} />
+            <circle cx="10" cy="5" r="2.6" fill="#ffffff" stroke="${s.color}" stroke-width="1.8" />
+          </svg>
+          <span>${s.label}</span>
+        `;
+
+        btn.addEventListener('click', () => {
+          // Vähemalt üks sari peab jääma aktiivseks
+          const activeCount = Object.values(visibleState).filter(Boolean).length;
+          if (visibleState[s.id] && activeCount === 1) return;
+
+          visibleState[s.id] = !visibleState[s.id];
+          btn.classList.toggle('is-muted', !visibleState[s.id]);
+          btn.setAttribute('aria-pressed', String(visibleState[s.id]));
+          renderChart();
+          if (activeYearIndex !== null) {
+            updateTooltipContent(activeYearIndex);
+          }
+        });
+
+        legendEl.appendChild(btn);
+      });
+
+      const cardEl = document.getElementById('err-card');
+      const wrapEl = document.getElementById('chart-wrap');
+      const svgEl = document.getElementById('chart-svg');
+      const tooltipEl = document.getElementById('err-tooltip');
+
+      // Otspunktide (2020 ja 2026) siltide vertikaalne hajutamine, et tekstid ei kattuks
+      function resolveLabelOverlaps(items, minGap, minY, maxY) {
+        const sorted = items.slice().sort((a, b) => a.y - b.y);
+        for (let i = 1; i < sorted.length; i++) {
+          if (sorted[i].y - sorted[i - 1].y < minGap) {
+            sorted[i].y = sorted[i - 1].y + minGap;
+          }
+        }
+        // Kui alumine silt läheb üle alumise piiri, nihutame ülespoole tagasi
+        if (sorted.length > 0 && sorted[sorted.length - 1].y > maxY) {
+          sorted[sorted.length - 1].y = maxY;
+          for (let i = sorted.length - 2; i >= 0; i--) {
+            if (sorted[i + 1].y - sorted[i].y < minGap) {
+              sorted[i].y = sorted[i + 1].y - minGap;
+            }
+          }
+        }
+        if (sorted.length > 0 && sorted[0].y < minY) {
+          sorted[0].y = minY;
+        }
+        return sorted;
+      }
+
+      // Joonistab puhta SVG joondiagrammi
+      function renderChart() {
+        const width = wrapEl.clientWidth || 632;
+        const height = wrapEl.clientHeight || 256;
+
+        // Veerised telgede ja otspunktide siltide jaoks
+        const padLeft = 46;
+        const padRight = 48;
+        const padTop = 14;
+        const padBottom = 24;
+
+        const plotW = Math.max(180, width - padLeft - padRight);
+        const plotH = Math.max(120, height - padTop - padBottom);
+
+        const yMax = 45000;
+        const yTicks = [0, 10000, 20000, 30000, 40000];
+
+        const getX = (idx) => padLeft + (idx / (years.length - 1)) * plotW;
+        const getY = (val) => padTop + plotH - (val / yMax) * plotH;
+
+        let svgContent = '';
+
+        // Horisontaalsed võrgujooned (#edf1f4) ja Y-telje väärtused
+        yTicks.forEach((tick) => {
+          const y = getY(tick);
+          const strokeColor = tick === 0 ? '#cfd7de' : '#edf1f4';
+          svgContent += `
+            <line x1="${padLeft}" y1="${y}" x2="${padLeft + plotW}" y2="${y}" stroke="${strokeColor}" stroke-width="1" />
+            <text x="${padLeft - 7}" y="${y + 3.5}" text-anchor="end" class="axis-label">${formatInt(tick)}</text>
+          `;
+        });
+
+        // X-telje aastad (2020–2026)
+        years.forEach((yr, idx) => {
+          const x = getX(idx);
+          svgContent += `
+            <text x="${x}" y="${padTop + plotH + 17}" text-anchor="middle" class="axis-label">${yr}</text>
+          `;
+        });
+
+        // Vertikaalne abijoon hõljumisel
+        const initialGuideX = activeYearIndex !== null ? getX(activeYearIndex) : 0;
+        const guideOpacity = activeYearIndex !== null ? 1 : 0;
+        svgContent += `
+          <line id="hover-guide" x1="${initialGuideX}" y1="${padTop}" x2="${initialGuideX}" y2="${padTop + plotH}"
+                stroke="#9aa5b1" stroke-width="1" stroke-dasharray="3,3" opacity="${guideOpacity}" />
+        `;
+
+        // Andmesarjade jooned ja punktid
+        const startLabels = [];
+        const endLabels = [];
+
+        seriesData.forEach((s) => {
+          const isVisible = visibleState[s.id];
+          const hiddenClass = isVisible ? '' : 'is-hidden';
+          const dashAttr = s.dashed ? 'stroke-dasharray="5,3.5"' : '';
+
+          const points = s.people.map((val, idx) => ({
+            x: getX(idx),
+            y: getY(val),
+            val
+          }));
+
+          const pathD = points
+            .map((pt, idx) => `${idx === 0 ? 'M' : 'L'} ${pt.x.toFixed(1)} ${pt.y.toFixed(1)}`)
+            .join(' ');
+
+          let circlesSvg = '';
+          points.forEach((pt, idx) => {
+            const isHighlighted = activeYearIndex === idx;
+            const radius = isHighlighted ? 4.4 : 3.2;
+            circlesSvg += `
+              <circle class="data-dot" data-series="${s.id}" data-idx="${idx}"
+                      cx="${pt.x.toFixed(1)}" cy="${pt.y.toFixed(1)}" r="${radius}"
+                      fill="#ffffff" stroke="${s.color}" stroke-width="2" />
+            `;
+          });
+
+          svgContent += `
+            <g class="series-group ${hiddenClass}" data-series-group="${s.id}">
+              <path d="${pathD}" fill="none" stroke="${s.color}" stroke-width="${s.strokeWidth}"
+                    stroke-linecap="round" stroke-linejoin="round" ${dashAttr} />
+              ${circlesSvg}
+            </g>
+          `;
+
+          if (isVisible) {
+            startLabels.push({
+              id: s.id,
+              color: s.color,
+              x: points[0].x - 7,
+              y: points[0].y + 3.5,
+              text: formatInt(points[0].val)
+            });
+            endLabels.push({
+              id: s.id,
+              color: s.color,
+              x: points[points.length - 1].x + 7,
+              y: points[points.length - 1].y + 3.5,
+              text: formatInt(points[points.length - 1].val)
+            });
+          }
+        });
+
+        // Otspunktide siltide kattuvuse vältimine
+        const resolvedStart = resolveLabelOverlaps(startLabels, 13, padTop + 6, padTop + plotH - 2);
+        const resolvedEnd = resolveLabelOverlaps(endLabels, 13, padTop + 6, padTop + plotH - 2);
+
+        resolvedStart.forEach((lbl) => {
+          svgContent += `
+            <text x="${lbl.x.toFixed(1)}" y="${lbl.y.toFixed(1)}" text-anchor="end"
+                  fill="${lbl.color}" class="end-label">${lbl.text}</text>
+          `;
+        });
+
+        resolvedEnd.forEach((lbl) => {
+          svgContent += `
+            <text x="${lbl.x.toFixed(1)}" y="${lbl.y.toFixed(1)}" text-anchor="start"
+                  fill="${lbl.color}" class="end-label">${lbl.text}</text>
+          `;
+        });
+
+        // Nähtamatud interaktiivsed veerud iga aasta kohal mugavaks hõljumiseks ja puudutamiseks
+        const colStep = plotW / (years.length - 1);
+        years.forEach((yr, idx) => {
+          const cx = getX(idx);
+          const rx = idx === 0 ? padLeft : cx - colStep / 2;
+          const rw = idx === 0 || idx === years.length - 1 ? colStep / 2 + 24 : colStep;
+          svgContent += `
+            <rect class="hover-zone" data-idx="${idx}" x="${rx.toFixed(1)}" y="${padTop - 4}"
+                  width="${rw.toFixed(1)}" height="${plotH + 12}" fill="transparent" style="cursor: crosshair;" />
+          `;
+        });
+
+        svgEl.setAttribute('viewBox', `0 0 ${width} ${height}`);
+        svgEl.innerHTML = svgContent;
+
+        // Sündmuste kuulajad igale aastaveerule
+        const zones = svgEl.querySelectorAll('.hover-zone');
+        zones.forEach((zone) => {
+          const idx = Number(zone.dataset.idx);
+          zone.addEventListener('mouseenter', () => showTooltipForYear(idx));
+          zone.addEventListener('mousemove', () => showTooltipForYear(idx));
+          zone.addEventListener('touchstart', (e) => {
+            e.stopPropagation();
+            showTooltipForYear(idx);
+          }, { passive: true });
+        });
+      }
+
+      // Täidab hüpikakna valitud aasta täpsete arvude ja kuludega
+      function updateTooltipContent(idx) {
+        const yr = years[idx];
+        const yoyNote = idx === 0 ? 'baasaasta' : `muutus vs ${years[idx - 1]}`;
+
+        let rowsHtml = '';
+        seriesData.forEach((s) => {
+          const count = s.people[idx];
+          const prevCount = idx > 0 ? s.people[idx - 1] : null;
+          const yoyStr = formatYoY(count, prevCount);
+          const tk = formatInt(s.tkCost[idx]);
+          const pat = s.patientCost !== null ? `, patsient: ${formatInt(s.patientCost[idx])} €` : '';
+          const dimmedClass = visibleState[s.id] ? '' : 'is-dimmed';
+
+          rowsHtml += `
+            <div class="tt-row ${dimmedClass}">
+              <div class="tt-main">
+                <span class="tt-name-wrap">
+                  <span class="tt-dot" style="background:${s.color};"></span>
+                  <span>${s.label}</span>
+                </span>
+                <span class="tt-val-wrap">
+                  <span>${formatInt(count)} in</span>
+                  ${yoyStr ? `<span class="tt-yoy">(${yoyStr})</span>` : ''}
+                </span>
+              </div>
+              <div class="tt-costs">TK: ${tk} €${pat}</div>
+            </div>
+          `;
+        });
+
+        tooltipEl.innerHTML = `
+          <div class="tt-year">
+            <span>${yr}. aasta</span>
+            <span class="tt-year-note">${yoyNote}</span>
+          </div>
+          ${rowsHtml}
+        `;
+      }
+
+      // Paigutab hüpikakna dünaamiliselt nii, et see ei välju kunagi 670px kaardi piiridest
+      function positionTooltip(idx) {
+        const cardRect = cardEl.getBoundingClientRect();
+        const wrapRect = wrapEl.getBoundingClientRect();
+
+        const padLeft = 46;
+        const padRight = 48;
+        const plotW = Math.max(180, wrapRect.width - padLeft - padRight);
+        const pointXInWrap = padLeft + (idx / (years.length - 1)) * plotW;
+        const pointXInCard = (wrapRect.left - cardRect.left) + pointXInWrap;
+
+        // Vertikaalne abijoon ja punktide esiletõstmine
+        const guide = document.getElementById('hover-guide');
+        if (guide) {
+          guide.setAttribute('x1', pointXInWrap.toFixed(1));
+          guide.setAttribute('x2', pointXInWrap.toFixed(1));
+          guide.setAttribute('opacity', '1');
+        }
+
+        svgEl.querySelectorAll('.data-dot').forEach((dot) => {
+          const dotIdx = Number(dot.dataset.idx);
+          dot.setAttribute('r', dotIdx === idx ? '4.5' : '3.2');
+        });
+
+        // Mõõdame hüpikakna tegelikud mõõtmed
+        tooltipEl.classList.add('is-visible');
+        const ttWidth = tooltipEl.offsetWidth || 282;
+        const ttHeight = tooltipEl.offsetHeight || 225;
+
+        const margin = 10;
+        const gapFromLine = 14;
+
+        // Vaikimisi paremale poole joonest; kui ei mahu, siis vasakule
+        let left = pointXInCard + gapFromLine;
+        if (left + ttWidth > cardRect.width - margin) {
+          left = pointXInCard - ttWidth - gapFromLine;
+        }
+        // Väga kitsal ekraanil tsentreerime turvaliselt kaardi sisse
+        if (left < margin) {
+          left = Math.max(margin, (cardRect.width - ttWidth) / 2);
+        }
+
+        // Vertikaalne paigutus graafikuala keskele, piiratud kaardi üla- ja alaserva vahele
+        const wrapTopInCard = wrapRect.top - cardRect.top;
+        let top = wrapTopInCard + (wrapRect.height - ttHeight) / 2;
+        if (top < margin) top = margin;
+        if (top + ttHeight > cardRect.height - margin) {
+          top = Math.max(margin, cardRect.height - ttHeight - margin);
+        }
+
+        tooltipEl.style.transform = `translate(${Math.round(left)}px, ${Math.round(top)}px)`;
+      }
+
+      function showTooltipForYear(idx) {
+        activeYearIndex = idx;
+        updateTooltipContent(idx);
+        positionTooltip(idx);
+      }
+
+      function hideTooltip() {
+        activeYearIndex = null;
+        tooltipEl.classList.remove('is-visible');
+        const guide = document.getElementById('hover-guide');
+        if (guide) {
+          guide.setAttribute('opacity', '0');
+        }
+        svgEl.querySelectorAll('.data-dot').forEach((dot) => {
+          dot.setAttribute('r', '3.2');
+        });
+      }
+
+      wrapEl.addEventListener('mouseleave', hideTooltip);
+      document.addEventListener('touchstart', (e) => {
+        if (!wrapEl.contains(e.target)) {
+          hideTooltip();
+        }
+      }, { passive: true });
+
+      window.addEventListener('resize', () => {
+        renderChart();
+        if (activeYearIndex !== null) {
+          positionTooltip(activeYearIndex);
+        }
+      });
+
+      // Algjoonistamine
+      renderChart();
+    })();
+  </script>
+</body>
+</html>
